@@ -1,0 +1,90 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{B206B83C-9619-4255-8855-9EB57DB53658}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderBook", "OrderBook", "{3C5E0D1F-4C1B-44A9-B409-4A2AA96A759E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MatchingEngine", "MatchingEngine", "{1D94F1D1-3FB4-4E6B-B0D3-E008C502286C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Domain", "PopcornMarket.OrderBook.Domain\PopcornMarket.OrderBook.Domain.csproj", "{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{1CBDB39A-5273-4DB6-A52E-C0162C149D8D}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Infrastructure", "PopcornMarket.OrderBook.Infrastructure\PopcornMarket.OrderBook.Infrastructure.csproj", "{C838E498-A370-45CF-8323-608ACC9D80DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Iac", "Iac", "{C98694BA-B4E6-4DAA-A9B6-D9207EB9E570}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\iac\docker-compose.yml = ..\..\iac\docker-compose.yml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Persistence", "PopcornMarket.OrderBook.Persistence\PopcornMarket.OrderBook.Persistence.csproj", "{5910B0B1-76C4-4003-A3B8-8F7276065BD4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FinancialAtlas", "FinancialAtlas", "{E2DFB3EA-B59C-43AF-B08B-2421F46344E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialAtlas.Domain", "PopcornMarket.FinancialAtlas.Domain\PopcornMarket.FinancialAtlas.Domain.csproj", "{CBBA8CFE-F696-450F-9DD2-28E0A76D9B98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.SharedKernel", "PopcornMarket.SharedKernel\PopcornMarket.SharedKernel.csproj", "{992D0241-9471-47C3-98C8-08AB255A6CFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialAtlas.Persistence", "PopcornMarket.FinancialAtlas.Persistence\PopcornMarket.FinancialAtlas.Persistence.csproj", "{2484D067-D6B5-4F81-8BC7-B73EE677C5D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialAtlas.Application", "PopcornMarket.FinancialAtlas.Application\PopcornMarket.FinancialAtlas.Application.csproj", "{20F2BE23-8A58-48AB-92DE-0B42C5B46934}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialAtlas.Api", "PopcornMarket.FinancialAtlas.Api\PopcornMarket.FinancialAtlas.Api.csproj", "{E0439E36-9E1B-4362-A017-D1F77BDD2B6D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C5E0D1F-4C1B-44A9-B409-4A2AA96A759E} = {B206B83C-9619-4255-8855-9EB57DB53658}
+		{1D94F1D1-3FB4-4E6B-B0D3-E008C502286C} = {B206B83C-9619-4255-8855-9EB57DB53658}
+		{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD} = {3C5E0D1F-4C1B-44A9-B409-4A2AA96A759E}
+		{C838E498-A370-45CF-8323-608ACC9D80DB} = {3C5E0D1F-4C1B-44A9-B409-4A2AA96A759E}
+		{5910B0B1-76C4-4003-A3B8-8F7276065BD4} = {3C5E0D1F-4C1B-44A9-B409-4A2AA96A759E}
+		{E2DFB3EA-B59C-43AF-B08B-2421F46344E3} = {B206B83C-9619-4255-8855-9EB57DB53658}
+		{CBBA8CFE-F696-450F-9DD2-28E0A76D9B98} = {E2DFB3EA-B59C-43AF-B08B-2421F46344E3}
+		{2484D067-D6B5-4F81-8BC7-B73EE677C5D1} = {E2DFB3EA-B59C-43AF-B08B-2421F46344E3}
+		{20F2BE23-8A58-48AB-92DE-0B42C5B46934} = {E2DFB3EA-B59C-43AF-B08B-2421F46344E3}
+		{E0439E36-9E1B-4362-A017-D1F77BDD2B6D} = {E2DFB3EA-B59C-43AF-B08B-2421F46344E3}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C838E498-A370-45CF-8323-608ACC9D80DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C838E498-A370-45CF-8323-608ACC9D80DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C838E498-A370-45CF-8323-608ACC9D80DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C838E498-A370-45CF-8323-608ACC9D80DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5910B0B1-76C4-4003-A3B8-8F7276065BD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5910B0B1-76C4-4003-A3B8-8F7276065BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5910B0B1-76C4-4003-A3B8-8F7276065BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5910B0B1-76C4-4003-A3B8-8F7276065BD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBBA8CFE-F696-450F-9DD2-28E0A76D9B98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBBA8CFE-F696-450F-9DD2-28E0A76D9B98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBBA8CFE-F696-450F-9DD2-28E0A76D9B98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBBA8CFE-F696-450F-9DD2-28E0A76D9B98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{992D0241-9471-47C3-98C8-08AB255A6CFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{992D0241-9471-47C3-98C8-08AB255A6CFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{992D0241-9471-47C3-98C8-08AB255A6CFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{992D0241-9471-47C3-98C8-08AB255A6CFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2484D067-D6B5-4F81-8BC7-B73EE677C5D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2484D067-D6B5-4F81-8BC7-B73EE677C5D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2484D067-D6B5-4F81-8BC7-B73EE677C5D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2484D067-D6B5-4F81-8BC7-B73EE677C5D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20F2BE23-8A58-48AB-92DE-0B42C5B46934}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20F2BE23-8A58-48AB-92DE-0B42C5B46934}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20F2BE23-8A58-48AB-92DE-0B42C5B46934}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20F2BE23-8A58-48AB-92DE-0B42C5B46934}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0439E36-9E1B-4362-A017-D1F77BDD2B6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0439E36-9E1B-4362-A017-D1F77BDD2B6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0439E36-9E1B-4362-A017-D1F77BDD2B6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0439E36-9E1B-4362-A017-D1F77BDD2B6D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,23 @@
+<Project>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AnalysisMode>Recommended</AnalysisMode>
+		<AnalysisLevel>latest-Recommended</AnalysisLevel>
+		<AnalysisModeGlobalization>None</AnalysisModeGlobalization>
+		<AnalysisModeSecurity>All</AnalysisModeSecurity>
+		<LangVersion>default</LangVersion>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<WarningsNotAsErrors>618,CS1030</WarningsNotAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<NoWarn>1591</NoWarn>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+</Project>
+
+

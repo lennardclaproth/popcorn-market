@@ -1,0 +1,45 @@
+version: '3.8'
+
+name: popcorn-market
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg17
+    container_name: popcorn-market-timescale
+    restart: always
+    environment:
+      POSTGRES_DB: popcorn_market
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+  
+  redis:
+    image: redis:latest
+    container_name: popcorn-market-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: popcorn-market-llm
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  timescale_data:
+  ollama_data:
+  mongodb_data:
