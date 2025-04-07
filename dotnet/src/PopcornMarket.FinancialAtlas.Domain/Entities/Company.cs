@@ -1,4 +1,5 @@
 ﻿using PopcornMarket.SharedKernel.Primitives;
+using PopcornMarket.SharedKernel.ResultPattern;
 
 namespace Popcorn.FinancialAtlas.Domain.Entities;
 
@@ -12,10 +13,8 @@ public class Company : Entity
     public string Ceo { get; private set; } = null!;
     public int FoundedYear { get; private set; }
     public int Employees { get; private set; }
-    
-    private Company(){ }
 
-    public Company(string ticker,
+    private Company(string ticker,
         string name,
         string industry,
         string description,
@@ -32,5 +31,12 @@ public class Company : Entity
         Ceo = ceo;
         FoundedYear = foundedYear;
         Employees = employees;
+    }
+
+    public static Result<Company> Create(string ticker, string name, string industry, string description,
+        string headquarters, string ceo, int foundedYear, int employees)
+    {
+        var company = new Company(ticker, name, industry, description, headquarters, ceo, foundedYear, employees);
+        return Result<Company>.Success(company);
     }
 }

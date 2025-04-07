@@ -22,6 +22,14 @@ services:
     ports:
       - "6379:6379"
 
+  seq:
+    image: datalust/seq:latest
+    container_name: popcorn-market-seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - 5341:80
+
   ollama:
     image: ollama/ollama:latest
     container_name: popcorn-market-llm
@@ -33,7 +41,7 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: mongo
+    container_name: popcorn-market-mongo
     ports:
       - "27017:27017"
     volumes:

@@ -4,5 +4,6 @@ namespace Popcorn.FinancialAtlas.Domain.Abstractions;
 
 public interface ICompanyRepository : IRepository<Company>
 {
-    Task<Company?> GetByTickerAsync(string ticker);
+    Task<Company?> GetByTicker(string ticker);
+    Task<IEnumerable<string>> GetTickers();
 }

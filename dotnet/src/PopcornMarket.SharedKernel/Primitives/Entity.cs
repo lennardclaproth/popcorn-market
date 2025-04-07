@@ -12,7 +12,14 @@ public abstract class Entity : IEquatable<Entity>
 
     public static bool operator ==(Entity? first, Entity? second)
     {
-        return first != null && second != null && first.Equals(second);
+        // If either is null, do a reference check
+        if (ReferenceEquals(first, null) && ReferenceEquals(second, null))
+            return true;
+        if (ReferenceEquals(first, null) || ReferenceEquals(second, null))
+            return false;
+
+        // Otherwise, both not null, fallback to first.Equals(second).
+        return first.Equals(second);
     }
 
     public static bool operator !=(Entity? first, Entity? second)
@@ -51,7 +58,7 @@ public abstract class Entity : IEquatable<Entity>
         {
             return false;
         }
-
+        
         return Equals(obj as Entity);
     }
 

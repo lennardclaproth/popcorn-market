@@ -9,7 +9,7 @@ type PoliticalArticle struct {
 }
 
 // NewGlobalArticle creates a new GlobalArticle
-func NewPoliticalArticle(region, content, headline, reasoning string) PoliticalArticle {
+func NewPoliticalArticle(region, content, headline, reasoning string, metadata map[string]string) PoliticalArticle {
 	return PoliticalArticle{
 		Region: region,
 		articleBase: articleBase{
@@ -17,7 +17,7 @@ func NewPoliticalArticle(region, content, headline, reasoning string) PoliticalA
 			Type:     Political,
 			Headline: headline,
 			Content:  content,
-			Metadata: Metadata{Reasoning: reasoning},
+			Metadata: metadata,
 		},
 	}
 }

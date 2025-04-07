@@ -1,26 +1,36 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
+using Popcorn.FinancialAtlas.Domain.Abstractions;
 using Popcorn.FinancialAtlas.Domain.Entities;
 using PopcornMarket.FinancialAtlas.Persistence.Constants;
 using PopcornMarket.FinancialAtlas.Persistence.Context;
-using PopcornMarket.SharedKernel.Attributes.ServiceLifetime;
-using Scrutor;
+using PopcornMarket.FinancialAtlas.Persistence.Maps;
+using PopcornMarket.FinancialAtlas.Persistence.Repositories;
 
 namespace PopcornMarket.FinancialAtlas.Persistence.Extensions;
 
 public static class PersistenceExtensions
 {
-    public static IServiceCollection AddPersistence(this IServiceCollection services, string connectionString)
+    public static IServiceCollection InstallPersistence(this IServiceCollection services, string connectionString)
     {
         InitializeMongoDb(services, connectionString);
-        AddClassesWithLifetime(services, PersistenceAssemblyReference.Assembly);
+        AddClassesWithLifetime(services);
         
         return services;
     }
 
     private static void InitializeMongoDb(IServiceCollection services, string connectionString)
     {
+        EntityMap.Configure();
+        BalanceSheetMap.Configure();
+        CashFlowStatementMap.Configure();
+        CompanyMap.Configure();
+        FinancialStatementMap.Configure();
+        IncomeStatementMap.Configure();
+        MarketDataMap.Configure();
+        MarketSnapshotMap.Configure();
+        
         var context = new MongoDbContext(connectionString, DbConstants.DatabaseName);
         
         var companiesCollection = context.GetCollection<Company>(DbConstants.CompanyCollection);
@@ -33,12 +43,9 @@ public static class PersistenceExtensions
         services.AddSingleton(context);
     }
     
-    private static void AddClassesWithLifetime(IServiceCollection services, Assembly assembly)
+    private static void AddClassesWithLifetime(IServiceCollection services)
     {
-        services.Scan(scan => scan.FromAssemblies([assembly])
-            .AddClasses(classes => classes.WithAttribute<SingletonLifetimeAttribute>()).AsImplementedInterfaces().WithSingletonLifetime()
-            .AddClasses(classes => classes.WithAttribute<ScopedLifetimeAttribute>()).AsImplementedInterfaces().WithScopedLifetime()
-            .AddClasses(classes => classes.WithAttribute<TransientLifetimeAttribute>()).AsImplementedInterfaces().WithTransientLifetime());
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
     }
 
 }

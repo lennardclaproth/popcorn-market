@@ -1,5 +1,6 @@
 ﻿using Popcorn.FinancialAtlas.Domain.ValueObjects;
 using PopcornMarket.SharedKernel.Primitives;
+using PopcornMarket.SharedKernel.ResultPattern;
 
 namespace Popcorn.FinancialAtlas.Domain.Entities;
 
@@ -15,6 +16,13 @@ public class MarketData : Entity
     {
         TickerSymbol = tickerSymbol;
         Current = current;
+    }
+
+    public static Result<MarketData> Create(string tickerSymbol, MarketSnapshot current)
+    {
+        var marketData = new MarketData(tickerSymbol, current);
+        
+        return Result<MarketData>.Success(marketData);
     }
 
     public void UpdateCurrent(MarketSnapshot snapshot)

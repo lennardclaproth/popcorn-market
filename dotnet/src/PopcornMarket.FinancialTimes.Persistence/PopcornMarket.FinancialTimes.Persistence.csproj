@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MongoDB.Bson" Version="3.2.0" />
+      <PackageReference Include="MongoDB.Driver" Version="3.2.0" />
+      <PackageReference Include="Scrutor" Version="6.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PopcornMarket.FinancialTimes.Domain\PopcornMarket.FinancialTimes.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

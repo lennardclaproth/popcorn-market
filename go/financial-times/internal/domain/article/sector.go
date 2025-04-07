@@ -9,7 +9,7 @@ type SectorArticle struct {
 }
 
 // NewSectorArticle creates a new SectorArticle
-func NewSectorArticle(sector, content, headline, reasoning string) SectorArticle {
+func NewSectorArticle(sector, content, headline, reasoning string, metadata map[string]string) SectorArticle {
 	return SectorArticle{
 		Sector: sector,
 		articleBase: articleBase{
@@ -17,7 +17,7 @@ func NewSectorArticle(sector, content, headline, reasoning string) SectorArticle
 			Type:     Sector,
 			Headline: headline,
 			Content:  content,
-			Metadata: Metadata{Reasoning: reasoning},
+			Metadata: metadata,
 		},
 	}
 }

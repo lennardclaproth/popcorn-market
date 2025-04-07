@@ -13,5 +13,6 @@ const (
 // Metadata holds additional information about the article
 type Metadata struct {
 	Reasoning string            `json:"reasoning" bson:"reasoning"`
+	Prompt string
 	Extras    map[string]string `json:"extras,omitempty" bson:"extras,omitempty"`
 }

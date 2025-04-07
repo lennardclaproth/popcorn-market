@@ -7,7 +7,6 @@ using PopcornMarket.SharedKernel.Attributes.ServiceLifetime;
 
 namespace PopcornMarket.FinancialAtlas.Persistence.Repositories;
 
-[ScopedLifetime]
 public class CompanyRepository : ICompanyRepository
 {
     private readonly IMongoCollection<Company> _collection;
@@ -17,34 +16,41 @@ public class CompanyRepository : ICompanyRepository
         _collection = context.GetCollection<Company>(DbConstants.CompanyCollection);
     }
 
-    public Task<IEnumerable<Company>> GetAllAsync()
+    public Task<IEnumerable<Company>> GetAll()
     {
         throw new NotImplementedException();
     }
 
-    public Task<Company?> GetByIdAsync(string id)
+    public Task<Company?> GetById(string id)
     {
         throw new NotImplementedException();
     }
 
-    public async Task AddAsync(Company entity)
+    public async Task Add(Company entity)
     {
         await _collection.InsertOneAsync(entity);
     }
 
-    public Task UpdateAsync(string id, Company entity)
+    public Task Update(string id, Company entity)
     {
         throw new NotImplementedException();
     }
 
-    public Task DeleteAsync(string id)
+    public Task Delete(string id)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<Company?> GetByTickerAsync(string ticker)
+    public async Task<Company?> GetByTicker(string ticker)
     {
         var filter = Builders<Company>.Filter.Eq(c => c.Ticker, ticker);
         return await _collection.Find(filter).FirstOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<string>> GetTickers()
+    {
+        var filter = Builders<Company>.Filter.Empty;
+        var cursor = await _collection.DistinctAsync(x => x.Ticker, filter);
+        return cursor.ToEnumerable();
     }
 }

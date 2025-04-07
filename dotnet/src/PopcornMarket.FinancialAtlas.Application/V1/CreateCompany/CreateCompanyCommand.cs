@@ -2,7 +2,7 @@ using PopcornMarket.SharedKernel.CQRS;
 
 namespace PopcornMarket.FinancialAtlas.Application.V1.CreateCompany;
 
-internal sealed record CreateCompanyCommand : ICommand
+public sealed record CreateCompanyCommand : ICommand
 {
     public required string Ticker { get; init; }
     public required string Name { get; init; }

@@ -9,7 +9,7 @@ type MacroArticle struct {
 }
 
 // NewMacroArticle creates a new MacroArticle
-func NewMacroArticle(region, content, headline, reasoning string) MacroArticle {
+func NewMacroArticle(region, content, headline string, metadata map[string]string) MacroArticle {
 	return MacroArticle{
 		Region: region,
 		articleBase: articleBase{
@@ -17,7 +17,7 @@ func NewMacroArticle(region, content, headline, reasoning string) MacroArticle {
 			Type:     MacroEconomic,
 			Headline: headline,
 			Content:  content,
-			Metadata: Metadata{Reasoning: reasoning},
+			Metadata: metadata,
 		},
 	}
 }

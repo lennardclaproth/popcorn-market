@@ -19,7 +19,7 @@ type articleBase struct {
 	Type     ArticleType `json:"type" bson:"type"`
 	Headline string      `json:"headline" bson:"headline"`
 	Content  string      `json:"content" bson:"content"`
-	Metadata Metadata    `json:"metadata" bson:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty" bson:"metadata,omitempty"`
 }
 
 // Implement Article interface for articleBase
@@ -27,4 +27,4 @@ func (a articleBase) GetType() ArticleType { return a.Type }
 func (a articleBase) GetDate() time.Time   { return a.Date }
 func (a articleBase) GetHeadline() string  { return a.Headline }
 func (a articleBase) GetContent() string   { return a.Content }
-func (a articleBase) GetMetadata() Metadata { return a.Metadata }
+func (a articleBase) GetMetadata() map[string]string { return a.Metadata }

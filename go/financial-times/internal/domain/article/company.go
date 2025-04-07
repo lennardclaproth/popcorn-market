@@ -11,7 +11,7 @@ type CompanyArticle struct {
 }
 
 // NewCompanyArticle creates a new CompanyArticle
-func NewCompanyArticle(ticker, industry, company, content, headline, reasoning string) CompanyArticle {
+func NewCompanyArticle(ticker, industry, company, content, headline string, metadata map[string] string) CompanyArticle {
 	return CompanyArticle{
 		Ticker:   ticker,
 		Industry: industry,
@@ -21,7 +21,7 @@ func NewCompanyArticle(ticker, industry, company, content, headline, reasoning s
 			Type:     Company,
 			Headline: headline,
 			Content:  content,
-			Metadata: Metadata{Reasoning: reasoning},
+			Metadata: metadata,
 		},
 	}
 }
