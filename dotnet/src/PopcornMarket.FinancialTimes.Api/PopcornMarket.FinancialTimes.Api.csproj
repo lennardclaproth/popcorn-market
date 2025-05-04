@@ -26,6 +26,7 @@
     <ItemGroup>
       <ProjectReference Include="..\PopcornMarket.FinancialTimes.Application\PopcornMarket.FinancialTimes.Application.csproj" />
       <ProjectReference Include="..\PopcornMarket.FinancialTimes.Contracts\PopcornMarket.FinancialTimes.Contracts.csproj" />
+      <ProjectReference Include="..\PopcornMarket.FinancialTimes.Infrastructure\PopcornMarket.FinancialTimes.Infrastructure.csproj" />
       <ProjectReference Include="..\PopcornMarket.FinancialTimes.Persistence\PopcornMarket.FinancialTimes.Persistence.csproj" />
     </ItemGroup>
 

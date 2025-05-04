@@ -5,11 +5,12 @@ from typing import Dict, Optional
 
 class ArticleBase(BaseModel):
     """Base model for all articles."""
-    date: datetime
+    id: Optional[str] = None
+    date: Optional[datetime] = Field(default=None, alias="publish_date")
     type: int  # Assuming ArticleType is a string representation
     headline: str
     content: str
-    metadata: Optional[Dict[str, str]] = Field(default_factory=dict)
+    metadata: Optional[Dict[str, str]] = Field(default = None)
 
 
 class CompanyArticle(ArticleBase):

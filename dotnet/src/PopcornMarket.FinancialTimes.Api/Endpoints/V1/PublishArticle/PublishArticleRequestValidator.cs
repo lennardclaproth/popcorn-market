@@ -8,15 +8,15 @@ public class PublishArticleRequestValidator : AbstractValidator<PublishArticleRe
     public PublishArticleRequestValidator()
     {
         RuleFor(x => x.CompanyName)
-            .Must(c => c == null || c.Length < 3)
+            .Must(c => c == null || c.Length > 3)
             .WithMessage("CompanyName must be at least 3 characters long");
         
         RuleFor(x => x.Industry)
-            .Must(i => i == null || i.Length < 3)
+            .Must(i => i == null || i.Length > 3)
             .WithMessage("Industry must be at least 3 characters long");
         
         RuleFor(x => x.Region)
-            .Must(r => r == null || r.Length < 3)
+            .Must(r => r == null || r.Length > 3)
             .WithMessage("Region must be at least 3 characters long");
         
         RuleFor(x => x.Ticker)
@@ -26,5 +26,9 @@ public class PublishArticleRequestValidator : AbstractValidator<PublishArticleRe
         RuleFor(x => x.Sector)
             .Must(s => s == null || s?.Length > 3)
             .WithMessage("Sector must be at least 3 characters long");
+
+        RuleFor(x => x.Headline).NotEmpty();
+
+        RuleFor(x => x.Content).NotEmpty();
     }
 }

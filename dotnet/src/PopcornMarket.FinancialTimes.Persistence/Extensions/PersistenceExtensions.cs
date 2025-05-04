@@ -27,6 +27,7 @@ public static class PersistenceExtensions
         SectorArticleMap.Configure();
         PoliticalArticleMap.Configure();
         MacroEconomicArticleMap.Configure();
+        CompanyMap.Configure();
         
         var context = new MongoDbContext(connectionString, DbConstants.DatabaseName);
 
@@ -39,5 +40,6 @@ public static class PersistenceExtensions
         services.AddScoped<IMacroEconomicArticleRepository, MacroEconomicArticleRepository>();
         services.AddScoped<ISectorArticleRepository, SectorArticleRepository>();
         services.AddScoped<IPoliticalArticleRepository, PoliticalArticleRepository>();
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
     }
 }

@@ -30,6 +30,12 @@ services:
     ports:
       - 5341:80
 
+  kafka:
+    image: apache/kafka:latest
+    container_name: popcorn-market-event-stream
+    ports:
+      - 9092:9092
+
   ollama:
     image: ollama/ollama:latest
     container_name: popcorn-market-llm

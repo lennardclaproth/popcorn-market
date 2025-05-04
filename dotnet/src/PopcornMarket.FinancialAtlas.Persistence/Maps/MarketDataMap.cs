@@ -18,7 +18,8 @@ internal static class MarketDataMap
                 cm.AutoMap();
                 cm.SetIgnoreExtraElements(true);
 
-                cm.MapMember(m => m.TickerSymbol).SetElementName("ticker_symbol");
+                cm.MapMember(m => m.Ticker).SetElementName("ticker");
+                cm.MapMember(m => m.SharesOutstanding).SetElementName("shares_outstanding");
                 cm.MapMember(m => m.Current).SetElementName("current");
                 cm.MapMember(m => m.History).SetElementName("history");
             });

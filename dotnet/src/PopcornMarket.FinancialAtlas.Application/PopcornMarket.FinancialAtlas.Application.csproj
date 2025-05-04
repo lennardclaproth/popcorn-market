@@ -12,12 +12,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Contracts\PopcornMarket.FinancialAtlas.Contracts.csproj" />
       <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Domain\PopcornMarket.FinancialAtlas.Domain.csproj" />
+      <ProjectReference Include="..\PopcornMarket.Messaging.Contracts\PopcornMarket.Messaging.Contracts.csproj" />
       <ProjectReference Include="..\PopcornMarket.SharedKernel\PopcornMarket.SharedKernel.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Mappings\" />
     </ItemGroup>
 
 </Project>

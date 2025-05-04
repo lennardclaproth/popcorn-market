@@ -1,10 +1,16 @@
-BASE_URL = "https://localhost:7236/api/v1/articles"  # Replace with actual API URL
+FINANCIAL_TIMES = "https://localhost:7236/api/v1/articles"  # Replace with actual API URL
+COMPANY_ARTICLES_ENDPOINT = f"{FINANCIAL_TIMES}/company"
+POLITICAL_ARTICLES_ENDPOINT = f"{FINANCIAL_TIMES}/political"
+MACRO_ARTICLES_ENDPOINT = f"{FINANCIAL_TIMES}/macro"
+SECTOR_ARTICLES_ENDPOINT = f"{FINANCIAL_TIMES}/sector"
+PUBLISH_ARTICLE_ENDPOINT = f"{FINANCIAL_TIMES}/publish"
 
-COMPANY_ARTICLES_ENDPOINT = f"{BASE_URL}/company"
-POLITICAL_ARTICLES_ENDPOINT = f"{BASE_URL}/political"
-MACRO_ARTICLES_ENDPOINT = f"{BASE_URL}/macro"
-SECTOR_ARTICLES_ENDPOINT = f"{BASE_URL}/sector"
-PUBLISH_ARTICLE_ENDPOINT = f"{BASE_URL}/publish"
+FINANCIAL_ATLAS = "https://localhost:7087/api/v1"
+COMPANY_ENDPOINT=f"{FINANCIAL_ATLAS}/company"
+MARKET_DATA_ENDPOINT=f"{FINANCIAL_ATLAS}/market-data"
 
+MONGO_URL = "mongodb://localhost:27017/"
 
-OLLAMA_MODEL = 'deepseek-r1:1.5b'
+# OLLAMA_MODEL = 'deepseek-r1:1.5b'
+# OLLAMA_MODEL = 'gemma3:1b'
+OLLAMA_MODEL = 'gemma3:4b'

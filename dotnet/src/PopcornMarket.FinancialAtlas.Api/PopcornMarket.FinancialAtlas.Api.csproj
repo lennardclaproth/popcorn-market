@@ -33,6 +33,7 @@
     <ItemGroup>
       <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Application\PopcornMarket.FinancialAtlas.Application.csproj" />
       <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Contracts\PopcornMarket.FinancialAtlas.Contracts.csproj" />
+      <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Infrastructure\PopcornMarket.FinancialAtlas.Infrastructure.csproj" />
       <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Persistence\PopcornMarket.FinancialAtlas.Persistence.csproj" />
       <ProjectReference Include="..\PopcornMarket.SharedKernel\PopcornMarket.SharedKernel.csproj" />
     </ItemGroup>

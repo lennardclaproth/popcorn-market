@@ -2,7 +2,7 @@ using PopcornMarket.SharedKernel.ResultPattern;
 
 namespace Popcorn.FinancialAtlas.Domain.Errors;
 
-public class CompanyErrors
+public static class CompanyErrors
 {
     public static readonly Error CompanyAlreadyExists =
         Error.Conflict("Company.AlreadyExists", "The company with the supplied Ticker already exists.");

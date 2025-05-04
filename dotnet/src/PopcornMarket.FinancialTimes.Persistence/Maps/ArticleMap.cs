@@ -12,13 +12,6 @@ internal static class ArticleMap
     {
         if (!BsonClassMap.IsClassMapRegistered(typeof(Article)))
         {
-            BsonClassMap.RegisterClassMap<Entity>(cm =>
-            {
-                cm.MapMember(c => c.Id)
-                    .SetSerializer(new GuidSerializer(BsonType.String))
-                    .SetElementName("entity_id");
-            });
-            
             BsonClassMap.RegisterClassMap<Article>(cm =>
             {
                 cm.AutoMap(); // Automatically map properties

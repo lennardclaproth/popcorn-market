@@ -17,8 +17,8 @@ public class CreateCompanyRequestValidator : AbstractValidator<CreateCompanyRequ
         RuleFor(x => x.Ceo).MaximumLength(255).WithMessage("Ceo cannot be more than 255 characters");
 
         RuleFor(x => x.Ticker)
-            .Must(t => t.Length is >= 3 and <= 5)
-            .WithMessage("Ticker must be between 3 and 5");
+            .Must(t => t.Length is >= 3 and <= 6)
+            .WithMessage("Ticker must be between 3 and 6");
         
         RuleFor(x => x.Industry).NotEmpty().WithMessage("Industry cannot be empty");
         RuleFor(x => x.Industry).MaximumLength(100).WithMessage("Industry cannot be more than 255 characters");

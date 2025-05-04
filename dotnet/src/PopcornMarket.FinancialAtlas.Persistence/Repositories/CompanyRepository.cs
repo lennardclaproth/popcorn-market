@@ -21,7 +21,7 @@ public class CompanyRepository : ICompanyRepository
         throw new NotImplementedException();
     }
 
-    public Task<Company?> GetById(string id)
+    public Task<Company?> GetById(Guid id)
     {
         throw new NotImplementedException();
     }
@@ -31,12 +31,12 @@ public class CompanyRepository : ICompanyRepository
         await _collection.InsertOneAsync(entity);
     }
 
-    public Task Update(string id, Company entity)
+    public Task Update(Guid id, Company entity)
     {
         throw new NotImplementedException();
     }
 
-    public Task Delete(string id)
+    public Task Delete(Guid id)
     {
         throw new NotImplementedException();
     }

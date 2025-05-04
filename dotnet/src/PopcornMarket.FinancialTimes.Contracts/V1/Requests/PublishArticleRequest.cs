@@ -5,9 +5,6 @@ namespace PopcornMarket.FinancialTimes.Contracts.V1.Requests;
 
 public sealed record PublishArticleRequest
 {
-    [JsonPropertyName("date")]
-    public DateTime Date { get; set; }
-
     [JsonPropertyName("type")]
     public ArticleType ArticleType { get; set; }
 

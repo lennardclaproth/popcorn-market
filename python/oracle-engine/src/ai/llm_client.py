@@ -1,8 +1,12 @@
 import json
+import logging
 from typing import Any
+from mongo_db import client
 from ollama import ChatResponse, chat
 from config import OLLAMA_MODEL
 from helpers.json_helper import extract_json
+
+logger = logging.getLogger("worker_app")
 
 def execute_prompt(prompt: str) -> dict[str, str] | Any:
     """
@@ -13,9 +17,7 @@ def execute_prompt(prompt: str) -> dict[str, str] | Any:
     {'role': 'user', 'content': prompt},
     ])
 
-    try:
-        return extract_json(response.message.content)
-    except json.JSONDecodeError:
-        print("Error: Could not parse JSON. Returning empty object.")
-        return {"error": "Invalid JSON format"}
+    client.save_chat(prompt, response.message.content)
+
+    return extract_json(response.message.content)
     

@@ -4,7 +4,7 @@ using PopcornMarket.FinancialTimes.Domain.Entities;
 
 namespace PopcornMarket.FinancialTimes.Application.Mappings;
 
-public class ArticleMappingProfile : Profile
+public sealed class ArticleMappingProfile : Profile
 {
     public ArticleMappingProfile()
     {

@@ -3,8 +3,8 @@
 public interface IRepository<T>
 {
     Task<IEnumerable<T>> GetAll();
-    Task<T?> GetById(string id);
+    Task<T?> GetById(Guid id);
     Task Add(T entity);
-    Task Update(string id, T entity);
-    Task Delete(string id);
+    Task Update(Guid id, T entity);
+    Task Delete(Guid id);
 }

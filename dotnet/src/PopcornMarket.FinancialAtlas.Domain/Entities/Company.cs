@@ -3,7 +3,7 @@ using PopcornMarket.SharedKernel.ResultPattern;
 
 namespace Popcorn.FinancialAtlas.Domain.Entities;
 
-public class Company : Entity
+public class Company : AggregateRoot
 {
     public string Ticker { get; private set; } = null!;
     public string Name { get; private set; } = null!;

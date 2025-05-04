@@ -50,8 +50,7 @@ def generate(
         ticker=financials.ticker_symbol,
         industry=financials.income_statement.industry,
         company_name=financials.ticker_symbol,
-        date=datetime.datetime.now(),
-        type="Company Analysis",
+        type=0,
         headline=article_data.get("headline", ""),
         content=article_data.get("article", ""),
         metadata={"reasoning": article_data["reasoning"]}

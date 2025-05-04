@@ -6,21 +6,25 @@ namespace Popcorn.FinancialAtlas.Domain.Entities;
 
 public class MarketData : Entity
 {
-    public string TickerSymbol { get; private set; } = null!;
+    public string Ticker { get; private set; } = null!;
     public MarketSnapshot Current { get; private set; } = null!;
-    public List<MarketSnapshot> History { get; private set; } = new();
+    public long SharesOutstanding { get; private set; }
+    private readonly List<MarketSnapshot> _history = new();
+    public IReadOnlyCollection<MarketSnapshot> History => _history;
 
     private MarketData() { }
 
-    public MarketData(string tickerSymbol, MarketSnapshot current) : base(Guid.NewGuid())
+    private MarketData(string ticker, long sharesOutstanding ,MarketSnapshot current, List<MarketSnapshot> history) : base(Guid.NewGuid())
     {
-        TickerSymbol = tickerSymbol;
+        _history = history;
+        SharesOutstanding = sharesOutstanding;
+        Ticker = ticker;
         Current = current;
     }
 
-    public static Result<MarketData> Create(string tickerSymbol, MarketSnapshot current)
+    public static Result<MarketData> Create(string tickerSymbol, long sharesOutstanding ,MarketSnapshot current, List<MarketSnapshot> history)
     {
-        var marketData = new MarketData(tickerSymbol, current);
+        var marketData = new MarketData(tickerSymbol, sharesOutstanding, current, history);
         
         return Result<MarketData>.Success(marketData);
     }
@@ -32,7 +36,7 @@ public class MarketData : Entity
 
     public void UpdateMarketSnapshot(MarketSnapshot snapshot)
     {
-        History.Add(Current);
+        _history.Add(Current);
         Current = snapshot;
     }
 }

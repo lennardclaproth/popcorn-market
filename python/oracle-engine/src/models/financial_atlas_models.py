@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 from datetime import datetime
-
 
 class Company(BaseModel):
     """Represents a publicly traded company."""
@@ -17,15 +16,17 @@ class Company(BaseModel):
 class MarketSnapshot(BaseModel):
     """Represents a snapshot of a stock's market performance."""
     stock_price_usd: float = Field(..., title="Stock Price in USD")
-    market_cap_billion: float = Field(..., title="Market Capitalization in Billions")
-    dividend_per_share_usd: float = Field(..., title="Dividend per Share in USD")
-    dividend_yield_percent: float = Field(..., title="Dividend Yield Percentage")
+    volume: int = Field(..., title="Volume of the stocks traded")
+    market_cap_b: float = Field(..., title="Market Capitalization in Billions")
+    dividend_per_share_usd: Optional[float] = Field(default=None, title="Dividend per Share in USD")
+    dividend_yield_percent: Optional[float] = Field(default=None, title="Dividend Yield Percentage")
     date: datetime = Field(..., title="Snapshot Date")
 
 
 class MarketData(BaseModel):
     """Represents the market data for a company, including historical prices."""
-    ticker_symbol: str = Field(..., title="Stock Ticker Symbol")
+    ticker: str = Field(..., title="Stock Ticker Symbol")
+    shares_outstanding: int = Field(..., title="Outstanding shares of the company,")
     current: MarketSnapshot = Field(..., title="Current Market Data Snapshot")
     history: List[MarketSnapshot] = Field(default=[], title="Historical Market Data")
 

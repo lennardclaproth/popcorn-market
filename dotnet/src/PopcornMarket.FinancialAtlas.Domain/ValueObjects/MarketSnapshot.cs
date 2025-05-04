@@ -3,6 +3,7 @@
 public record MarketSnapshot(
     decimal StockPriceUSD,
     decimal MarketCapBillion,
-    decimal DividendPerShareUSD,
-    decimal DividendYieldPercent,
+    long Volume,
+    decimal? DividendPerShareUSD,
+    decimal? DividendYieldPercent,
     DateTime Date);

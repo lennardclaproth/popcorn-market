@@ -46,6 +46,6 @@ public static class PersistenceExtensions
     private static void AddClassesWithLifetime(IServiceCollection services)
     {
         services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IMarketDataRepository, MarketDataRepository>();
     }
-
 }
