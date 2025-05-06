@@ -4,4 +4,5 @@ public static class TopicConstants
 {
     private const string Version = "v1";
     public const string CompanyCreated = $"company.created.{Version}";
+    public const string MarketDataPublished = $"marketdata.published.{Version}";
 }

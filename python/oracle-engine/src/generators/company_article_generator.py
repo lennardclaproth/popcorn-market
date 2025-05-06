@@ -1,5 +1,5 @@
 import datetime
-from models.financial_times_models import CompanyArticle, PoliticalArticle, MacroArticle, SectorArticle
+from models.financial_times import CompanyArticle, PoliticalArticle, MacroArticle, SectorArticle
 from models.financial_atlas_models import FinancialStatement
 from ai.llm_client import execute_prompt
 

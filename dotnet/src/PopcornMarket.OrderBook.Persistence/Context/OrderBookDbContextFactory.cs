@@ -16,7 +16,7 @@ public class OrderBookDbContextFactory : IDesignTimeDbContextFactory<OrderBookDb
 
         var optionsBuilder = new DbContextOptionsBuilder<OrderBookDbContext>();
 
-        var connectionString = configuration.GetConnectionString("OrderBookDb");
+        var connectionString = configuration.GetSection("Persistence:ConnectionString").Value;
 
         if (!string.IsNullOrEmpty(connectionString))
         {

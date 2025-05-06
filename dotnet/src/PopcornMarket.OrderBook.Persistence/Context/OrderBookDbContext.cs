@@ -5,7 +5,9 @@ namespace PopcornMarket.OrderBook.Persistence.Context;
 
 public class OrderBookDbContext : DbContext
 {
-    public DbSet<Order> Orders { get; set; } = null!;
+    public DbSet<BuyOrder> BuyOrders { get; set; } = null!;
+    public DbSet<SellOrder> SellOrders { get; set; } = null!;
+    public DbSet<Company> Companies { get; set; } = null!;
     public DbSet<Domain.Entities.OrderBook> OrderBooks { get; set; } = null!;
     
     public OrderBookDbContext(DbContextOptions<OrderBookDbContext> options)
@@ -21,6 +23,6 @@ public class OrderBookDbContext : DbContext
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderBookDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(PersistenceAssemblyReference.Assembly);
     }
 }

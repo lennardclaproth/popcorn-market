@@ -4,7 +4,7 @@ using PopcornMarket.OrderBook.Persistence.Constants;
 
 namespace PopcornMarket.OrderBook.Persistence.Configurations;
 
-public class OrderBookConfiguration : IEntityTypeConfiguration<Domain.Entities.OrderBook>
+internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<Domain.Entities.OrderBook>
 {
     public void Configure(EntityTypeBuilder<Domain.Entities.OrderBook> builder)
     {
@@ -15,7 +15,7 @@ public class OrderBookConfiguration : IEntityTypeConfiguration<Domain.Entities.O
         builder.Property(ob => ob.Id)
             .HasColumnType("UUID");
 
-        builder.Property(ob => ob.StockSymbol)
+        builder.Property(ob => ob.Ticker)
             .IsRequired()
             .HasMaxLength(10);
         
@@ -29,6 +29,6 @@ public class OrderBookConfiguration : IEntityTypeConfiguration<Domain.Entities.O
             .HasForeignKey(o => o.OrderBookId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        builder.HasIndex(ob => ob.StockSymbol);
+        builder.HasIndex(ob => ob.Ticker);
     }
 }

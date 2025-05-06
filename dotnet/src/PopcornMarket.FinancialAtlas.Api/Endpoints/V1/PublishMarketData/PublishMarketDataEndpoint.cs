@@ -14,7 +14,10 @@ internal sealed class PublishMarketDataEndpoint : IEndpoint
         {
             var command = new PublishMarketDataCommand
             {
-                Ticker = request.Ticker, Current = request.Current, History = request.History,
+                Ticker = request.Ticker,
+                Current = request.Current,
+                History = request.History,
+                SharesOutstanding = request.SharesOutstanding
             };
             var result = await sender.Send(command);
             return result.IsFailure ? result.ToProblemDetails() : Results.Created();

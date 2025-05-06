@@ -3,7 +3,7 @@ using PopcornMarket.SharedKernel.Messaging;
 
 namespace PopcornMarket.Messaging.Contracts.V1.Events;
 
-public record CompanyCreatedEvent : IEvent
+public sealed record CompanyCreatedEvent : IEvent
 {
     [JsonPropertyName("ticker")]
     public required string Ticker { get; set; }

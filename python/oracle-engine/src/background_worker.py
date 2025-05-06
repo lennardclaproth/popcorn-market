@@ -136,10 +136,10 @@ def __handle_market_data_generation():
     """
 
 __generator_functions = [
-#  __handle_sector_article_generation, 
+ __handle_sector_article_generation, 
 #  __handle_company_article_generation, 
-#  __handle_macro_economic_generation, 
-#  __handle_political_article_generation,
+ __handle_macro_economic_generation, 
+ __handle_political_article_generation,
  __handle_company_generation
 ]
 

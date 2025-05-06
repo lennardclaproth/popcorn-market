@@ -53,6 +53,16 @@ services:
     volumes:
       - mongodb_data:/data/db
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: popcorn-market-observability
+    ports:
+      - "16686:16686" # Web UI
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
 volumes:
   timescale_data:
   ollama_data:

@@ -7,8 +7,30 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+      <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
+      <PackageReference Include="Confluent.Kafka" Version="2.10.0" />
+      <PackageReference Include="Confluent.Kafka.Extensions.Diagnostics" Version="0.5.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+      <PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" Version="0.4.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
+      <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.3" />
+      <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+      <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.1" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.11.1" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc9.15" />
       <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PopcornMarket.Messaging.Contracts\PopcornMarket.Messaging.Contracts.csproj" />
+      <ProjectReference Include="..\PopcornMarket.OrderBook.Application\PopcornMarket.OrderBook.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+        <HintPath>..\..\..\..\..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.15\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

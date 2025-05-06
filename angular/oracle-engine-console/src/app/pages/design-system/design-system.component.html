@@ -104,35 +104,157 @@
     </div>
 
     <!-- Card Example -->
+    <div class="inline-flex">
+        <div class="max-w-sm p-6 bg-white border border-slate-400 rounded-lg shadow-sm">
+            <h2 class="text-4xl font-garamnond font-bold text-slate-900 mb-3">
+                Noteworthy technology acquisitions 2021
+            </h2>
+            <p class="text font-noto text-gray-600 mb-3">
+                Here are the biggest enterprise technology acquisitions of 2021 so far, in reverse chronological order
+            </p>
+            <button class="
+                px-4 py-2
+                bg-amber-400 text-slate-800
+                rounded hover:rounded-full
+                outline outline-amber-900
+                hover:bg-amber-500 focus:bg-amber-600
+                focus:ring-3 focus:ring-amber-300
+                font-noto
+            ">
+                <div class="inline-flex space-x-4 items-center">
+                    Read More
+                    <lucide-icon name="file" class="ms-1 size-4 stroke-2"></lucide-icon>
+                </div>
+            </button>
+            <label class="ms-2 inline-flex items-center cursor-pointer">
+                <input type="checkbox" value="" class="sr-only peer">
+                <div
+                    class="relative w-11 h-6 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400">
+                </div>
+                <span class="font-noto text-gray-600">Toggle</span>
+            </label>
+        </div>
 
-    <div class="max-w-sm p-6 bg-white border border-slate-400 rounded-lg shadow-sm">
-        <h2 class="text-4xl font-garamnond font-bold text-slate-900 mb-3">
-            Noteworthy technology acquisitions 2021
-        </h2>
-        <p class="text font-noto text-gray-600 mb-3">
-            Here are the biggest enterprise technology acquisitions of 2021 so far, in reverse chronological order
-        </p>
-        <button class="
-            px-4 py-2
-            bg-amber-400 text-slate-800
-            rounded hover:rounded-full
-            outline outline-amber-900
-            hover:bg-amber-500 focus:bg-amber-600
-            focus:ring-3 focus:ring-amber-300
-            font-noto
-        ">
-            <div class="inline-flex space-x-4 items-center">
-                Read More
-                <lucide-icon name="file" class="ms-1 size-4 stroke-2"></lucide-icon>
-            </div>
-        </button>
-        <label class="ms-2 inline-flex items-center cursor-pointer">
-            <input type="checkbox" value="" class="sr-only peer">
-            <div
-                class="relative w-11 h-6 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400">
-            </div>
-            <span class="font-noto text-gray-600">Toggle</span>
-        </label>
+
+        <div class="overflow-x-auto border border-slate-400 rounded-lg shadow-sm bg-white ms-3">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 ">
+                <thead class="text-xs text-gray-700 uppercase bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th scope=" col" class="px-6 py-3 font-noto">
+                            Generator name
+                        </th>
+                        <th scope="col" class="px-6 py-3 font-noto">
+                            Probability
+                        </th>
+                        <th scope="col" class="px-6 py-3 font-noto">
+                        </th>
+                        <th scope="col" class="px-6 py-3 font-noto">
+                            Active
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="bg-white border-b border-slate-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap font-noto">
+                            Company generator
+                        </th>
+                        <td class="px-6 py-4 font-noto">
+                            <input id="default-range" type="range" value="50"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </td>
+                        <td>
+                            0.4
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div
+                                    class="relative w-9 h-5 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500">
+                                </div>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap font-noto">
+                            Company generator
+                        </th>
+                        <td class="px-6 py-4 font-noto">
+                            <input id="default-range" type="range" value="50"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </td>
+                        <td>
+                            0.4
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="checked" class="sr-only peer">
+                                <div
+                                    class="relative w-9 h-5 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500">
+                                </div>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr class="bg-white border-b border-slate-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap font-noto">
+                            Company generator
+                        </th>
+                        <td class="px-6 py-4 font-noto">
+                            <input id="default-range" type="range" value="50"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </td>
+                        <td>
+                            0.4
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div
+                                    class="relative w-9 h-5 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500">
+                                </div>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap font-noto">
+                            Company generator
+                        </th>
+                        <td class="px-6 py-4 font-noto">
+                            <input id="default-range" type="range" value="50"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </td>
+                        <td>
+                            0.4
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="checked" class="sr-only peer">
+                                <div
+                                    class="relative w-9 h-5 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500">
+                                </div>
+                            </label>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot class="bg-slate-50">
+                    <tr>
+                        <td colspan="100%" class="text-right">
+                            <button class="
+                              m-3
+                              px-4 py-2
+                              bg-green-400 text-slate-800
+                              rounded hover:rounded-full
+                              outline outline-green-900
+                              hover:bg-green-500 focus:bg-green-600
+                              focus:ring-3 focus:ring-green-300
+                              font-noto
+                          ">
+                                Save Changes
+                            </button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     </div>
 
     <div class="flex items-start gap-2.5">

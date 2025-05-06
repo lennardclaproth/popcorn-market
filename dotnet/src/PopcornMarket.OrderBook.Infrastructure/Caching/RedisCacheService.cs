@@ -7,9 +7,9 @@ internal sealed class RedisCacheService : ICacheService
 {
     private readonly IDatabase _cache;
     
-    public RedisCacheService(IDatabase cache)
+    public RedisCacheService(IConnectionMultiplexer connection)
     {
-        _cache = cache;
+        _cache = connection.GetDatabase();
     }
     
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)

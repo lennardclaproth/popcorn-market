@@ -1,18 +1,18 @@
 <div class="flex">
-    <div class="basis-1/3">
-        <div class="max-w-sm p-6 bg-white border border-slate-400 rounded-lg shadow-sm">
-            <div class="flex flex-row">
+    <div class="basis-1/3 p-3 space-y-3">
+        <div class="max-w p-6 bg-white border border-slate-400 rounded-lg shadow-sm">
+            <div class="flex flex-row justify-between items-center">
                 <h2 class="text-4xl font-garamnond font-bold text-slate-900 mb-3">
                     Background Service
                 </h2>
-                <div class="justify-end">
+                <div>
                     <span class="
-                    inline-flex items-center
-                    bg-slate-900 text-amber-50 
-                    text-sm font-medium font-noto
-                    px-2.5 py-1
-                    rounded-full
-                  ">
+                        inline-flex items-center
+                        bg-slate-900 text-amber-50 
+                        text-sm font-medium font-noto
+                        px-2.5 py-1
+                        rounded-full
+                    ">
                         RUNNING
                         <span class="relative flex h-2 w-2 ms-2">
                             <span
@@ -22,10 +22,12 @@
                     </span>
                 </div>
             </div>
+
             <p class="text font-noto text-gray-600 mb-3">
                 The background service is responsible for generating the content which you'll be able to see in the chat
                 on the right.
             </p>
+
             <button class="
                 px-4 py-2
                 bg-green-400 text-slate-800
@@ -38,6 +40,158 @@
                 Start Service
             </button>
         </div>
+
+
+        <div class="overflow-x-auto border border-slate-400 rounded-lg shadow-sm bg-white">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 ">
+                <thead class="text-xs text-gray-700 uppercase bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th scope=" col" class="px-6 py-3 font-noto">
+                            Generator name
+                        </th>
+                        <th scope="col" class="px-6 py-3 font-noto">
+                            Probability
+                        </th>
+                        <th scope="col" class="px-6 py-3 font-noto">
+                        </th>
+                        <th scope="col" class="px-6 py-3 font-noto">
+                            Active
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="bg-white border-b border-slate-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap font-noto">
+                            Company generator
+                        </th>
+                        <td class="px-6 py-4 font-noto">
+                            <input id="default-range" type="range" value="50"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </td>
+                        <td>
+                            0.4
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div
+                                    class="relative w-9 h-5 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500">
+                                </div>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap font-noto">
+                            Sector article generator
+                        </th>
+                        <td class="px-6 py-4 font-noto">
+                            <input id="default-range" type="range" value="50"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </td>
+                        <td>
+                            0.4
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="checked" class="sr-only peer">
+                                <div
+                                    class="relative w-9 h-5 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500">
+                                </div>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr class="bg-white border-b border-slate-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap font-noto">
+                            Macro economic article generator
+                        </th>
+                        <td class="px-6 py-4 font-noto">
+                            <input id="default-range" type="range" value="50"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </td>
+                        <td>
+                            0.4
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer">
+                                <div
+                                    class="relative w-9 h-5 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500">
+                                </div>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap font-noto">
+                            Company generator
+                        </th>
+                        <td class="px-6 py-4 font-noto">
+                            <input id="default-range" type="range" value="50"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </td>
+                        <td>
+                            0.4
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="checked" class="sr-only peer">
+                                <div
+                                    class="relative w-9 h-5 ring-1 ring-slate-900 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-800 after:ring after:ring-slate-800 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500">
+                                </div>
+                            </label>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot class="bg-slate-50">
+                    <tr>
+                        <td colspan="100%" class="text-right">
+                            <button class="
+                              m-3
+                              px-4 py-2
+                              bg-green-400 text-slate-800
+                              rounded hover:rounded-full
+                              outline outline-green-900
+                              hover:bg-green-500 focus:bg-green-600
+                              focus:ring-3 focus:ring-green-300
+                              font-noto
+                          ">
+                                Save Changes
+                            </button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     </div>
-    <div class="basis-2/3">02</div>
+
+    <div class="basis-2/3 p-3 space-y-3 overflow-y-scroll max-h-screen">
+        <div class="flex items-start gap-2.5">
+            <img class="w-8 h-8 rounded-full self-end" src="/docs/images/people/profile-picture-3.jpg" alt="Jese image">
+            <div class="flex flex-col gap-1 w-full max-w-md">
+                <div
+                    class="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-tl-xl rounded-br-xl rounded-tr-xl dark:bg-slate-700">
+                    <markdown class="variable-binding prose prose-sm dark:prose-invert max-w-none" [data]="question">
+                    </markdown>
+                </div>
+                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                    <span class="text-sm font-semibold text-gray-900">Oracle Engine</span>
+                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">11:46</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex w-full flex-row-reverse items-start gap-2.5">
+            <img class="w-8 h-8 rounded-full self-end" src="/docs/images/people/profile-picture-3.jpg" alt="Jese image">
+            <div class="flex flex-col gap-1 max-w-md">
+                <div
+                    class="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-tl-xl rounded-bl-xl rounded-tr-xl dark:bg-slate-700">
+                    <markdown class="variable-binding prose prose-sm dark:prose-invert max-w-none" [data]="answer">
+                    </markdown>
+                </div>
+                <div class="flex items-center justify-end space-x-2 rtl:space-x-reverse self-end">
+                    <span class="text-sm font-semibold text-gray-900">Oracle</span>
+                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">11:46</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

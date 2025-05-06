@@ -1,5 +1,7 @@
+using PopcornMarket.OrderBook.Domain.Enums;
 using PopcornMarket.OrderBook.Domain.Helpers;
 using PopcornMarket.SharedKernel.Primitives;
+using PopcornMarket.SharedKernel.ResultPattern;
 
 namespace PopcornMarket.OrderBook.Domain.Entities;
 
@@ -7,39 +9,39 @@ namespace PopcornMarket.OrderBook.Domain.Entities;
 /// The OrderBook is responsible for managing buy and sell
 /// orders for a specific stock. 
 /// </summary>
-public class OrderBook : Entity
+public sealed class OrderBook : Entity
 {
-    public string StockSymbol { get; private set; } = null!;
+    public string Ticker { get; private set; } = null!;
     private readonly SortedSet<BuyOrder> _buyOrders = new();
     private readonly SortedSet<SellOrder> _sellOrders = new();
 
     public IReadOnlyCollection<BuyOrder> BuyOrders => _buyOrders;
     public IReadOnlyCollection<SellOrder> SellOrders => _sellOrders;
     
-    private OrderBook(string stockSymbol)
+    private OrderBook(string ticker)
     {
-        StockSymbol = stockSymbol;
+        Ticker = ticker;
         _buyOrders = new SortedSet<BuyOrder>(new OrderComparer(true));
         _sellOrders = new SortedSet<SellOrder>(new OrderComparer(false));
     }
 
-    public static OrderBook Create(string stockSymbol)
+    public static Result<OrderBook> Create(string ticker)
     {
-        if(string.IsNullOrWhiteSpace(stockSymbol)) throw new ArgumentNullException(nameof(stockSymbol));
+        if(string.IsNullOrWhiteSpace(ticker)) throw new ArgumentNullException(nameof(ticker));
 
-        return new OrderBook(stockSymbol);
+        return Result<OrderBook>.Success(new OrderBook(ticker));
     }
     
-    public BuyOrder AddBuyOrder(string traderId, decimal price, int quantity)
+    public BuyOrder AddBuyOrder(string traderId, decimal price, int quantity, OrderType orderType)
     {
-        var buyOrder = BuyOrder.Create(StockSymbol, traderId, price, quantity, this);
+        var buyOrder = BuyOrder.Create(Ticker, traderId, price, quantity, orderType, this);
         _buyOrders.Add(buyOrder);
         return buyOrder;
     }
 
-    public SellOrder AddSellOrder(string traderId, decimal price, int quantity)
+    public SellOrder AddSellOrder(string traderId, decimal price, int quantity, OrderType orderType)
     {
-        var sellOrder = SellOrder.Create(StockSymbol, traderId, price, quantity, this);
+        var sellOrder = SellOrder.Create(Ticker, traderId, price, quantity, orderType, this);
         _sellOrders.Add(sellOrder);
         return sellOrder;
     }

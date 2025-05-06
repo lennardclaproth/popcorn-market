@@ -54,7 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contracts", "Contracts", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialAtlas.Contracts", "PopcornMarket.FinancialAtlas.Contracts\PopcornMarket.FinancialAtlas.Contracts.csproj", "{D298EE24-013B-4D1F-B71E-5A9A6CD9B156}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarktet.OrderBook.Application", "PopcornMarktet.OrderBook.Application\PopcornMarktet.OrderBook.Application.csproj", "{77BDFA23-E81E-4AD2-9700-47C54A24A092}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Application", "PopcornMarket.OrderBook.Application\PopcornMarket.OrderBook.Application.csproj", "{77BDFA23-E81E-4AD2-9700-47C54A24A092}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CoinjurerBroker", "CoinjurerBroker", "{D5880F38-3B16-431F-A071-186553BDE757}"
 EndProject
@@ -63,6 +63,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.Messaging.Contracts", "PopcornMarket.Messaging.Contracts\PopcornMarket.Messaging.Contracts.csproj", "{8ADE56AE-5A4B-4A38-ADF4-AEC791B7E950}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialTimes.Infrastructure", "PopcornMarket.FinancialTimes.Infrastructure\PopcornMarket.FinancialTimes.Infrastructure.csproj", "{E78499CD-AD74-4AD8-AC8E-4C6A3942CF1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Api", "PopcornMarket.OrderBook.Api\PopcornMarket.OrderBook.Api.csproj", "{430DABA2-51AC-474F-8DA0-68536C55D8FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +95,7 @@ Global
 		{BD41E4BD-73ED-4800-9D98-EDC5EE411896} = {E2DFB3EA-B59C-43AF-B08B-2421F46344E3}
 		{8ADE56AE-5A4B-4A38-ADF4-AEC791B7E950} = {EEC4F2E5-0AEC-48D0-9B79-05AF2E4065C2}
 		{E78499CD-AD74-4AD8-AC8E-4C6A3942CF1B} = {BC399CE8-EC54-4207-A3F1-500EDF6010EC}
+		{430DABA2-51AC-474F-8DA0-68536C55D8FF} = {3C5E0D1F-4C1B-44A9-B409-4A2AA96A759E}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -171,5 +174,9 @@ Global
 		{E78499CD-AD74-4AD8-AC8E-4C6A3942CF1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E78499CD-AD74-4AD8-AC8E-4C6A3942CF1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E78499CD-AD74-4AD8-AC8E-4C6A3942CF1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{430DABA2-51AC-474F-8DA0-68536C55D8FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{430DABA2-51AC-474F-8DA0-68536C55D8FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{430DABA2-51AC-474F-8DA0-68536C55D8FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{430DABA2-51AC-474F-8DA0-68536C55D8FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

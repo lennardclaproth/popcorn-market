@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.InstallPersistence(builder.Configuration["Persistence:ConnectionString"] ?? throw new InvalidOperationException());
 builder.Services.InstallApplication(ApplicationAssemblyReference.Assembly);
 builder.InstallPresentation();
-builder.Services.InstallInfrastructure();
+builder.Services.InstallInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

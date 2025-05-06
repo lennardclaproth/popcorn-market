@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Confluent.Kafka;
+using Confluent.Kafka.Extensions.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using PopcornMarket.FinancialAtlas.Application.Abstractions;
 
@@ -14,7 +15,8 @@ internal sealed class KafkaProducer : IProducer
     {
         var config = configuration.GetSection("Messaging:Kafka");
         var producerConfig = new ProducerConfig { BootstrapServers = config["BootstrapServers"] };
-        _producer = new ProducerBuilder<string, string>(producerConfig).Build();
+        _producer = new ProducerBuilder<string, string>(producerConfig)
+            .BuildWithInstrumentation();
     }
     
     public async Task PublishAsync<T>(string topic, T message, CancellationToken cancellationToken = default) where T : class

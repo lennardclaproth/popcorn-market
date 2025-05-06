@@ -2,5 +2,5 @@
 
 public interface IConsumer
 {
-    Task StartConsuming(CancellationToken cancellationToken);
+    public Task StartConsuming(CancellationToken cancellationToken);
 }

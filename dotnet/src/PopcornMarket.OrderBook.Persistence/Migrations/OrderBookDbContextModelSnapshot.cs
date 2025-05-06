@@ -15,9 +15,9 @@ namespace PopcornMarket.OrderBook.Persistence.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
 
-            modelBuilder.Entity("PopcornMarket.OrderBook.Domain.Entities.Order", b =>
+            modelBuilder.Entity("PopcornMarket.OrderBook.Domain.Entities.BuyOrder", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("UUID");
@@ -25,14 +25,12 @@ namespace PopcornMarket.OrderBook.Persistence.Migrations
                     b.Property<Guid>("OrderBookId")
                         .HasColumnType("UUID");
 
-                    b.Property<string>("OrderType")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("OrderType")
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("NUMERIC(18,2)");
+                        .HasPrecision(18, 6)
+                        .HasColumnType("NUMERIC(18,6)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
@@ -55,13 +53,36 @@ namespace PopcornMarket.OrderBook.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrderBookId");
+
                     b.HasIndex("Timestamp");
 
-                    b.ToTable("Order", "OrderBook");
+                    b.ToTable("BuyOrder", "OrderBook");
+                });
 
-                    b.HasDiscriminator<string>("OrderType").HasValue("Order");
+            modelBuilder.Entity("PopcornMarket.OrderBook.Domain.Entities.Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("UUID");
 
-                    b.UseTphMappingStrategy();
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("StockPriceUSD")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("NUMERIC(18,6)");
+
+                    b.Property<string>("Ticker")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Company", "OrderBook");
                 });
 
             modelBuilder.Entity("PopcornMarket.OrderBook.Domain.Entities.OrderBook", b =>
@@ -70,34 +91,59 @@ namespace PopcornMarket.OrderBook.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("UUID");
 
-                    b.Property<string>("StockSymbol")
+                    b.Property<string>("Ticker")
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StockSymbol");
+                    b.HasIndex("Ticker");
 
                     b.ToTable("OrderBook", "OrderBook");
                 });
 
-            modelBuilder.Entity("PopcornMarket.OrderBook.Domain.Entities.BuyOrder", b =>
-                {
-                    b.HasBaseType("PopcornMarket.OrderBook.Domain.Entities.Order");
-
-                    b.HasIndex("OrderBookId");
-
-                    b.HasDiscriminator().HasValue("BuyOrder");
-                });
-
             modelBuilder.Entity("PopcornMarket.OrderBook.Domain.Entities.SellOrder", b =>
                 {
-                    b.HasBaseType("PopcornMarket.OrderBook.Domain.Entities.Order");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<Guid>("OrderBookId")
+                        .HasColumnType("UUID");
+
+                    b.Property<int>("OrderType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("NUMERIC(18,6)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StockSymbol")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TIMESTAMPTZ");
+
+                    b.Property<string>("TraderId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("OrderBookId");
 
-                    b.HasDiscriminator().HasValue("SellOrder");
+                    b.HasIndex("Timestamp");
+
+                    b.ToTable("SellOrder", "OrderBook");
                 });
 
             modelBuilder.Entity("PopcornMarket.OrderBook.Domain.Entities.BuyOrder", b =>

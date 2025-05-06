@@ -4,6 +4,9 @@ using Popcorn.FinancialAtlas.Domain.Abstractions;
 using Popcorn.FinancialAtlas.Domain.Entities;
 using Popcorn.FinancialAtlas.Domain.Errors;
 using Popcorn.FinancialAtlas.Domain.ValueObjects;
+using PopcornMarket.FinancialAtlas.Application.Abstractions;
+using PopcornMarket.Messaging.Contracts.V1.Constants;
+using PopcornMarket.Messaging.Contracts.V1.Events;
 using PopcornMarket.SharedKernel.CQRS;
 using PopcornMarket.SharedKernel.ResultPattern;
 
@@ -13,11 +16,15 @@ internal sealed class PublishMarketDataCommandHandler : ICommandHandler<PublishM
 {
     private readonly IMapper _mapper;
     private readonly IMarketDataRepository _marketDataRepository;
+    private readonly ICompanyRepository _companyRepository;
+    private readonly IProducer _producer;
 
-    public PublishMarketDataCommandHandler(IMapper mapper, IMarketDataRepository marketDataRepository)
+    public PublishMarketDataCommandHandler(IMapper mapper, IMarketDataRepository marketDataRepository, ICompanyRepository companyRepository, IProducer producer)
     {
         _mapper = mapper;
         _marketDataRepository = marketDataRepository;
+        _companyRepository = companyRepository;
+        _producer = producer;
     }
 
     /// <summary>
@@ -31,12 +38,12 @@ internal sealed class PublishMarketDataCommandHandler : ICommandHandler<PublishM
     /// <exception cref="NotImplementedException"></exception>
     public async Task<Result> Handle(PublishMarketDataCommand request, CancellationToken cancellationToken)
     {
+        var company = await _companyRepository.GetByTicker(request.Ticker);
         var existingMarketData = await _marketDataRepository.GetByTicker(request.Ticker);
 
-        if (existingMarketData != null)
-        {
-            return Result.Failure(MarketDataErrors.MarketDataAlreadyExists);
-        }
+        if (company == null) return Result.Failure(CompanyErrors.CompanyNotFound);
+        
+        if (existingMarketData != null) return Result.Failure(MarketDataErrors.MarketDataAlreadyExists);
         
         var currentSnapshot = _mapper.Map<MarketSnapshot>(request.Current);
         var history = _mapper.Map<List<MarketSnapshot>>(request.History);
@@ -51,6 +58,21 @@ internal sealed class PublishMarketDataCommandHandler : ICommandHandler<PublishM
         Guard.Against.Null(creationResult.Value, nameof(creationResult.Value), "Value cannot be null here.");
         
         await _marketDataRepository.Add(creationResult.Value);
+
+        var marketData = creationResult.Value;
+
+        var marketDataPublishedEvent = new MarketDataPublishedEvent
+        {
+            Ticker = company.Ticker,
+            Name = company.Name,
+            Date = marketData.Current.Date,
+            MarketCapBillion = marketData.Current.MarketCapBillion,
+            SharesOutstanding = marketData.SharesOutstanding,
+            StockPriceUSD = marketData.Current.StockPriceUSD,
+            Volume = marketData.Current.Volume
+        };
+        await _producer.PublishAsync(TopicConstants.MarketDataPublished, marketDataPublishedEvent, cancellationToken);
+        
         return Result.Success();
     }
 }
