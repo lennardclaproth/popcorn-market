@@ -38,6 +38,7 @@ internal sealed class CompanyCreatedEventHandler : IEventHandler<CompanyCreatedE
             Ceo = @event.Ceo,
             FoundedYear = @event.FoundedYear,
             Employees = @event.Employees,
+            Region = @event.Region
         };
         
         var result = await _sender.Send(createCompanyCommand, cancellationToken);

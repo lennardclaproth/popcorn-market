@@ -1,12 +1,12 @@
 import logging
 import random
-from constants import REGIONS
+from constants.prompt import REGIONS
 from core import article_formatter
 from models.financial_times import PoliticalArticle, MacroArticle, SectorArticle
 from models.generator import Generator
 from services.chat import execute_prompt
 from services import financial_times
-from constants import SECTORS
+from constants.prompt import SECTORS
 
 logger = logging.getLogger("worker_app")
 

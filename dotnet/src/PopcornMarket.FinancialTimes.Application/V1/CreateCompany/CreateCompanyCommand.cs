@@ -12,4 +12,5 @@ public sealed record CreateCompanyCommand : ICommand
     public required string Ceo { get; init; }
     public required int FoundedYear { get; init; }
     public required int Employees { get; init; }
+    public required string Region { get; init; }
 }

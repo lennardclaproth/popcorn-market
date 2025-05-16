@@ -26,7 +26,6 @@ def seed_generators():
     for representation, meta in REGISTRY.items():
         if representation not in existing_reprs:
             generator_cls = meta["generator"]
-            # generator_inst = generator_cls()
             missing.append(generator_cls)
 
     if(missing):

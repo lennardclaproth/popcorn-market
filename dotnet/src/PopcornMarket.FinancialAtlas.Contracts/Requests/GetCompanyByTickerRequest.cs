@@ -1,9 +1,9 @@
-﻿using PopcornMarket.FinancialAtlas.Contracts.Dtos;
-using PopcornMarket.SharedKernel.CQRS;
+﻿using System.Text.Json.Serialization;
 
-namespace PopcornMarket.FinancialAtlas.Application.V1.GetCompanyByTicker;
+namespace PopcornMarket.FinancialAtlas.Contracts.Requests;
 
-internal sealed record GetCompanyByTickerQuery : IQuery<CompanyDto>
+public sealed record GetCompanyByTickerRequest
 {
+    [JsonPropertyName("ticker")]
     public required string Ticker { get; init; }
 }

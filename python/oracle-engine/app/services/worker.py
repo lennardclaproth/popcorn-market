@@ -36,7 +36,6 @@ def run():
             repr = REGISTRY.get(generator[0].representation)
             fn = repr.get('func')
             fn()
-            # Call generator function
         except Exception as e:
             logger.exception(e)
     logger.info("Worker received stop signal and is exiting.")

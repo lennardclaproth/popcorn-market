@@ -21,4 +21,6 @@ public sealed record CompanyCreatedEvent : IEvent
     public required int FoundedYear { get; set; }
     [JsonPropertyName("employees")]
     public required int Employees { get; set; }
+    [JsonPropertyName("region")]
+    public required string Region { get; init; }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace PopcornMarket.FinancialAtlas.Contracts.Responses;
+namespace PopcornMarket.FinancialTimes.Contracts.V1.Responses;
 
 public sealed record GetTickersResponse
 {

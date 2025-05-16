@@ -20,4 +20,6 @@ public sealed record CompanyDto
     public required int FoundedYear { get; init; }
     [JsonPropertyName("employees")]
     public required int Employees { get; init; }
+    [JsonPropertyName("region")]
+    public required string Region { get; init; }
 }

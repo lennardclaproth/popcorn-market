@@ -4,7 +4,7 @@ from models.generator import Generator
 from core import article_formatter
 from models.financial_times import PoliticalArticle, MacroArticle
 from services import financial_times
-from constants import REGIONS
+from constants.prompt import REGIONS
 from services.chat import execute_prompt
 
 generator = Generator(
@@ -88,9 +88,10 @@ def generate():
     try:
         logger.info("Started generating a new macro economic article")
 
-        macro_economic_articles = financial_times.fetch_macro_articles()
-        political_articles = financial_times.fetch_political_articles()
         region = random.choice(REGIONS)
+
+        macro_economic_articles = financial_times.fetch_macro_articles_by_region(region)
+        political_articles = financial_times.fetch_political_articles_by_region(region)
 
         prompt = __build_prompt(
             macro_economic_articles,

@@ -4,22 +4,22 @@ using PopcornMarket.FinancialTimes.Domain.Abstractions;
 using PopcornMarket.SharedKernel.CQRS;
 using PopcornMarket.SharedKernel.ResultPattern;
 
-namespace PopcornMarket.FinancialTimes.Application.V1.GetArticlesByRegion;
+namespace PopcornMarket.FinancialTimes.Application.V1.GetPoliticalArticlesByRegion;
 
-internal sealed class GetArticlesByRegionQueryHandler : IQueryHandler<GetPoliticalArticlesByRegionQuery, IEnumerable<ArticleDto>>
+internal sealed class GetPoliticalArticlesByRegionQueryHandler : IQueryHandler<GetPoliticalArticlesByRegionQuery, IEnumerable<ArticleDto>>
 {
-    private readonly IPoliticalArticleRepository _sectorArticleRepository;
+    private readonly IPoliticalArticleRepository _politicalArticleRepository;
     private readonly IMapper _mapper;
 
-    public GetArticlesByRegionQueryHandler(IMapper mapper, IPoliticalArticleRepository sectorArticleRepository)
+    public GetPoliticalArticlesByRegionQueryHandler(IMapper mapper, IPoliticalArticleRepository politicalArticleRepository)
     {
         _mapper = mapper;
-        _sectorArticleRepository = sectorArticleRepository;
+        _politicalArticleRepository = politicalArticleRepository;
     }
 
     public async Task<Result<IEnumerable<ArticleDto>>> Handle(GetPoliticalArticlesByRegionQuery request, CancellationToken cancellationToken)
     {
-        var articles = await _sectorArticleRepository.GetPoliticalArticlesByRegion(request.Region, request.Limit); 
+        var articles = await _politicalArticleRepository.GetArticlesByRegion(request.Region, request.Limit); 
         var result = _mapper.Map<IEnumerable<ArticleDto>>(articles);
         return Result<IEnumerable<ArticleDto>>.Success(result);
     }

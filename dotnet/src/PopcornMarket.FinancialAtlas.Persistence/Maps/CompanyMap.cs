@@ -41,6 +41,9 @@ internal static class CompanyMap
 
                 cm.MapMember(c => c.Employees)
                     .SetElementName("employees");
+                
+                cm.MapMember(c => c.Region)
+                    .SetElementName("region");
             });
         }
     }

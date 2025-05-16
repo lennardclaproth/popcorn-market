@@ -1,5 +1,5 @@
 import requests
-from config import COMPANY_ENDPOINT, MARKET_DATA_ENDPOINT
+from constants.financial_atlas import COMPANY_ENDPOINT, MARKET_DATA_ENDPOINT, TICKERS_ENDPOINT
 from models.financial_atlas import Company, FinancialStatement, MarketData
 
 def fetch_tickers() -> list[str]:
@@ -7,20 +7,51 @@ def fetch_tickers() -> list[str]:
     Fetches the available tickers from the FinancialAtlas
     service.
     """
-    raise NotImplementedError()
+    url = f"{TICKERS_ENDPOINT}"
+    response = requests.get(url, verify=False)
+
+    if response.status_code == 404:
+        return []
+
+    if response.status_code != 200 and response.status_code != 404:
+        raise Exception("Failed to fetch tickers: %s - %s", response.status_code, response.text)
+
+    try:
+        response_body = response.json()
+    except ValueError as e:
+        raise Exception("Invalid JSON in response") from e
+
+    tickers = response_body.get("tickers", [])
+    return tickers
+
 
 def fetch_company(ticker) -> Company:
     """
     Fetches a company from the financial atlas service
     based on the ticker
     """
-    raise NotImplementedError()
+    url = f"{COMPANY_ENDPOINT}/{ticker}"
+    response = requests.get(url, verify=False)
+    if response.status_code != 200 and response.status_code != 404:
+        raise Exception("Failed to fetch company: %s - %s", response.status_code, response.text)
+
+    try:
+        response_body = response.json()
+    except ValueError as e:
+        raise Exception("Invalid JSON in response") from e
+
+    company = response_body.get("company", None)
+
+    if company == None:
+        raise Exception("Company is not contained in response: %s", response.text)
+
+    return Company(company)
 
 def fetch_company_financials(ticker : str) -> FinancialStatement:
     """
     Fetches the financials of a company based on the ticker
     """
-    raise NotImplementedError()
+    return []
 
 def create_company(company_profile : Company):
     """

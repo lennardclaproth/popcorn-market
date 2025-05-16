@@ -5,7 +5,7 @@ from models.financial_atlas import Company
 from services.chat import execute_prompt
 from services import financial_atlas
 from generators import market_data_generator
-from constants import SECTORS, REGIONS, LOCALES
+from constants.prompt import SECTORS, REGIONS, LOCALES
 from core import ticker_creator
 from faker import Faker
 from datetime import datetime
@@ -121,7 +121,8 @@ def generate():
             headquarters=headquarters,
             ceo=ceo_name,
             founded_year=founded_year,
-            employees=employees
+            employees=employees,
+            region=region
         )
 
         financial_atlas.create_company(company)

@@ -1,8 +1,8 @@
-﻿using Popcorn.FinancialAtlas.Domain.Abstractions;
+﻿using PopcornMarket.FinancialTimes.Domain.Abstractions;
 using PopcornMarket.SharedKernel.CQRS;
 using PopcornMarket.SharedKernel.ResultPattern;
 
-namespace PopcornMarket.FinancialAtlas.Application.V1.GetTickers;
+namespace PopcornMarket.FinancialTimes.Application.V1.GetTickers;
 
 internal sealed class GetTickersQueryHandler : IQueryHandler<GetTickersQuery, IEnumerable<string>>
 {

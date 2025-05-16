@@ -1,0 +1,4 @@
+FINANCIAL_ATLAS = "https://localhost:7087/api/v1"
+COMPANY_ENDPOINT=f"{FINANCIAL_ATLAS}/company"
+MARKET_DATA_ENDPOINT=f"{FINANCIAL_ATLAS}/market-data"
+TICKERS_ENDPOINT = f"{FINANCIAL_ATLAS}/company/tickers"

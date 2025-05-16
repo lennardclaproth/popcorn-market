@@ -19,7 +19,8 @@ REGIONS = [
     "South America",
     "Middle East",
     "Oceania",
-    "North America"
+    "North America",
+    "Global"
 ]
 
 LOCALES = {

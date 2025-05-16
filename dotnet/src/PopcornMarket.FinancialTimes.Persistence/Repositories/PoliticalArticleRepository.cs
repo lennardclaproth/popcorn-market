@@ -48,4 +48,13 @@ internal sealed class PoliticalArticleRepository : IPoliticalArticleRepository
     {
         await _collection.DeleteOneAsync(x => x.Id == id);
     }
+
+    public async Task<IEnumerable<PoliticalArticle>> GetArticlesByRegion(string region, int limit)
+    {
+        var cursor = await _collection.Find(x => x.Region == region)
+            .Limit(limit)
+            .SortByDescending(x => x.PublishDate)
+            .ToCursorAsync();
+        return await cursor.ToListAsync();
+    }
 }

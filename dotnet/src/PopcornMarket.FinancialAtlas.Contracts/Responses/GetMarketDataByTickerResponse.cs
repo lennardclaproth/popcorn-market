@@ -1,3 +1,8 @@
-﻿namespace PopcornMarket.FinancialAtlas.Contracts.Responses;
+﻿using PopcornMarket.FinancialAtlas.Contracts.Dtos;
 
-public record GetMarketDataByTickerResponse();
+namespace PopcornMarket.FinancialAtlas.Contracts.Responses;
+
+public sealed record GetMarketDataByTickerResponse
+{
+    public required MarketSnapshotDto MarketSnapshot { get; init; }
+}

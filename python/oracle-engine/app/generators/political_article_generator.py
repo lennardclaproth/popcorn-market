@@ -1,5 +1,5 @@
 import logging
-from constants import REGIONS
+from constants.prompt import REGIONS
 from core import article_formatter
 from models.financial_times import PoliticalArticle
 from models.generator import Generator
@@ -51,7 +51,7 @@ POLITICAL_TOPICS = [
 ]
 
 
-def __build_prompt(political_landscape: list[PoliticalArticle]) -> str:
+def __build_prompt(political_landscape: list[PoliticalArticle], local_political_landscape: list[PoliticalArticle], region) -> str:
     """
     Generates a political article based on recent political developments.
     """
@@ -59,18 +59,20 @@ def __build_prompt(political_landscape: list[PoliticalArticle]) -> str:
     # Get topic hint
     topic_hint = random.choice(POLITICAL_TOPICS)
 
-    region = random.choice(REGIONS)
-
     # Generate summaries
     summary_string = article_formatter.format(political_landscape)
-
+    local_summary_string = article_formatter.format(local_political_landscape)
     prompt = f"""
 🔹 **Generate a Unique Political News Article** 🔹
 
 🌍 **Regional Focus**: {region}
 
-🗺️ **Political Context (Recent Articles):**
+🗺️ **Global Political Context (Recent Articles):**
 {summary_string}
+
+🗺️ **Local Political Context (Recent Articles):**
+{local_summary_string}
+
 
 🎯 **Your Task:**
 Write a **concise, engaging political article** that reflects recent developments in {region} from the context above.
@@ -95,12 +97,14 @@ def generate():
     """
     try:
         logger.info("Started generating a new political article...")
-        political_articles = financial_times.fetch_political_articles()
-        
-        prompt = __build_prompt(political_articles)
+        political_articles = financial_times.fetch_political_articles_by_region("Global")
+        region = random.choice(REGIONS)
+        regional_political_articles = financial_times.fetch_political_articles_by_region(region)
+
+        prompt = __build_prompt(political_articles, regional_political_articles, region)
         article_data = execute_prompt(prompt)
         article = PoliticalArticle(
-            region="Global",
+            region=region,
             type=2,
             headline=article_data.get("headline", ""),
             content=article_data.get("article", ""),

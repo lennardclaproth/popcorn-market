@@ -33,7 +33,8 @@ internal sealed class CreateCompanyCommandHandler : ICommandHandler<CreateCompan
             request.Headquarters,
             request.Ceo,
             request.FoundedYear,
-            request.Employees);
+            request.Employees,
+            request.Region);
 
         if (creationResult.IsFailure)
         {

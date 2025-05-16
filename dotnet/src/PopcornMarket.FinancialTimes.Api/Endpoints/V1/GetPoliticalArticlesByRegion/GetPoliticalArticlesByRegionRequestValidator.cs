@@ -1,11 +1,11 @@
 using FluentValidation;
 using PopcornMarket.FinancialTimes.Contracts.V1.Requests;
 
-namespace PopcornMarket.FinancialTimes.Api.Endpoints.V1.GetArticlesByRegion;
+namespace PopcornMarket.FinancialTimes.Api.Endpoints.V1.GetPoliticalArticlesByRegion;
 
-public class GetArticlesByRegionRequestValidator : AbstractValidator<GetArticlesByRegionRequest>
+public class GetPoliticalArticlesByRegionRequestValidator : AbstractValidator<GetPoliticalArticlesByRegionRequest>
 {
-    public GetArticlesByRegionRequestValidator()
+    public GetPoliticalArticlesByRegionRequestValidator()
     {
         RuleFor(x => x.Region)
             .Must(c => c.Length >= 3 && c.Length <= 255)

@@ -24,7 +24,8 @@ internal sealed class CreateCompanyEndpoint : IEndpoint
                 Industry = req.Industry,
                 FoundedYear = req.FoundedYear,
                 Employees = req.Employees,
-                Headquarters = req.Headquarters
+                Headquarters = req.Headquarters,
+                Region = req.Region
             };
 
             var result = await sender.Send(command, ct);

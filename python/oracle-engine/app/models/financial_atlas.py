@@ -12,6 +12,7 @@ class Company(BaseModel):
     ceo: str = Field(..., title="CEO Name")
     founded_year: int = Field(..., title="Year the company was founded")
     employees: int = Field(..., title="Total number of employees")
+    region: str = Field(..., title="The region of the company")
 
 class MarketSnapshot(BaseModel):
     """Represents a snapshot of a stock's market performance."""

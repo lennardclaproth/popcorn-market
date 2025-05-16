@@ -1,6 +1,9 @@
-﻿namespace PopcornMarket.FinancialAtlas.Application.V1.GetMarketDataByTicker;
+﻿using PopcornMarket.FinancialAtlas.Contracts.Dtos;
+using PopcornMarket.SharedKernel.CQRS;
 
-public class GetMarketDataByTickerQuery
+namespace PopcornMarket.FinancialAtlas.Application.V1.GetMarketDataByTicker;
+
+public sealed record GetMarketDataByTickerQuery : IQuery<MarketSnapshotDto>
 {
-    
+    public required string Ticker { get; init; }
 }

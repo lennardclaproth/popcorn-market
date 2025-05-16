@@ -1,10 +1,10 @@
 ﻿using MediatR;
-using PopcornMarket.FinancialAtlas.Api.Abstractions;
-using PopcornMarket.FinancialAtlas.Api.Extensions;
-using PopcornMarket.FinancialAtlas.Application.V1.GetTickers;
-using PopcornMarket.FinancialAtlas.Contracts.Responses;
+using PopcornMarket.FinancialTimes.Api.Abstractions;
+using PopcornMarket.FinancialTimes.Api.Extensions;
+using PopcornMarket.FinancialTimes.Application.V1.GetTickers;
+using PopcornMarket.FinancialTimes.Contracts.V1.Responses;
 
-namespace PopcornMarket.FinancialAtlas.Api.Endpoints.V1.GetTickers;
+namespace PopcornMarket.FinancialTimes.Api.Endpoints.V1.GetTickers;
 
 internal sealed class GetTickersEndpoint : IEndpoint
 {
