@@ -1,22 +1,23 @@
 <div class="p-8 space-y-10">
-
-    <!-- Typography -->
+    
+    
     <div>
         <h1 class="text-5xl font-garamnond font-bold text-slate-900">Heading 1</h1>
         <p class="text font-noto text-gray-600">This is a paragraph showing base text styling.</p>
     </div>
 
-    <!-- Buttons -->
     <div class="space-x-4">
         <button class="
+            transition-all duration-300 ease-in-out
             px-4 py-2
             bg-amber-400 text-slate-800
-            rounded hover:rounded-full
+            rounded-[0.2rem] hover:rounded-[2rem]
             outline outline-amber-900
             hover:bg-amber-500 focus:bg-amber-600
             focus:ring-3 focus:ring-amber-300
             font-noto
         ">
+            <i class="fi fi-rr-home"></i>
             Primary Button
         </button>
         <button class="
@@ -103,7 +104,6 @@
         </span>
     </div>
 
-    <!-- Card Example -->
     <div class="inline-flex">
         <div class="max-w-sm p-6 bg-white border border-slate-400 rounded-lg shadow-sm">
             <h2 class="text-4xl font-garamnond font-bold text-slate-900 mb-3">
@@ -287,5 +287,6 @@
             </div>
         </div>
     </div>
-
+    <pop-button variant="primary" label="Hello World" icon="ph-floppy-disk" iconPlacement="left" [loading]="loading"
+        (clicked)="logHelloWorld()" />
 </div>

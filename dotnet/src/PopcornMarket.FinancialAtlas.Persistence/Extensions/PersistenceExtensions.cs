@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using Popcorn.FinancialAtlas.Domain.Abstractions;
 using Popcorn.FinancialAtlas.Domain.Entities;
@@ -22,14 +21,7 @@ public static class PersistenceExtensions
 
     private static void InitializeMongoDb(IServiceCollection services, string connectionString)
     {
-        EntityMap.Configure();
-        BalanceSheetMap.Configure();
-        CashFlowStatementMap.Configure();
-        CompanyMap.Configure();
-        FinancialStatementMap.Configure();
-        IncomeStatementMap.Configure();
-        MarketDataMap.Configure();
-        MarketSnapshotMap.Configure();
+        ConfigureMappings();
         
         var context = new MongoDbContext(connectionString, DbConstants.DatabaseName);
         
@@ -42,10 +34,25 @@ public static class PersistenceExtensions
         
         services.AddSingleton(context);
     }
+
+    private static void ConfigureMappings()
+    {
+        EntityMap.Configure();
+        BalanceSheetMap.Configure();
+        CashFlowStatementMap.Configure();
+        CompanyMap.Configure();
+        FinancialStatementMap.Configure();
+        IncomeStatementMap.Configure();
+        MarketDataMap.Configure();
+        MarketSnapshotMap.Configure();
+        ReportingPeriodMap.Configure();
+        
+    }
     
     private static void AddClassesWithLifetime(IServiceCollection services)
     {
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IMarketDataRepository, MarketDataRepository>();
+        services.AddScoped<IFinancialStatementRepository, FinancialStatementRepository>();
     }
 }

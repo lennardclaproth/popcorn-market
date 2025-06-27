@@ -16,9 +16,9 @@ class Company(BaseModel):
 
 class MarketSnapshot(BaseModel):
     """Represents a snapshot of a stock's market performance."""
-    stock_price_usd: float = Field(..., title="Stock Price in USD")
+    stock_price_usd: float = Field(..., title="Stock Price in USD", alias="stock_price_USD")
     volume: int = Field(..., title="Volume of the stocks traded")
-    market_cap_b: float = Field(..., title="Market Capitalization in Billions")
+    market_cap_b: float = Field(..., title="Market Capitalization in Billions", alias="market_cap_B")
     dividend_per_share_usd: Optional[float] = Field(default=None, title="Dividend per Share in USD")
     dividend_yield_percent: Optional[float] = Field(default=None, title="Dividend Yield Percentage")
     date: datetime = Field(..., title="Snapshot Date")
@@ -29,7 +29,8 @@ class MarketData(BaseModel):
     ticker: str = Field(..., title="Stock Ticker Symbol")
     shares_outstanding: int = Field(..., title="Outstanding shares of the company,")
     current: MarketSnapshot = Field(..., title="Current Market Data Snapshot")
-    history: List[MarketSnapshot] = Field(default=[], title="Historical Market Data")
+    history: Optional[List[MarketSnapshot]] = Field(default=None, title="Historical Market Data")
+
 
 class IncomeStatement(BaseModel):
     """Represents a company's income statement."""

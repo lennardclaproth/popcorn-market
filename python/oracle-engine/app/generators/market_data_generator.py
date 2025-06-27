@@ -13,9 +13,9 @@ def generate(company: Company) -> MarketData:
 
     current = MarketSnapshot(
         date=datetime.now(),
-        stock_price_usd=current_price,
+        stock_price_USD=current_price,
         volume=int(random.gauss(avg_volume, avg_volume * 0.1)),  # simulate volume variation
-        market_cap_b = market_cap
+        market_cap_B = market_cap
     )
 
     history = generate_price_history(current_price, avg_volume, shares_outstanding, 365)

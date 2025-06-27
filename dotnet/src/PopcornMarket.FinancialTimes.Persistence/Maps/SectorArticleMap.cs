@@ -15,6 +15,7 @@ internal static class SectorArticleMap
                 cm.SetIgnoreExtraElements(true);
                     
                 cm.MapMember(c => c.Sector).SetElementName("sector");
+                cm.MapMember(c => c.Region).SetElementName("region");
             });
         }
     }

@@ -1,11 +1,13 @@
+from itertools import chain
 import logging
 import random
 from models.generator import Generator
+from models.graph import NodeMetadata
 from core import article_formatter
 from models.financial_times import PoliticalArticle, MacroArticle
-from services import financial_times
+from services import financial_times, graph, chat
 from constants.prompt import REGIONS
-from services.chat import execute_prompt
+from constants.financial_times import MACRO_ARTICLE_TYPE, SERVICE_DESC
 
 generator = Generator(
     active=True,
@@ -98,16 +100,23 @@ def generate():
             political_articles,
             region
         )
-        article_data = execute_prompt(prompt)
+        article_data = chat.execute_prompt(prompt)
         article = MacroArticle(
             region=region,
-            type=1,
+            type=MACRO_ARTICLE_TYPE,
             headline=article_data.get("headline", ""),
             content=article_data.get("article", ""),
             # metadata={"reasoning": article_data["reasoning"]}
         )
 
-        financial_times.publish_article(article)
+        entity_id = financial_times.publish_article(article)
         logger.info("Successfully published a new macro economic article.")
+
+        # Builds a node based on the information gathered
+        logger.info("Generating Node for entity with Id: %s.", entity_id)
+        children = [article.id for article in chain(political_articles, macro_economic_articles)]
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC), children)
+        logger.info("✅ Successfully inserted Node with entity_id %s.", entity_id)
+
     except Exception as e:
         raise Exception("An exception occurred while trying to generate a macro economic article.") from e
