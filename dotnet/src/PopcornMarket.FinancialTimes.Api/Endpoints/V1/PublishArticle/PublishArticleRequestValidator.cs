@@ -20,7 +20,7 @@ public class PublishArticleRequestValidator : AbstractValidator<PublishArticleRe
             .WithMessage("Region must be at least 3 characters long");
         
         RuleFor(x => x.Ticker)
-            .Must(t => t == null || t.Length is > 3 and < 6)
+            .Must(t => t == null || t.Length is >= 3 and <= 6)
             .WithMessage("Ticker must be between 3 and 6 characters long");
         
         RuleFor(x => x.Sector)

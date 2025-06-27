@@ -6,7 +6,7 @@ using PopcornMarket.SharedKernel.ResultPattern;
 
 namespace PopcornMarket.FinancialTimes.Application.V1.PublishCompanyArticle;
 
-internal sealed class PublishCompanyArticleCommandHandler : ICommandHandler<PublishCompanyArticleCommand>
+internal sealed class PublishCompanyArticleCommandHandler : ICommandHandler<PublishCompanyArticleCommand, Guid>
 {
     private readonly ICompanyArticleRepository _companyArticleRepository;
 
@@ -15,20 +15,20 @@ internal sealed class PublishCompanyArticleCommandHandler : ICommandHandler<Publ
         _companyArticleRepository = companyArticleRepository;
     }
 
-    public async Task<Result> Handle(PublishCompanyArticleCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(PublishCompanyArticleCommand request, CancellationToken cancellationToken)
     {
         var articleCreationResult = CompanyArticle.Create(request.Headline, request.Content, request.TickerSymbol, request.Sector,
             request.CompanyName);
 
         if (articleCreationResult.IsFailure)
         {
-            return articleCreationResult;
+            return Result<Guid>.Failure(articleCreationResult.Error);
         }
 
-        Guard.Against.Null(articleCreationResult.Value, nameof(articleCreationResult.Value));
+        var article = Guard.Against.Null(articleCreationResult.Value, nameof(articleCreationResult.Value));
         
-        await _companyArticleRepository.Add(articleCreationResult.Value);
+        await _companyArticleRepository.Add(article);
         
-        return Result.Success();
+        return Result<Guid>.Success(article.Id);
     }
 }

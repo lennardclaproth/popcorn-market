@@ -33,5 +33,6 @@ def seed_generators():
         logger.info("Successfully seeded generators.")
     else:
         logger.info("All generators have already been registered. No new generators added.")
-        
-    
+
+def set_probability(id: str, probability: float):
+    generator_db.get_generator_by_id

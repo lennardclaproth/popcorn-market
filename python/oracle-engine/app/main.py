@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from logging_config import LOGGING_CONFIG
-from routers import worker, generator
+from routers import worker, generator, chat
 from services.generator import seed_generators
 
 logging.config.dictConfig(LOGGING_CONFIG)
@@ -17,5 +17,7 @@ async def lifespan(app:FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(worker.router)
-app.include_router(generator.router)
+routers = [worker.router, generator.router, chat.router]
+
+for router in routers:
+    app.include_router(router)

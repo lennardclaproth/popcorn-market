@@ -1,6 +1,6 @@
 import requests
 from constants.financial_atlas import COMPANY_ENDPOINT, MARKET_DATA_ENDPOINT, TICKERS_ENDPOINT
-from models.financial_atlas import Company, FinancialStatement, MarketData
+from models.financial_atlas import Company, FinancialStatement, MarketData, MarketSnapshot
 
 def fetch_tickers() -> list[str]:
     """
@@ -45,7 +45,26 @@ def fetch_company(ticker) -> Company:
     if company == None:
         raise Exception("Company is not contained in response: %s", response.text)
 
-    return Company(company)
+    return Company(**company)
+
+def fetch_current_market_snapshot(ticker : str) -> MarketSnapshot:
+    url = f"{MARKET_DATA_ENDPOINT}/{ticker}/current"
+    response = requests.get(url, verify=False)
+    if response.status_code != 200 and response.status_code != 404:
+        raise Exception("Failed to fetch snapshot: %s - %s", response.status_code, response.text)
+
+    try:
+        response_body = response.json()
+    except ValueError as e:
+        raise Exception("Invalid JSON in response") from e
+
+    snapshot = response_body.get("marketSnapshot", None)
+
+    if snapshot == None:
+        raise Exception("Snapshot is not contained in response: %s", response.text)
+
+    return MarketSnapshot(**snapshot)
+
 
 def fetch_company_financials(ticker : str) -> FinancialStatement:
     """

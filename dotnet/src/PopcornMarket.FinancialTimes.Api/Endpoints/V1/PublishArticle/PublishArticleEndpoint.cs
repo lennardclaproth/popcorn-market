@@ -8,6 +8,7 @@ using PopcornMarket.FinancialTimes.Application.V1.PublishPoliticalArticle;
 using PopcornMarket.FinancialTimes.Application.V1.PublishSectorArticle;
 using PopcornMarket.FinancialTimes.Contracts.V1.Enums;
 using PopcornMarket.FinancialTimes.Contracts.V1.Requests;
+using PopcornMarket.FinancialTimes.Contracts.V1.Responses;
 using CQRS = PopcornMarket.SharedKernel.CQRS;
 
 namespace PopcornMarket.FinancialTimes.Api.Endpoints.V1.PublishArticle;
@@ -22,7 +23,7 @@ public class PublishArticleEndpoint : IEndpoint
             CancellationToken ct
         ) =>
         {
-            CQRS.ICommand command = req.ArticleType switch
+            CQRS.ICommand<Guid> command = req.ArticleType switch
             {
                 ArticleType.Company => new PublishCompanyArticleCommand
                 {
@@ -52,6 +53,7 @@ public class PublishArticleEndpoint : IEndpoint
                     Headline = req.Headline,
                     Content = req.Content,
                     Sector = Guard.Against.Null(req.Sector, nameof(req.Sector)),
+                    Region = Guard.Against.Null(req.Region, nameof(req.Region)),
                 },
             
                 _ => throw new ArgumentOutOfRangeException(req.ArticleType.ToString())
@@ -59,7 +61,7 @@ public class PublishArticleEndpoint : IEndpoint
             
             var result = await sender.Send(command, ct);
             
-            return result.IsFailure ? result.ToProblemDetails() : Results.Created();
+            return result.IsFailure ? result.ToProblemDetails() : Results.Created("/api/v1/articles/{id}", new PublishArticleResponse { Id = result.Value});
         }).AllowAnonymous()
         .AddValidation<PublishArticleRequest>()
         .WithName("PublishArticle")

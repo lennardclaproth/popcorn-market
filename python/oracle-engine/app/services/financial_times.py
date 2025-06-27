@@ -39,10 +39,19 @@ def fetch_company_articles(ticker: str):
     url = f"{COMPANY_ARTICLES_ENDPOINT}/{ticker}?limit={ARTICLE_LIMIT}"
     response = requests.get(url, verify=False)
 
-    if response.status_code != 200 or response.status_code != 404:
-        raise Exception("Failed to fetch company articles:  %s - %s", response.status_code, response.text)
+    if response.status_code == 404:
+        return []
 
-    articles = response.json()
+    if response.status_code != 200:
+        raise Exception("Failed to fetch company articles:  %s - %s", response.status_code, response.text)
+    
+    try:
+        response_body = response.json()
+    except ValueError as e:
+        raise Exception("Invalid JSON in response") from e
+
+    articles = response_body.get("articles", [])
+    
     return [CompanyArticle(**article) for article in articles]
 
 
@@ -143,11 +152,15 @@ def fetch_sector_articles(sector: str):
     articles = response_body.get("articles", [])
     return [SectorArticle(**article) for article in articles]
 
-def publish_article(article):
+def publish_article(article) -> str:
     url = f"{PUBLISH_ARTICLE_ENDPOINT}"
     json = article.model_dump(mode="json")
     response = requests.post(url, json=json, verify=False)   
 
     if response.status_code != 201 and response.status_code != 404:
         raise Exception("Failed to publish article: %s - %s", response.status_code, response.text)
+    
+    if response.content != None:
+        data = response.json()
+        return data["id"]
     

@@ -1,15 +1,26 @@
 import { Component } from '@angular/core';
 import { LucideAngularModule, FileIcon } from 'lucide-angular';
 import { MarkdownComponent } from 'ngx-markdown';
+import { ButtonComponent } from "../../../lib/atoms/button/button.component";
 
 @Component({
   selector: 'app-design-system',
   standalone: true, // ✅ necessary to use imports in component
-  imports: [LucideAngularModule, MarkdownComponent],
+  imports: [LucideAngularModule, MarkdownComponent, ButtonComponent],
   templateUrl: './design-system.component.html',
   styleUrls: ['./design-system.component.css'] // typo: `styleUrls` (plural)
 })
 export class DesignSystemComponent {
+  loading = false
+  logHelloWorld() {
+    console.log("Hello World")
+    this.loading = true
+
+    setTimeout(() => {
+      this.loading = false;
+    }, 3000);
+  }
+
   readonly FileIcon = FileIcon;
   readonly answer = `
     \`\`\`json

@@ -16,7 +16,7 @@ class ArticleBase(BaseModel):
 class CompanyArticle(ArticleBase):
     """Represents an article about a specific company."""
     ticker: str
-    industry: str
+    sector: str
     company_name: str
 
 
@@ -33,3 +33,4 @@ class PoliticalArticle(ArticleBase):
 class SectorArticle(ArticleBase):
     """Represents an article about trends in a specific sector."""
     sector: str
+    region: str

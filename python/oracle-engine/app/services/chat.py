@@ -1,6 +1,6 @@
 import logging
 from typing import Any
-from db.chat import save_chat
+from db import chat as db
 from ollama import ChatResponse, chat
 from config import OLLAMA_MODEL
 from core.json_helper import extract_json
@@ -16,7 +16,9 @@ def execute_prompt(prompt: str) -> dict[str, str] | Any:
     {'role': 'user', 'content': prompt},
     ])
 
-    save_chat(prompt, response.message.content)
+    db.save_chat(prompt, response.message.content)
 
     return extract_json(response.message.content)
     
+def fetch_with_limit(limit=10):
+    return db.fetch_with_limit(limit)

@@ -1,11 +1,13 @@
+from itertools import chain
 import logging
 import random
 from constants.prompt import REGIONS
+from constants.financial_times import SERVICE_DESC
 from core import article_formatter
 from models.financial_times import PoliticalArticle, MacroArticle, SectorArticle
 from models.generator import Generator
-from services.chat import execute_prompt
-from services import financial_times
+from models.graph import NodeMetadata
+from services import financial_times, graph, chat
 from constants.prompt import SECTORS
 
 logger = logging.getLogger("worker_app")
@@ -53,6 +55,7 @@ SECTOR_ANGLES = [
 
 def __build_prompt(
     sector: str,
+    region: str,
     sector_articles: list[SectorArticle], 
     macro_economic_trends: list[MacroArticle], 
     political_landscape: list[PoliticalArticle]
@@ -61,7 +64,6 @@ def __build_prompt(
     Generates a sector analysis article using industry trends, economic influences, and politics.
     """
     angle = random.choice(SECTOR_ANGLES)
-    region = random.choice(REGIONS)
     sector_summary = article_formatter.format(sector_articles)
     macro_summary = article_formatter.format(macro_economic_trends)
     political_summary = article_formatter.format(political_landscape)
@@ -108,24 +110,35 @@ def generate():
         sector = random.choice(SECTORS)
         logger.info("Starting article generation for sector: %s sector.", sector)
 
+        region = random.choice(REGIONS)
         sector_articles = financial_times.fetch_sector_articles(sector)
         macro_economic_articles = financial_times.fetch_macro_articles()
         political_articles = financial_times.fetch_political_articles()
 
-        prompt = __build_prompt(sector_articles, 
+        prompt = __build_prompt(sector,
+                                region,
+                                sector_articles, 
                                 macro_economic_articles, 
                                 political_articles)
-        article_data = execute_prompt(prompt)
+        article_data = chat.execute_prompt(prompt)
         article = SectorArticle(
             sector=sector,
+            region=region,
             type=3,
             headline=article_data.get("headline", ""),
             content=article_data.get("article", ""),
             # metadata={"reasoning": article_data["reasoning"]}
         )
         # Generate article via generator service with the inputs
-        financial_times.publish_article(article)
-        logger.info("Article successfully published.")
+        entity_id = financial_times.publish_article(article)
+        logger.info("✅ Article successfully published.")
+
+        # Builds a node based on the information gathered
+        logger.info("Generating Node for entity with Id: %s.", entity_id)
+        children = [article.id for article in chain(political_articles, sector_articles, macro_economic_articles)]
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC), children)
+        logger.info("✅ Successfully inserted Node with entity_id %s.", entity_id)
+
 
     except Exception as e:
         raise Exception("An exception occurred while trying to generate a sector article.") from e
