@@ -1,10 +1,13 @@
 from itertools import chain
+from itertools import chain
 import logging
 from constants.prompt import REGIONS
 from constants.financial_times import POLITICAL_ARTICLE_TYPE, SERVICE_DESC
 from core import article_formatter
 from models.financial_times import PoliticalArticle
 from models.generator import Generator
+from services import financial_times, graph
+from models.graph import Node, NodeMetadata
 from services import financial_times, graph
 from models.graph import Node, NodeMetadata
 from services.chat import execute_prompt
@@ -114,7 +117,15 @@ def generate():
             # metadata={"reasoning": article_data["reasoning"]}
         )
         entity_id = financial_times.publish_article(article)
+        entity_id = financial_times.publish_article(article)
         logger.info("Successfully published a new political article")
+
+        # Builds a node based on the information gathered
+        logger.info("Generating Node for entity with Id: %s.", entity_id)
+        children = [article.id for article in chain(political_articles, regional_political_articles)]
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC), children)
+        logger.info("✅ Successfully inserted Node with entity_id %s.", entity_id)
+
 
         # Builds a node based on the information gathered
         logger.info("Generating Node for entity with Id: %s.", entity_id)

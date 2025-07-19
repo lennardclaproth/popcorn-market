@@ -1,11 +1,16 @@
 from itertools import chain
+from itertools import chain
 import logging
 import random
 from constants.financial_times import COMPANY_ARTICLE_TYPE, SERVICE_DESC
 from core import article_formatter
 from models.financial_times import CompanyArticle, SectorArticle, PoliticalArticle, MacroArticle, ArticleBase
 from models.financial_atlas import Company, MarketSnapshot
+from models.financial_times import CompanyArticle, SectorArticle, PoliticalArticle, MacroArticle, ArticleBase
+from models.financial_atlas import Company, MarketSnapshot
 from models.generator import Generator
+from models.graph import NodeMetadata
+from services import financial_times, financial_atlas, graph, chat
 from models.graph import NodeMetadata
 from services import financial_times, financial_atlas, graph, chat
 logger = logging.getLogger("worker_app")
@@ -34,9 +39,15 @@ COMPANY_ANGLES = [
 def __build_prompt(
     company: Company,
     snapshot: MarketSnapshot,
+    company: Company,
+    snapshot: MarketSnapshot,
     company_articles: list[CompanyArticle],
     sector_articles: list[SectorArticle],
     macro_trends: list[MacroArticle],
+    macro_trends_by_region: list[MacroArticle],
+    political_trends: list[PoliticalArticle],
+    political_trends_by_region: list[PoliticalArticle],
+    region: str
     macro_trends_by_region: list[MacroArticle],
     political_trends: list[PoliticalArticle],
     political_trends_by_region: list[PoliticalArticle],
@@ -48,7 +59,10 @@ def __build_prompt(
     sector_news = article_formatter.format(sector_articles)
     macro_news = article_formatter.format(macro_trends)
     macro_news_by_region = article_formatter.format(macro_trends_by_region)
+    macro_news_by_region = article_formatter.format(macro_trends_by_region)
     political_news = article_formatter.format(political_trends)
+    political_news_by_region = article_formatter.format(political_trends_by_region)
+    macro_news_by_region = article_formatter.format(macro_trends_by_region)
     political_news_by_region = article_formatter.format(political_trends_by_region)
     macro_news_by_region = article_formatter.format(macro_trends_by_region)
 
@@ -58,6 +72,13 @@ def __build_prompt(
 🌍 **Regional Focus**: {region}
 
 🏢 **Company Overview**
+- Name: {company.name}
+- Ticker: {company.ticker}
+- Industry: {company.industry}
+- Description: {company.description}
+- Region: {company.region}
+- Stock price: {snapshot.stock_price_usd}
+- Market cap B: {snapshot.market_cap_b}
 - Name: {company.name}
 - Ticker: {company.ticker}
 - Industry: {company.industry}
@@ -78,8 +99,14 @@ def __build_prompt(
 📊 **Macroeconomic Trends by region**
 {macro_news_by_region}
 
+📊 **Macroeconomic Trends by region**
+{macro_news_by_region}
+
 🏛️ **Political Landscape**
 {political_news}
+
+🏛️ **Political Landscape by region**
+{political_news_by_region}
 
 🏛️ **Political Landscape by region**
 {political_news_by_region}
@@ -106,6 +133,12 @@ def generate():
             return
         
         ticker = random.choice(tickers)
+        tickers = financial_times.fetch_tickers()
+
+        if len(tickers) == 0:
+            return
+        
+        ticker = random.choice(tickers)
         logger.info("Generating company article for ticker: %s", ticker)
 
         company_profile = financial_atlas.fetch_company(ticker)
@@ -114,7 +147,12 @@ def generate():
         sector_articles = financial_times.fetch_sector_articles(company_profile.industry)
         company_articles = financial_times.fetch_company_articles(ticker)
 
+
         macro_articles = financial_times.fetch_macro_articles()
+        macro_articles_by_region = financial_times.fetch_macro_articles_by_region(company_profile.region)
+        regional_ids = {article.id for article in macro_articles_by_region}
+        macro_articles = [article for article in macro_articles if article.id not in regional_ids]
+
         macro_articles_by_region = financial_times.fetch_macro_articles_by_region(company_profile.region)
         regional_ids = {article.id for article in macro_articles_by_region}
         macro_articles = [article for article in macro_articles if article.id not in regional_ids]
@@ -123,8 +161,13 @@ def generate():
         political_articles_by_region = financial_times.fetch_political_articles_by_region(company_profile.region)
         regional_ids = {article.id for article in political_articles_by_region}
         political_articles = [article for article in macro_articles if article.id not in regional_ids]
+        political_articles_by_region = financial_times.fetch_political_articles_by_region(company_profile.region)
+        regional_ids = {article.id for article in political_articles_by_region}
+        political_articles = [article for article in macro_articles if article.id not in regional_ids]
 
         prompt = __build_prompt(
+            company=company_profile,
+            snapshot=snapshot,
             company=company_profile,
             snapshot=snapshot,
             company_articles=company_articles,
@@ -136,6 +179,7 @@ def generate():
             region=company_profile.region
         )
 
+        article_data = chat.execute_prompt(prompt)
         article_data = chat.execute_prompt(prompt)
 
         article = CompanyArticle(
@@ -149,7 +193,14 @@ def generate():
         )
 
         entity_id = financial_times.publish_article(article)
+        entity_id = financial_times.publish_article(article)
         logger.info("✅ Article for %s published successfully.", ticker)
+
+        # Builds a node based on the information gathered
+        logger.info("Generating Node for entity with Id: %s.", entity_id)
+        children = [article.id for article in chain(political_articles, sector_articles, macro_articles, company_articles, political_articles)]
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC), children)
+        logger.info("✅ Successfully inserted Node with entity_id %s.", entity_id)
 
         # Builds a node based on the information gathered
         logger.info("Generating Node for entity with Id: %s.", entity_id)

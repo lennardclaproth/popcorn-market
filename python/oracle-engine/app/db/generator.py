@@ -34,3 +34,9 @@ def get_by_id(id: str):
         return None
     
     return Generator(**generator)
+def get_by_id(id: str):
+    generator = collection.find_one({"_id":ObjectId(id)})
+    if generator is None:
+        return None
+    
+    return Generator(**generator)
