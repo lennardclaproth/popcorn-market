@@ -8,8 +8,6 @@ from models.financial_times import PoliticalArticle
 from models.generator import Generator
 from services import financial_times, graph
 from models.graph import Node, NodeMetadata
-from services import financial_times, graph
-from models.graph import Node, NodeMetadata
 from services.chat import execute_prompt
 import random
 
