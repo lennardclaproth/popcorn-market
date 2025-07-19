@@ -9,7 +9,7 @@ public record FinancialStatementDto
     [JsonPropertyName("publish_date")]
     public DateTime PublishDate { get; private set; }
     [JsonPropertyName("period")]
-    public ReportingPeriodDto Period { get; init; } = null!;
+    public string Period { get; init; } = null!;
     [JsonPropertyName("income_statement")]
     public IncomeStatementDto IncomeStatement { get; init; } = new();
     [JsonPropertyName("balance_sheet")]

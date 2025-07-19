@@ -8,7 +8,9 @@ public class FinancialStatementMappingProfile : Profile
 {
     public FinancialStatementMappingProfile()
     {
-        CreateMap<FinancialStatement, FinancialStatementDto>();
+        CreateMap<FinancialStatement, FinancialStatementDto>()
+            .ForMember(dest => dest.Period, opt => opt.MapFrom(src => src.ReportingPeriod.ToString()));
+        
         CreateMap<FinancialStatementDto, FinancialStatement>();
     }
 }
