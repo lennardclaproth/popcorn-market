@@ -29,7 +29,8 @@ class MarketData(BaseModel):
     ticker: str = Field(..., title="Stock Ticker Symbol")
     shares_outstanding: int = Field(..., title="Outstanding shares of the company,")
     current: MarketSnapshot = Field(..., title="Current Market Data Snapshot")
-    history: List[MarketSnapshot] = Field(default=[], title="Historical Market Data")
+    history: Optional[List[MarketSnapshot]] = Field(default=None, title="Historical Market Data")
+
 
 class IncomeStatement(BaseModel):
     """Represents a company's income statement."""

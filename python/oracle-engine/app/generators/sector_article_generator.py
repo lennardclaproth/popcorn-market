@@ -2,7 +2,7 @@ from itertools import chain
 import logging
 import random
 from constants.prompt import REGIONS
-from constants.financial_times import SERVICE_DESC
+from constants.financial_times import SECTOR_ARTICLE_TYPE, SERVICE_DESC
 from core import article_formatter
 from models.financial_times import PoliticalArticle, MacroArticle, SectorArticle
 from models.generator import Generator
@@ -124,7 +124,7 @@ def generate():
         article = SectorArticle(
             sector=sector,
             region=region,
-            type=3,
+            type=SECTOR_ARTICLE_TYPE,
             headline=article_data.get("headline", ""),
             content=article_data.get("article", ""),
             # metadata={"reasoning": article_data["reasoning"]}

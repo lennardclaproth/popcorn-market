@@ -14,8 +14,6 @@ def get_generators():
     generators = fetch_generators()
     return generators
 
-@router.patch("{generator_id}/probability")
-def patch_generator_probability():
-    
-
+# @router.patch("{generator_id}/probability")
 # def patch_generator_probability():
+    

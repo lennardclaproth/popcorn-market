@@ -3,7 +3,7 @@ using PopcornMarket.SharedKernel.CQRS;
 
 namespace PopcornMarket.FinancialAtlas.Application.V1.GetMarketDataByTicker;
 
-public sealed record GetMarketDataByTickerQuery : IQuery<MarketSnapshotDto>
+public sealed record GetMarketDataByTickerQuery : IQuery<MarketDataDto>
 {
     public required string Ticker { get; init; }
 }

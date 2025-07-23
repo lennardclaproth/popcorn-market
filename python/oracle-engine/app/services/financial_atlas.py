@@ -1,5 +1,5 @@
 import requests
-from constants.financial_atlas import COMPANY_ENDPOINT, MARKET_DATA_ENDPOINT, TICKERS_ENDPOINT
+from constants.financial_atlas import COMPANY_ENDPOINT, FINANCIAL_STATEMENT_ENDPOINT, MARKET_DATA_ENDPOINT, TICKERS_ENDPOINT
 from models.financial_atlas import Company, FinancialStatement, MarketData, MarketSnapshot
 
 def fetch_tickers() -> list[str]:
@@ -47,7 +47,7 @@ def fetch_company(ticker) -> Company:
 
     return Company(**company)
 
-def fetch_current_market_snapshot(ticker : str) -> MarketSnapshot:
+def fetch_market_data(ticker : str) -> MarketData:
     url = f"{MARKET_DATA_ENDPOINT}/{ticker}/current"
     response = requests.get(url, verify=False)
     if response.status_code != 200 and response.status_code != 404:
@@ -58,19 +58,34 @@ def fetch_current_market_snapshot(ticker : str) -> MarketSnapshot:
     except ValueError as e:
         raise Exception("Invalid JSON in response") from e
 
-    snapshot = response_body.get("marketSnapshot", None)
+    market_data = response_body.get("marketSnapshot", None)
 
-    if snapshot == None:
+    if market_data == None:
         raise Exception("Snapshot is not contained in response: %s", response.text)
 
-    return MarketSnapshot(**snapshot)
+    return MarketData(**market_data)
 
 
 def fetch_company_financials(ticker : str) -> FinancialStatement:
     """
     Fetches the financials of a company based on the ticker
     """
-    return []
+    url = f"{FINANCIAL_STATEMENT_ENDPOINT}/{ticker}"
+    response = requests.get(url, verify=False)
+    if response.status_code != 200 and response.status_code != 404:
+        raise Exception("Failed to fetch financials: %s - %s", response.status_code, response.text)
+
+    try:
+        response_body = response.json()
+    except ValueError as e:
+        raise Exception("Invalid JSON in response") from e
+
+    financials = response_body.get("financials", None)
+
+    if financials == None:
+        raise Exception("Financials are not contained in response: %s", response.text)
+
+    return FinancialStatement(**financials)
 
 def create_company(company_profile : Company):
     """

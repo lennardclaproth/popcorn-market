@@ -1,7 +1,8 @@
 ﻿namespace Popcorn.FinancialAtlas.Domain.Enums;
 
-public enum FinancialStatementInterval
+public enum PeriodType
 {
     Quarterly,
-    Yearly
+    Yearly,
+    HalfYearly,
 }

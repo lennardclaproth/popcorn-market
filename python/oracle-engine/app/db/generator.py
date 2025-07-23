@@ -9,7 +9,11 @@ def get_active_generators() -> list[Generator]:
     return [Generator(**doc) for doc in generators]
 
 def insert_many(generators: list[Generator]):
-    gen = [g.model_dump(by_alias=True) for g in generators]
+    gen = [g.model_dump(
+                by_alias=True, 
+                exclude_none=True,
+                exclude_unset=True) 
+            for g in generators]
     return collection.insert_many(gen)
 
 def update_one(generator: Generator):
@@ -24,6 +28,12 @@ def update_one(generator: Generator):
     )
     return result
 
+def get_by_id(id: str):
+    generator = collection.find_one({"_id":ObjectId(id)})
+    if generator is None:
+        return None
+    
+    return Generator(**generator)
 def get_by_id(id: str):
     generator = collection.find_one({"_id":ObjectId(id)})
     if generator is None:

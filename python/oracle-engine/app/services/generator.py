@@ -19,7 +19,6 @@ def seed_generators():
     logger.info("Seeding generators...")
     generators = generator_db.get_active_generators()
     existing_reprs = {generator.representation for generator in generators}
-    REGISTRY
 
     missing = []
 

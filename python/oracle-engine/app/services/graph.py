@@ -13,8 +13,8 @@ def create_node(entity_id : str, metadata : NodeMetadata, child_entities : list[
         )
 
     for entity_id in child_entities:
-        node = fetch_node_by_entity_id(entity_id)
-        if node is None:
+        _ = fetch_node_by_entity_id(entity_id)
+        if _ is None:
             continue
 
         node.children.append(entity_id)

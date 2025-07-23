@@ -1,7 +1,7 @@
 from itertools import chain
 import logging
 import random
-from constants.financial_times import SERVICE_DESC
+from constants.financial_times import COMPANY_ARTICLE_TYPE, SERVICE_DESC
 from core import article_formatter
 from models.financial_times import CompanyArticle, SectorArticle, PoliticalArticle, MacroArticle, ArticleBase
 from models.financial_atlas import Company, MarketSnapshot
@@ -109,7 +109,7 @@ def generate():
         logger.info("Generating company article for ticker: %s", ticker)
 
         company_profile = financial_atlas.fetch_company(ticker)
-        snapshot = financial_atlas.fetch_current_market_snapshot(ticker)
+        snapshot = financial_atlas.fetch_market_data(ticker)
 
         sector_articles = financial_times.fetch_sector_articles(company_profile.industry)
         company_articles = financial_times.fetch_company_articles(ticker)
@@ -130,10 +130,9 @@ def generate():
             company_articles=company_articles,
             sector_articles=sector_articles,
             macro_trends=macro_articles,
-            macro_articles_by_region=macro_articles_by_region,
-            political_trends=political_articles,
-            political_articles_by_region=political_articles_by_region,
             macro_trends_by_region=macro_articles_by_region,
+            political_trends=political_articles,
+            political_trends_by_region=political_articles_by_region,
             region=company_profile.region
         )
 
@@ -143,7 +142,7 @@ def generate():
             ticker=ticker,
             company_name=company_profile.name,
             sector=company_profile.industry,
-            type=0,
+            type=COMPANY_ARTICLE_TYPE,
             headline=article_data.get("headline", ""),
             content=article_data.get("article", ""),
             metadata={"source": "AI", "reasoning": article_data.get("reasoning", "")}

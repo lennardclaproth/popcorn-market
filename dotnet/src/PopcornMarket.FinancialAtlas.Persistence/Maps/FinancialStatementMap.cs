@@ -1,8 +1,5 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
+﻿using MongoDB.Bson.Serialization;
 using Popcorn.FinancialAtlas.Domain.Entities;
-using PopcornMarket.SharedKernel.Primitives;
 
 namespace PopcornMarket.FinancialAtlas.Persistence.Maps;
 
@@ -18,14 +15,11 @@ internal static class FinancialStatementMap
                 cm.AutoMap();
                 cm.SetIgnoreExtraElements(true);
 
-                cm.MapMember(fs => fs.TickerSymbol)
+                cm.MapMember(fs => fs.Ticker)
                     .SetElementName("ticker_symbol");
-
-                cm.MapMember(fs => fs.Year)
-                    .SetElementName("year");
-
-                cm.MapMember(fs => fs.StatementInterval)
-                    .SetElementName("statement_interval");
+                
+                cm.MapMember(fs => fs.ReportingPeriod)
+                    .SetElementName("reporting_period");
 
                 cm.MapMember(fs => fs.IncomeStatement)
                     .SetElementName("income_statement");

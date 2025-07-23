@@ -30,7 +30,10 @@ internal sealed class GetMarketDataByTickerEndpoint : IEndpoint
 
             Guard.Against.Null(result.Value, nameof(result.Value));
 
-            var response = new GetMarketDataByTickerResponse { MarketSnapshot = result.Value };
+            var response = new GetMarketDataByTickerResponse
+            {
+                MarketData = result.Value,
+            };
 
             return Results.Ok(response);
         }).AllowAnonymous();

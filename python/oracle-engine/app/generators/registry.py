@@ -1,4 +1,4 @@
-from generators import company_generator, macro_economic_article_generator, political_article_generator, sector_article_generator, company_article_generator
+from generators import company_generator, macro_economic_article_generator, political_article_generator, sector_article_generator, company_article_generator, financial_report_generator
 
 REGISTRY = {
     company_generator.REPRESENTATION: {
@@ -20,5 +20,9 @@ REGISTRY = {
     company_article_generator.REPRESENTATION: {
         "generator": company_article_generator.generator,
         "func": company_article_generator.generate
+    },
+    financial_report_generator.REPRESENTATION: {
+        "generator": financial_report_generator.generator,
+        "func": financial_report_generator.generate
     }
 }
