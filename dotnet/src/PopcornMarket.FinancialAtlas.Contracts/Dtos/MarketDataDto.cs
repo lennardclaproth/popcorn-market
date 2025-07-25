@@ -10,6 +10,6 @@ public sealed record MarketDataDto()
     public string Ticker { get; init; } = null!;
     [JsonPropertyName("shares_outstanding")]
     public long SharesOutstanding { get; init; }
-    [JsonPropertyName("market_snapshot")]
-    public MarketSnapshotDto MarketSnapshot { get; init; } = null!;
+    [JsonPropertyName("current")]
+    public MarketSnapshotDto Current { get; init; } = null!;
 };

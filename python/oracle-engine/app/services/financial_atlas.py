@@ -24,7 +24,6 @@ def fetch_tickers() -> list[str]:
     tickers = response_body.get("tickers", [])
     return tickers
 
-
 def fetch_company(ticker) -> Company:
     """
     Fetches a company from the financial atlas service
@@ -58,10 +57,10 @@ def fetch_market_data(ticker : str) -> MarketData:
     except ValueError as e:
         raise Exception("Invalid JSON in response") from e
 
-    market_data = response_body.get("marketSnapshot", None)
+    market_data = response_body.get("market_data", None)
 
     if market_data == None:
-        raise Exception("Snapshot is not contained in response: %s", response.text)
+        raise Exception("Market data is not contained in response: %s", response.text)
 
     return MarketData(**market_data)
 
@@ -74,13 +73,16 @@ def fetch_company_financials(ticker : str) -> FinancialStatement:
     response = requests.get(url, verify=False)
     if response.status_code != 200 and response.status_code != 404:
         raise Exception("Failed to fetch financials: %s - %s", response.status_code, response.text)
+    
+    if not response.content or response.content.decode("utf-8").strip() == "":
+        return None
 
     try:
         response_body = response.json()
-    except ValueError as e:
+    except requests.JSONDecodeError as e:
         raise Exception("Invalid JSON in response") from e
 
-    financials = response_body.get("financials", None)
+    financials = response_body.get("financial_statement", None)
 
     if financials == None:
         raise Exception("Financials are not contained in response: %s", response.text)
@@ -98,6 +100,17 @@ def create_company(company_profile : Company):
     if response.status_code != 201 and response.status_code != 404:
         raise Exception("Failed to create company: %s - %s", response.status_code, response.text)
     
+def publish_financial_statement(financial_statement: FinancialStatement):
+    """
+    Publishes a financial statement of a company
+    """
+    url = f"{FINANCIAL_STATEMENT_ENDPOINT}/{financial_statement.ticker}"
+    json = financial_statement.model_dump(mode="json")
+    response = requests.post(url, json=json, verify=False)
+
+    if response.status_code != 201 and response.status_code != 404:
+        raise Exception("Failed to publish financial statement: %s - %s", response.status_code, response.text)
+
 def publish_market_data(market_data: MarketData):
     """
     Publishes market data of a company
