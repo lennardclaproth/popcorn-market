@@ -100,7 +100,7 @@ def create_company(company_profile : Company):
     if response.status_code != 201 and response.status_code != 404:
         raise Exception("Failed to create company: %s - %s", response.status_code, response.text)
     
-def publish_financial_statement(financial_statement: FinancialStatement):
+def publish_financial_statement(financial_statement: FinancialStatement) -> str:
     """
     Publishes a financial statement of a company
     """
@@ -110,7 +110,11 @@ def publish_financial_statement(financial_statement: FinancialStatement):
 
     if response.status_code != 201 and response.status_code != 404:
         raise Exception("Failed to publish financial statement: %s - %s", response.status_code, response.text)
-
+    
+    if response.content != None:
+        data = response.json()
+        return data["id"]
+    
 def publish_market_data(market_data: MarketData):
     """
     Publishes market data of a company

@@ -21,9 +21,13 @@ class MarketSnapshot(BaseModel):
     stock_price_usd: float = Field(..., title="Stock Price in USD", alias="stock_price_USD")
     volume: int = Field(..., title="Volume of the stocks traded")
     market_cap_b: float = Field(..., title="Market Capitalization in Billions", alias="market_cap_B")
-    dividend_per_share_usd: Optional[float] = Field(default=None, title="Dividend per Share in USD")
+    dividend_per_share_usd: Optional[float] = Field(default=None, title="Dividend per Share in USD", alias="dividend_per_share_USD")
     dividend_yield_percent: Optional[float] = Field(default=None, title="Dividend Yield Percentage")
     date: datetime = Field(..., title="Snapshot Date")
+    model_config = ConfigDict(
+        populate_by_name=True,
+        extra="forbid"
+    )
 
 
 class MarketData(BaseModel):

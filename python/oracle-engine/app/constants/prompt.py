@@ -30,5 +30,6 @@ LOCALES = {
     "South America": ["es_AR", "pt_BR", "es_CL", "es_CO"],
     "Middle East": ["ar_EG", "ar_SA", "fa_IR", "he_IL"],
     "Oceania": ["en_AU", "en_NZ"],
-    "North America": ["en_US", "en_CA", "es_MX"]
+    "North America": ["en_US", "en_CA", "es_MX"],
+    "Globlal": ["en_US", "en_GB"]
 }

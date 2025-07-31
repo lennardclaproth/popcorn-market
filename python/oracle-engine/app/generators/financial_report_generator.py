@@ -61,10 +61,12 @@ from math import exp
 import random
 from sqlite3 import Date
 from models.financial_atlas import BalanceSheet, CashFlowStatement, FinancialStatement, IncomeStatement, MarketData, PeriodType, PublishFinancialStatementRequest, ReportingPeriod
-from services import financial_atlas, financial_times
+from services import financial_atlas, financial_times, graph
 from models.financial_times import ArticleBase
 from models.generator import Generator
 from constants.financial_times import COMPANY_ARTICLE_TYPE, MACRO_ARTICLE_TYPE, POLITICAL_ARTICLE_TYPE, SECTOR_ARTICLE_TYPE
+from constants.financial_atlas import SERVICE_DESC
+from models.graph import NodeMetadata, EventType
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, BertTokenizer, BertForSequenceClassification, pipeline
 from os.path import dirname
 
@@ -116,10 +118,10 @@ def generate():
     if financial_statement is None:
         market_data = financial_atlas.fetch_market_data(ticker)
         initial_financial_statement = generate_initial_financial_statement(market_data)
-        financial_statement = financial_atlas.publish_financial_statement(
+        entity_id = financial_atlas.publish_financial_statement(
             financial_statement=initial_financial_statement
         )
-        # Should still handle the graph creation
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC, event_type=EventType.FINANCIAL_STATEMENT_PUBLISHED), [])
         return
 
     sector_articles = financial_times.fetch_sector_articles(company_profile.industry)
@@ -136,7 +138,11 @@ def generate():
 
     growth_factor = determine_growth_factor(all_articles)
     financial_statement = apply_growth_factor(financial_statement, growth_factor)
-    financial_atlas.publish_financial_statement(financial_statement)
+    entity_id = financial_atlas.publish_financial_statement(financial_statement)
+
+    children = [article.id for article in all_articles]
+    graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC, event_type=EventType.FINANCIAL_STATEMENT_PUBLISHED, kvp={"growth_factor": growth_factor + 1}), children)
+
 
 def generate_initial_financial_statement(market_data: MarketData) -> PublishFinancialStatementRequest:
     snapshot = market_data.current
