@@ -59,7 +59,6 @@
 from datetime import datetime, timezone
 from math import exp
 import random
-from sqlite3 import Date
 from models.financial_atlas import BalanceSheet, CashFlowStatement, FinancialStatement, IncomeStatement, MarketData, PeriodType, PublishFinancialStatementRequest, ReportingPeriod
 from services import financial_atlas, financial_times, graph
 from models.financial_times import ArticleBase
