@@ -6,7 +6,7 @@ from constants.financial_times import SECTOR_ARTICLE_TYPE, SERVICE_DESC
 from core import article_formatter
 from models.financial_times import PoliticalArticle, MacroArticle, SectorArticle
 from models.generator import Generator
-from models.graph import NodeMetadata
+from models.graph import EventType, NodeMetadata
 from services import financial_times, graph, chat
 from constants.prompt import SECTORS
 
@@ -136,7 +136,7 @@ def generate():
         # Builds a node based on the information gathered
         logger.info("Generating Node for entity with Id: %s.", entity_id)
         children = [article.id for article in chain(political_articles, sector_articles, macro_economic_articles)]
-        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC), children)
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC, event_type=EventType.ARTICLE_PUBLISHED), children)
         logger.info("✅ Successfully inserted Node with entity_id %s.", entity_id)
 
 

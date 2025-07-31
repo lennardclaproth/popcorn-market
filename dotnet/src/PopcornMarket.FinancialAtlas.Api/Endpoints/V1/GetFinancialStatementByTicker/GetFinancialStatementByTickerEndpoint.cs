@@ -24,7 +24,10 @@ internal sealed class GetFinancialStatementByTickerEndpoint : IEndpoint
                     return result.ToProblemDetails();
                 }
 
-                Guard.Against.Null(result.Value, nameof(result.Value));
+                if (result.Value == null)
+                {
+                    return Results.Ok();
+                }
 
                 var response = new GetFinancialStatementByTickerResponse
                 {

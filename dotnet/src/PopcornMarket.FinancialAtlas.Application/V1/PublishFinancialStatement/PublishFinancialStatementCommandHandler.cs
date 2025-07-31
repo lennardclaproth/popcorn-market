@@ -11,7 +11,7 @@ using PeriodType = Popcorn.FinancialAtlas.Domain.Enums.PeriodType;
 
 namespace PopcornMarket.FinancialAtlas.Application.V1.PublishFinancialStatement;
 
-internal sealed class PublishFinancialStatementCommandHandler : ICommandHandler<PublishFinancialStatementCommand>
+internal sealed class PublishFinancialStatementCommandHandler : ICommandHandler<PublishFinancialStatementCommand, Guid>
 {
     private readonly IFinancialStatementRepository _financialStatementRepository;
     private readonly ICompanyRepository _companyRepository;
@@ -34,10 +34,10 @@ internal sealed class PublishFinancialStatementCommandHandler : ICommandHandler<
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task<Result> Handle(PublishFinancialStatementCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(PublishFinancialStatementCommand request, CancellationToken cancellationToken)
     {
         var company = await _companyRepository.GetByTicker(request.Ticker);
-        if(company == null) return Result.Failure(CompanyErrors.CompanyNotFound);
+        if(company == null) return Result<Guid>.Failure(CompanyErrors.CompanyNotFound);
 
         var financialStatement = await _financialStatementRepository.GetMostRecent(request.Ticker, cancellationToken);
         var domainInterval = _mapper.Map<PeriodType>(request.Interval);
@@ -45,7 +45,7 @@ internal sealed class PublishFinancialStatementCommandHandler : ICommandHandler<
         
         if (financialStatement != null && financialStatement.ReportingPeriod.CompareTo(requestReportingPeriod) > 0)
         {
-            return Result.Failure(FinancialStatementErrors.ReportingPeriodTooSmall);
+            return Result<Guid>.Failure(FinancialStatementErrors.ReportingPeriodTooSmall);
         }
 
         var incomeStatement = _mapper.Map<IncomeStatement>(request.IncomeStatement);
@@ -62,12 +62,12 @@ internal sealed class PublishFinancialStatementCommandHandler : ICommandHandler<
 
         if (creationResult.IsFailure)
         {
-            return creationResult;
+            return Result<Guid>.Failure(creationResult.Error);
         }
         
         Guard.Against.Null(creationResult.Value, "FinancialStatement.CreationResult");
         
         await _financialStatementRepository.Add(creationResult.Value);
-        return Result.Success();
+        return Result<Guid>.Success(creationResult.Value.Id);
     }
 }

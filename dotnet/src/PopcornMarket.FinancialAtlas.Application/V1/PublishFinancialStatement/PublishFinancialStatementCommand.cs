@@ -4,7 +4,7 @@ using PopcornMarket.SharedKernel.CQRS;
 
 namespace PopcornMarket.FinancialAtlas.Application.V1.PublishFinancialStatement;
 
-public sealed record PublishFinancialStatementCommand : ICommand
+public sealed record PublishFinancialStatementCommand : ICommand<Guid>
 {
     public string Ticker { get; init; } = null!;
     public int Year { get; init; }

@@ -3,7 +3,7 @@ from itertools import chain
 import logging
 import random
 from models.generator import Generator
-from models.graph import NodeMetadata
+from models.graph import EventType, NodeMetadata
 from models.graph import NodeMetadata
 from core import article_formatter
 from models.financial_times import PoliticalArticle, MacroArticle
@@ -104,7 +104,7 @@ def generate():
             region
         )
         article_data = chat.execute_prompt(prompt)
-        article_data = chat.execute_prompt(prompt)
+        
         article = MacroArticle(
             region=region,
             type=MACRO_ARTICLE_TYPE,
@@ -114,20 +114,12 @@ def generate():
         )
 
         entity_id = financial_times.publish_article(article)
-        entity_id = financial_times.publish_article(article)
         logger.info("Successfully published a new macro economic article.")
 
         # Builds a node based on the information gathered
         logger.info("Generating Node for entity with Id: %s.", entity_id)
         children = [article.id for article in chain(political_articles, macro_economic_articles)]
-        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC), children)
-        logger.info("✅ Successfully inserted Node with entity_id %s.", entity_id)
-
-
-        # Builds a node based on the information gathered
-        logger.info("Generating Node for entity with Id: %s.", entity_id)
-        children = [article.id for article in chain(political_articles, macro_economic_articles)]
-        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC), children)
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC, event_type=EventType.ARTICLE_PUBLISHED), children)
         logger.info("✅ Successfully inserted Node with entity_id %s.", entity_id)
 
     except Exception as e:

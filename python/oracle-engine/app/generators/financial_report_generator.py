@@ -59,11 +59,13 @@
 from datetime import datetime, timezone
 from math import exp
 import random
-from models.financial_atlas import FinancialStatement
-from services import financial_atlas, financial_times
+from models.financial_atlas import BalanceSheet, CashFlowStatement, FinancialStatement, IncomeStatement, MarketData, PeriodType, PublishFinancialStatementRequest, ReportingPeriod
+from services import financial_atlas, financial_times, graph
 from models.financial_times import ArticleBase
 from models.generator import Generator
 from constants.financial_times import COMPANY_ARTICLE_TYPE, MACRO_ARTICLE_TYPE, POLITICAL_ARTICLE_TYPE, SECTOR_ARTICLE_TYPE
+from constants.financial_atlas import SERVICE_DESC
+from models.graph import NodeMetadata, EventType
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, BertTokenizer, BertForSequenceClassification, pipeline
 from os.path import dirname
 
@@ -99,21 +101,27 @@ model = AutoModelForSequenceClassification.from_pretrained(f'{dirname(__file__)}
 finbert = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
 
-def generate() -> FinancialStatement:
+def generate():
     """
     
     """
     tickers = financial_atlas.fetch_tickers()
     if len(tickers) == 0:
         return
-    
+
     ticker = random.choice(tickers)
-
-    # Should check if the ticker already has a quarterly report of the current quarter
-    # Should check if a quarterly report already exists.
-
     company_profile = financial_atlas.fetch_company(ticker)
     financial_statement = financial_atlas.fetch_company_financials(ticker)
+    
+    # I don't know if this is nice...
+    if financial_statement is None:
+        market_data = financial_atlas.fetch_market_data(ticker)
+        initial_financial_statement = generate_initial_financial_statement(market_data)
+        entity_id = financial_atlas.publish_financial_statement(
+            financial_statement=initial_financial_statement
+        )
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC, event_type=EventType.FINANCIAL_STATEMENT_PUBLISHED), [])
+        return
 
     sector_articles = financial_times.fetch_sector_articles(company_profile.industry)
     company_articles = financial_times.fetch_company_articles(ticker)
@@ -128,9 +136,81 @@ def generate() -> FinancialStatement:
     )
 
     growth_factor = determine_growth_factor(all_articles)
+    financial_statement = apply_growth_factor(financial_statement, growth_factor)
+    entity_id = financial_atlas.publish_financial_statement(financial_statement)
 
-    
+    children = [article.id for article in all_articles]
+    graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC, event_type=EventType.FINANCIAL_STATEMENT_PUBLISHED, kvp={"growth_factor": growth_factor + 1}), children)
 
+
+def generate_initial_financial_statement(market_data: MarketData) -> PublishFinancialStatementRequest:
+    snapshot = market_data.current
+    shares = market_data.shares_outstanding
+    market_cap = snapshot.market_cap_b
+
+    # Derived values
+    revenue = market_cap * 1.5
+    cogs = revenue * 0.5
+    gross_profit = revenue - cogs
+    operating_expenses = revenue * 0.2
+    ebitda = gross_profit - operating_expenses
+    depreciation_amortization = revenue * 0.05
+    ebit = ebitda - depreciation_amortization
+    interest_expense = revenue * 0.02
+    tax_rate = 0.2
+    net_income = (ebit - interest_expense) * (1 - tax_rate)
+    eps = net_income * 1e9 / shares  # convert billions to dollars
+
+    income_statement = IncomeStatement(
+        revenue_b=revenue,
+        cogs_b=cogs,
+        gross_profit_b=gross_profit,
+        operating_expenses_b=operating_expenses,
+        ebitda_b=ebitda,
+        depreciation_amortization_b=depreciation_amortization,
+        ebit_b=ebit,
+        interest_expense_b=interest_expense,
+        tax_rate_percent=tax_rate * 100,
+        net_income_b=net_income,
+        eps_usd=round(eps, 2),
+    )
+
+    total_assets = market_cap * 1.5
+    total_liabilities = total_assets * 0.4
+    total_equity = total_assets - total_liabilities
+
+    balance_sheet = BalanceSheet(
+        total_assets_b=total_assets,
+        total_liabilities_b=total_liabilities,
+        total_equity_b=total_equity,
+        debt_to_equity_ratio=(total_liabilities / total_equity),
+    )
+
+    operating_cash_flow = net_income * 0.8
+    capex = revenue * 0.05
+    free_cash_flow = operating_cash_flow - capex
+    financing_cash_flow = market_cap * 0.01
+    investing_cash_flow = -capex
+    net_cash_flow = operating_cash_flow + financing_cash_flow + investing_cash_flow
+
+    cash_flow_statement = CashFlowStatement(
+        operating_cash_flow_b=operating_cash_flow,
+        capital_expenditures_b=capex,
+        free_cash_flow_b=free_cash_flow,
+        financing_cash_flow_b=financing_cash_flow,
+        investing_cash_flow_b=investing_cash_flow,
+        net_cash_flow_b=net_cash_flow,
+    )
+
+    return PublishFinancialStatementRequest(
+        ticker=market_data.ticker,
+        year=datetime.now(timezone.utc).year,
+        interval=PeriodType.Yearly,
+        period_number=1,
+        income_statement=income_statement,
+        balance_sheet=balance_sheet,
+        cash_flow_statement=cash_flow_statement,
+    )
     
 def determine_growth_factor(articles: list[ArticleBase]):
     scores = {
@@ -193,6 +273,88 @@ def determine_growth_factor(articles: list[ArticleBase]):
 
     return growth
 
+def apply_growth_factor(
+    previous: PublishFinancialStatementRequest,
+    growth_factor: float
+) -> PublishFinancialStatementRequest:
+    growth_factor = 1 + growth_factor
+
+    if growth_factor <= 0:
+        raise ValueError("Growth factor must result in a positive multiplier.")
+    
+    prev_income = previous.income_statement
+    prev_balance = previous.balance_sheet
+    prev_cash = previous.cash_flow_statement
+
+    # --- Income Statement ---
+    revenue = prev_income.revenue_b * growth_factor
+    cogs = revenue * 0.5
+    gross_profit = revenue - cogs
+    operating_expenses = prev_income.operating_expenses_b * growth_factor
+    ebitda = gross_profit - operating_expenses
+    depreciation_amortization = prev_income.depreciation_amortization_b * growth_factor
+    ebit = ebitda - depreciation_amortization
+    interest_expense = prev_income.interest_expense_b * growth_factor
+    tax_rate = prev_income.tax_rate_percent / 100
+    net_income = (ebit - interest_expense) * (1 - tax_rate)
+    eps = net_income * 1e9 / (net_income * 1e9 / prev_income.eps_usd)  # Keep same share count
+
+    income_statement = IncomeStatement(
+        revenue_b=revenue,
+        cogs_b=cogs,
+        gross_profit_b=gross_profit,
+        operating_expenses_b=operating_expenses,
+        ebitda_b=ebitda,
+        depreciation_amortization_b=depreciation_amortization,
+        ebit_b=ebit,
+        interest_expense_b=interest_expense,
+        tax_rate_percent=tax_rate * 100,
+        net_income_b=net_income,
+        eps_usd=round(eps, 2),
+    )
+
+    # --- Balance Sheet ---
+    total_assets = prev_balance.total_assets_b * (1 + (growth_factor - 1) * 0.5)
+    total_liabilities = total_assets * 0.4  # keep ratio constant
+    total_equity = total_assets - total_liabilities
+
+    balance_sheet = BalanceSheet(
+        total_assets_b=total_assets,
+        total_liabilities_b=total_liabilities,
+        total_equity_b=total_equity,
+        debt_to_equity_ratio=(total_liabilities / total_equity),
+    )
+
+    # --- Cash Flow Statement ---
+    operating_cash_flow = net_income * 0.8
+    capex = revenue * 0.05
+    free_cash_flow = operating_cash_flow - capex
+    financing_cash_flow = prev_cash.financing_cash_flow_b * growth_factor
+    investing_cash_flow = -capex
+    net_cash_flow = operating_cash_flow + financing_cash_flow + investing_cash_flow
+
+    cash_flow_statement = CashFlowStatement(
+        operating_cash_flow_b=operating_cash_flow,
+        capital_expenditures_b=capex,
+        free_cash_flow_b=free_cash_flow,
+        financing_cash_flow_b=financing_cash_flow,
+        investing_cash_flow_b=investing_cash_flow,
+        net_cash_flow_b=net_cash_flow,
+    )
+
+    # --- Reporting Period ---
+    prev_period = ReportingPeriod.from_string(previous.period)
+    next_period = ReportingPeriod.next_period(prev_period)
+
+    return PublishFinancialStatementRequest(
+        ticker=previous.ticker,
+        year=next_period.year,
+        interval=PeriodType.Quarterly,
+        period_number=next_period.period_number,
+        income_statement=income_statement,
+        balance_sheet=balance_sheet,
+        cash_flow_statement=cash_flow_statement,
+    )
 
 def analyze_sentiment(article: ArticleBase) -> float:
     text = f"{article.headline}. {article.content}"

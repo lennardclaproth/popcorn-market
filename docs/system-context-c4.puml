@@ -1,0 +1,40 @@
+!include <C4/C4_Context>
+
+@startuml C4_Elements
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "user", "Optional Description")
+
+System(oracleEngine, "oracle-engine", "Optional Description")
+System(analistEngine, "analist-engine", "Optional Description")
+System(traderEngine, "trader-engine", "Optional Description")
+System(financialAtlas, "financial-atlas", "Optional Description")
+System(financialTimes, "financial-times", "Optional Description")
+System(coinjurerBroker, "coinjurer-broker", "Optional Description")
+System(babylonExchange, "babylon-exchange", "Optional Description")
+System(templarCustodian, "templar-custodian", "Optional Description")
+
+
+
+Rel(user, coinjurerBroker, "Uses", "HTTP/REST")
+Rel(oracleEngine, financialAtlas, "Uses", "HTTP/REST")
+Rel(oracleEngine, financialTimes, "Uses", "HTTP/REST")
+
+Rel(financialAtlas, financialTimes, "Publishes events used by", "Event bus (Kafka/RabbitMQ)")
+Rel(financialAtlas, babylonExchange, "Publishes IPO event", "Event bus")
+Rel(financialAtlas, coinjurerBroker, "Publishes IPO event", "Event bus")
+Rel(financialAtlas, templarCustodian, "Publishes IPO event", "Event bus")
+
+Rel(traderEngine, coinjurerBroker, "Uses", "HTTP/REST")
+
+Rel(coinjurerBroker, financialAtlas, "Uses", "HTTP/REST")
+Rel(coinjurerBroker, financialTimes, "Uses", "HTTP/REST")
+Rel(coinjurerBroker, babylonExchange, "Uses", "HTTP/REST")
+
+Rel(analistEngine, financialTimes, "Uses", "HTTP/REST")
+Rel(analistEngine, financialAtlas, "Uses", "HTTP/REST")
+
+Rel(babylonExchange, financialAtlas, "Publishes trade executed event", "Event bus (Kafka/RabbitMQ)")
+Rel(babylonExchange, templarCustodian, "Publishes trade executed event", "Event bus (Kafka/RabbitMQ)")
+
+@enduml

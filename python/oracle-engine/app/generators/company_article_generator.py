@@ -4,9 +4,9 @@ import random
 from constants.financial_times import COMPANY_ARTICLE_TYPE, SERVICE_DESC
 from core import article_formatter
 from models.financial_times import CompanyArticle, SectorArticle, PoliticalArticle, MacroArticle, ArticleBase
-from models.financial_atlas import Company, MarketSnapshot
+from models.financial_atlas import Company, MarketData, MarketSnapshot
 from models.generator import Generator
-from models.graph import NodeMetadata
+from models.graph import EventType, NodeMetadata
 from services import financial_times, financial_atlas, graph, chat
 logger = logging.getLogger("worker_app")
 
@@ -33,7 +33,7 @@ COMPANY_ANGLES = [
 
 def __build_prompt(
     company: Company,
-    snapshot: MarketSnapshot,
+    snapshot: MarketData,
     company_articles: list[CompanyArticle],
     sector_articles: list[SectorArticle],
     macro_trends: list[MacroArticle],
@@ -63,8 +63,8 @@ def __build_prompt(
 - Industry: {company.industry}
 - Description: {company.description}
 - Region: {company.region}
-- Stock price: {snapshot.stock_price_usd}
-- Market cap B: {snapshot.market_cap_b}
+- Stock price: {snapshot.current.stock_price_usd}
+- Market cap B: {snapshot.current.market_cap_b}
 
 📰 **Recent Company News**
 {company_news}
@@ -154,7 +154,7 @@ def generate():
         # Builds a node based on the information gathered
         logger.info("Generating Node for entity with Id: %s.", entity_id)
         children = [article.id for article in chain(political_articles, sector_articles, macro_articles, company_articles, political_articles)]
-        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC), children)
+        graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC, event_type=EventType.ARTICLE_PUBLISHED), children)
         logger.info("✅ Successfully inserted Node with entity_id %s.", entity_id)
 
     except Exception as e:
