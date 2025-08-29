@@ -12,8 +12,10 @@ public class Order : Entity
     public OrderBook OrderBook { get; private set; } = null!;
     public string StockSymbol { get; private set; } = null!;
     public string TraderId { get; private set; } = null!;
-    public decimal Price { get; private set; }
+    public decimal Price { get; private set; }  
+    public decimal ExecutionPrice { get; private set; }
     public int Quantity { get; private set; }
+    public int RemainingQuantity { get; private set; }
     public DateTime PlacedTimestamp { get; private set; }
     public DateTime? ExecutedTimestamp { get; private set; }
     public OrderStatus Status { get; private set; }
@@ -58,24 +60,24 @@ public class Order : Entity
         return new Order(stockSymbol, traderId, price, quantity, orderType , orderBook, orderSide);
     }
     
-    public void UpdateQuantity(int newQuantity)
-    {
-        if (newQuantity < 0) throw new ArgumentException("Quantity cannot be negative.");
-        Quantity = newQuantity;
-    }
-    
-    public void FulfillOrder()
+    public void FulfillOrder(decimal price)
     {
         ExecutedTimestamp = DateTime.UtcNow;
+        ExecutionPrice = price;
         Status = OrderStatus.Fulfilled;
     }
 
-    public void PartiallyFulfillOrder(int newQuantity)
+    public void PartiallyFulfillOrder(int newQuantity, decimal price)
     {
-        if (newQuantity <= 0) FulfillOrder();
+        if (newQuantity <= 0)
+        {
+            // calculate price based on execution;
+            FulfillOrder(price);
+        }
         else
         {
-            Quantity = newQuantity;
+            // calculate new price based on 
+            RemainingQuantity = newQuantity;
             Status = OrderStatus.PartiallyFilled;
         }
     }

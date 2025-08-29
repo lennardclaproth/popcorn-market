@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using PopcornMarket.BabylonExchange.Domain.Enums;
+using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.BabylonExchange.Domain.Events;
 using PopcornMarket.BabylonExchange.Domain.Helpers;
 using PopcornMarket.SharedKernel.Primitives;
@@ -15,13 +17,16 @@ public sealed class OrderBook : AggregateRoot
     public string Ticker { get; private set; } = null!;
     private readonly SortedSet<Order> _buyOrders = new();
     private readonly SortedSet<Order> _sellOrders = new();
-    public decimal? CurrentPrice { get; private set; }
-
-    public IReadOnlyCollection<Order> BuyOrders => _buyOrders;
-    public IReadOnlyCollection<Order> SellOrders => _sellOrders;
-    
+    private readonly List<Order> _orders = new();
     public Listing Listing { get; private set; } = null!;
     public Guid ListingId { get; private set; }
+    public decimal? CurrentPrice { get; private set; }
+
+    [NotMapped]
+    public IReadOnlyCollection<Order> BuyOrders => _buyOrders;
+    [NotMapped]
+    public IReadOnlyCollection<Order> SellOrders => _sellOrders;
+    public IReadOnlyCollection<Order> Orders => _orders;
     
     private OrderBook(string ticker)
     {
@@ -39,15 +44,7 @@ public sealed class OrderBook : AggregateRoot
 
     public void AddOrder(Order order)
     {
-        switch (order.OrderSide)
-        {
-            case OrderSide.Buy:
-                _buyOrders.Add(order);
-                break;
-            case OrderSide.Sell:
-                _sellOrders.Add(order);
-                break;
-        }
+        _orders.Add(order);
 
         var orderPlacedEvent = new OrderPlaced
         {
@@ -61,9 +58,23 @@ public sealed class OrderBook : AggregateRoot
         RaiseDomainEvent(orderPlacedEvent);
     }
 
+#pragma warning disable CA1822
+#pragma warning disable IDE0060
     public void MatchOrder(Order order)
+#pragma warning restore IDE0060
+#pragma warning restore CA1822
     {
-        throw new NotImplementedException();
+        return;
+    }
+
+    public Result SetReferencePrice(decimal referencePrice)
+    {
+        if (CurrentPrice != null)
+        {
+            return Result.Failure(OrderBookErrors.OrderBookReferencePriceSet);
+        }
+        CurrentPrice = referencePrice;
+        return Result.Success();
     }
     
     public Order? GetBestBuyOrder() => _buyOrders.LastOrDefault();

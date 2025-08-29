@@ -69,7 +69,7 @@ public sealed class Listing : AggregateRoot
 
         if (OrderBook.CurrentPrice == null)
         {
-            return Result.Failure(OrderBookErrors.OrderBookNoReferencePriceSet);
+            return Result.Failure(OrderBookErrors.OrderBookReferenceNotPriceSet);
         }
         
         Status = ListingStatus.Active;

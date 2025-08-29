@@ -1,6 +1,7 @@
 ﻿using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.SharedKernel.CQRS;
+using PopcornMarket.SharedKernel.Exceptions;
 using PopcornMarket.SharedKernel.ResultPattern;
 
 namespace PopcornMarket.BabylonExchange.Application.V1.ActivateListing;
@@ -18,7 +19,16 @@ public class ActivateListingCommandHandler : ICommandHandler<ActivateListingComm
     {
         var listing = await _listingRepository.GetById(request.Id);
         if (listing == null) return Result.Failure(ListingErrors.ListingWithIdNotFound);
+        
+        if (listing.OrderBook == null) throw new RequiredPropertyIsNullException(nameof(listing.OrderBook));
+        
+        var orderBookSetReferencePriceResult = listing.OrderBook.SetReferencePrice(request.ReferencePrice);
 
+        if (orderBookSetReferencePriceResult.IsFailure)
+        {
+            return orderBookSetReferencePriceResult;
+        }
+        
         var listingActivationResult = listing.Activate();
 
         if (listingActivationResult.IsFailure)

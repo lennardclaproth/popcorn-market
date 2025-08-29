@@ -1,5 +1,7 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Persistence.Constants;
 
 namespace PopcornMarket.BabylonExchange.Persistence.Configurations;
@@ -19,15 +21,14 @@ internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<BabylonE
             .IsRequired()
             .HasMaxLength(10);
         
-        builder.HasMany(ob => ob.BuyOrders)
+        builder.HasMany(ob => ob.Orders)
             .WithOne(o => o.OrderBook)
             .HasForeignKey(o => o.OrderBookId)
             .OnDelete(DeleteBehavior.Cascade);
-        
-        builder.HasMany(ob => ob.SellOrders)
-            .WithOne(o => o.OrderBook)
-            .HasForeignKey(o => o.OrderBookId)
-            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(ob => ob.Listing)
+            .WithOne(l => l.OrderBook)
+            .HasForeignKey<OrderBook>(ob => ob.ListingId);
         
         builder.HasIndex(ob => ob.Ticker);
     }

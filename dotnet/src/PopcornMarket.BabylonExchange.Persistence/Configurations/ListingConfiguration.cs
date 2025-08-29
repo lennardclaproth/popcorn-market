@@ -11,19 +11,22 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
     {
         builder.ToTable(name: nameof(Listing), schema: SchemaConstants.Schema);
 
-        builder.HasKey(c => c.Id);
+        builder.HasKey(l => l.Id);
 
-        builder.Property(c => c.Id)
+        builder.Property(l => l.Id)
             .HasColumnType("UUID");
-
-        builder.Property(c  => c.Ticker)
+        
+        builder.Property(l  => l.Ticker)
             .IsRequired()
             .HasMaxLength(10);
 
-        builder.Property(c => c.Name)
+        builder.HasOne(l => l.OrderBook)
+            .WithOne(o => o.Listing); 
+        
+        builder.Property(l => l.Name)
             .HasMaxLength(255);
 
-        builder.Property(c => c.Isin)
+        builder.Property(l => l.Isin)
             .IsRequired()
             .HasMaxLength(12);
     }

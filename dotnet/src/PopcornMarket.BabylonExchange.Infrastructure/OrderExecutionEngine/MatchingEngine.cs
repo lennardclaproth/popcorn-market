@@ -1,6 +1,7 @@
 ﻿using System.Threading.Channels;
 using Ardalis.GuardClauses;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Entities;
@@ -11,15 +12,15 @@ namespace PopcornMarket.BabylonExchange.Infrastructure.OrderExecutionEngine;
 public class MatchingEngine : BackgroundService
 {
     private readonly Channel<Order> _channel;
-    private readonly IOrderBookRepository _orderBookRepository;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly Dictionary<string, CachedOrderBook> _loadedOrderBooks = new();
     private readonly IMediator _mediator;
 
-    public MatchingEngine(Channel<Order> channel, IOrderBookRepository orderBookRepository, IMediator mediator)
+    public MatchingEngine(Channel<Order> channel, IMediator mediator, IServiceScopeFactory scopeFactory)
     {
         _channel = channel;
-        _orderBookRepository = orderBookRepository;
         _mediator = mediator;
+        _scopeFactory = scopeFactory;
     }
 
     /// <summary>
@@ -35,9 +36,12 @@ public class MatchingEngine : BackgroundService
     {
         await foreach (var order in _channel.Reader.ReadAllAsync(stoppingToken))
         {
+            using var scope = _scopeFactory.CreateScope();
+            var repo = scope.ServiceProvider.GetRequiredService<IOrderBookRepository>();
+            
             if (!_loadedOrderBooks.ContainsKey(order.StockSymbol))
             {
-                var book = await _orderBookRepository.GetByTickerIncludingPendingOrders(order.StockSymbol);
+                var book = await repo.GetByTickerIncludingPendingOrders(order.StockSymbol);
                 Guard.Against.Null(book, nameof(book));
                 _loadedOrderBooks.Add(book.Ticker, new CachedOrderBook(book));
             }

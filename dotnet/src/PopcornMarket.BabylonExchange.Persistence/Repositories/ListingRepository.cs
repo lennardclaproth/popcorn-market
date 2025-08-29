@@ -16,25 +16,30 @@ internal sealed class ListingRepository : IListingRepository
 
     public async Task AddEntity(Listing entity)
     {
-        await _context.Companies.AddAsync(entity);
+        await _context.Listings.AddAsync(entity);
         await _context.SaveChangesAsync();
     }
 
-    public Task UpdateEntity(Listing entity)
+    public async Task UpdateEntity(Listing entity)
     {
-        throw new NotImplementedException();
+        _context.Listings.Update(entity);
+        await _context.SaveChangesAsync();
     }
 
-    public Task<Listing?> GetById(Guid id)
+    public async Task<Listing?> GetById(Guid id)
     {
-        throw new NotImplementedException();
+        return await _context.Listings.Where(l => l.Id == id)
+            .Include(l => l.OrderBook)
+            .FirstOrDefaultAsync();
     }
     
     public async Task<Listing?> GetByTicker(string ticker)
     {
-        var company = await _context.Companies
+        var listing = await _context.Listings
+            .Where(l => l.Ticker == ticker)
+            .Include(l => l.OrderBook)
             .FirstOrDefaultAsync(c => c.Ticker == ticker);
         
-        return company;
+        return listing;
     }
 }

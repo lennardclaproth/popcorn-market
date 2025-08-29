@@ -33,7 +33,7 @@ public static class InfrastructureExtensions
 
     private static void SetupOrderExecutionEngine(IServiceCollection services)
     {
-        services.AddSingleton(Channel.CreateUnbounded<Order>());
+        services.AddSingleton(Channel.CreateUnbounded<Domain.Entities.Order>());
         services.AddSingleton<IOrderQueue, InMemoryOrderQueue>();
         services.AddHostedService<MatchingEngine>();
     }
