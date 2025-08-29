@@ -2,9 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{B206B83C-9619-4255-8855-9EB57DB53658}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OrderBook", "OrderBook", "{3C5E0D1F-4C1B-44A9-B409-4A2AA96A759E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BabylonExchange", "BabylonExchange", "{3C5E0D1F-4C1B-44A9-B409-4A2AA96A759E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Domain", "PopcornMarket.OrderBook.Domain\PopcornMarket.OrderBook.Domain.csproj", "{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.BabylonExchange.Domain", "PopcornMarket.BabylonExchange.Domain\PopcornMarket.BabylonExchange.Domain.csproj", "{C1F82E83-AC26-4102-AD61-9A4BAAFE60AD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{1CBDB39A-5273-4DB6-A52E-C0162C149D8D}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,14 +13,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Infrastructure", "PopcornMarket.OrderBook.Infrastructure\PopcornMarket.OrderBook.Infrastructure.csproj", "{C838E498-A370-45CF-8323-608ACC9D80DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.BabylonExchange.Infrastructure", "PopcornMarket.BabylonExchange.Infrastructure\PopcornMarket.BabylonExchange.Infrastructure.csproj", "{C838E498-A370-45CF-8323-608ACC9D80DB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Iac", "Iac", "{C98694BA-B4E6-4DAA-A9B6-D9207EB9E570}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\iac\docker-compose.yml = ..\..\iac\docker-compose.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Persistence", "PopcornMarket.OrderBook.Persistence\PopcornMarket.OrderBook.Persistence.csproj", "{5910B0B1-76C4-4003-A3B8-8F7276065BD4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.BabylonExchange.Persistence", "PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj", "{5910B0B1-76C4-4003-A3B8-8F7276065BD4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FinancialAtlas", "FinancialAtlas", "{E2DFB3EA-B59C-43AF-B08B-2421F46344E3}"
 EndProject
@@ -54,7 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contracts", "Contracts", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialAtlas.Contracts", "PopcornMarket.FinancialAtlas.Contracts\PopcornMarket.FinancialAtlas.Contracts.csproj", "{D298EE24-013B-4D1F-B71E-5A9A6CD9B156}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Application", "PopcornMarket.OrderBook.Application\PopcornMarket.OrderBook.Application.csproj", "{77BDFA23-E81E-4AD2-9700-47C54A24A092}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.BabylonExchange.Application", "PopcornMarket.BabylonExchange.Application\PopcornMarket.BabylonExchange.Application.csproj", "{77BDFA23-E81E-4AD2-9700-47C54A24A092}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialAtlas.Infrastructure", "PopcornMarket.FinancialAtlas.Infrastructure\PopcornMarket.FinancialAtlas.Infrastructure.csproj", "{BD41E4BD-73ED-4800-9D98-EDC5EE411896}"
 EndProject
@@ -62,7 +62,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.Messaging.Con
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.FinancialTimes.Infrastructure", "PopcornMarket.FinancialTimes.Infrastructure\PopcornMarket.FinancialTimes.Infrastructure.csproj", "{E78499CD-AD74-4AD8-AC8E-4C6A3942CF1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.OrderBook.Api", "PopcornMarket.OrderBook.Api\PopcornMarket.OrderBook.Api.csproj", "{430DABA2-51AC-474F-8DA0-68536C55D8FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.BabylonExchange.Api", "PopcornMarket.BabylonExchange.Api\PopcornMarket.BabylonExchange.Api.csproj", "{430DABA2-51AC-474F-8DA0-68536C55D8FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
