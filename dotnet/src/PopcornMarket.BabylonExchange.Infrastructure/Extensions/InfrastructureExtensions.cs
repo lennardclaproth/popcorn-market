@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Confluent.Kafka.Extensions.OpenTelemetry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Infrastructure.Caching;
 using PopcornMarket.BabylonExchange.Infrastructure.Messaging.Consumers;
 using PopcornMarket.BabylonExchange.Infrastructure.Messaging.Services;
+using PopcornMarket.BabylonExchange.Infrastructure.OrderExecutionEngine;
 using PopcornMarket.SharedKernel.Messaging;
 using StackExchange.Redis;
 
@@ -22,10 +24,18 @@ public static class InfrastructureExtensions
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConn!));
         services.AddSingleton<ICacheService, RedisCacheService>();
         
+        SetupOrderExecutionEngine(services);
         SetupKafkaMessaging(services);
         AddObservability(services, configuration);
         
         return services;
+    }
+
+    private static void SetupOrderExecutionEngine(IServiceCollection services)
+    {
+        services.AddSingleton(Channel.CreateUnbounded<Order>());
+        services.AddSingleton<IOrderQueue, InMemoryOrderQueue>();
+        services.AddHostedService<MatchingEngine>();
     }
     
     private static void SetupKafkaMessaging(this IServiceCollection services)

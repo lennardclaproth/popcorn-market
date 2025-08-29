@@ -17,10 +17,18 @@ public class Order : Entity
     public DateTime PlacedTimestamp { get; private set; }
     public DateTime? ExecutedTimestamp { get; private set; }
     public OrderStatus Status { get; private set; }
-    
+    public OrderType OrderType { get; private set; }
+    public OrderSide OrderSide { get; private set; }
+
     protected Order() { } // Required for EF Core
 
-    protected Order(string stockSymbol, string traderId, decimal price, int quantity, OrderBook orderBook) : base(Guid.NewGuid())
+    protected Order(string stockSymbol,
+        string traderId,
+        decimal price,
+        int quantity,
+        OrderType orderType,
+        OrderBook orderBook,
+        OrderSide orderSide) : base(Guid.NewGuid())
     {
         OrderBook = orderBook;
         OrderBookId = orderBook.Id;
@@ -29,7 +37,25 @@ public class Order : Entity
         Price = price;
         Quantity = quantity;
         PlacedTimestamp = DateTime.UtcNow;
+        OrderType = orderType;
         Status = OrderStatus.Pending;
+        OrderSide = orderSide;
+    }
+
+    public static Order Create(
+        string stockSymbol,
+        string traderId,
+        decimal price,
+        int quantity,
+        OrderType orderType,
+        OrderBook orderBook,
+        OrderSide orderSide)
+    {
+        if (string.IsNullOrWhiteSpace(stockSymbol)) throw new ArgumentException("Stock symbol is required.");
+        if (quantity <= 0) throw new ArgumentException("Quantity must be greater than zero.");
+        if (price <= 0) throw new ArgumentException("Price must be greater than zero.");
+
+        return new Order(stockSymbol, traderId, price, quantity, orderType , orderBook, orderSide);
     }
     
     public void UpdateQuantity(int newQuantity)

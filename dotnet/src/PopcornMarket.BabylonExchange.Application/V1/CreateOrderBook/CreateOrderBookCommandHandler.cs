@@ -10,18 +10,18 @@ namespace PopcornMarket.BabylonExchange.Application.V1.CreateOrderBook;
 internal sealed class CreateOrderBookCommandHandler : ICommandHandler<CreateOrderBookCommand>
 {
     private readonly IOrderBookRepository _orderBookRepository;
-    private readonly ICompanyRepository _companyRepository;
+    private readonly IListingRepository _listingRepository;
 
-    public CreateOrderBookCommandHandler(IOrderBookRepository orderBookRepository, ICompanyRepository companyRepository)
+    public CreateOrderBookCommandHandler(IOrderBookRepository orderBookRepository, IListingRepository listingRepository)
     {
         _orderBookRepository = orderBookRepository;
-        _companyRepository = companyRepository;
+        _listingRepository = listingRepository;
     }
 
     public async Task<Result> Handle(CreateOrderBookCommand request, CancellationToken cancellationToken)
     {
-        var company = await _companyRepository.GetByTicker(request.Ticker);
-        if (company == null) return Result.Failure(CompanyErrors.CompanyNotFound);
+        var company = await _listingRepository.GetByTicker(request.Ticker);
+        if (company == null) return Result.Failure(ListingErrors.ListingNotFound);
         
         var orderBook = await _orderBookRepository.GetByTicker(request.Ticker);
         if (orderBook != null) return Result.Failure(OrderBookErrors.OrderBookAlreadyExists);

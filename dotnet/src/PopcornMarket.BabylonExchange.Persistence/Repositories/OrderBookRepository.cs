@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
+using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Persistence.Context;
 
 namespace PopcornMarket.BabylonExchange.Persistence.Repositories;
@@ -35,5 +36,10 @@ internal sealed class OrderBookRepository : IOrderBookRepository
             .FirstOrDefaultAsync(ob => ob.Ticker == ticker);
         
         return orderBook;
+    }
+
+    public Task<OrderBook?> GetByTickerIncludingPendingOrders(string ticker)
+    {
+        throw new NotImplementedException();
     }
 }

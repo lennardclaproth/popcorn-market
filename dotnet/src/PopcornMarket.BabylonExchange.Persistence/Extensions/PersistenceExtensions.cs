@@ -20,9 +20,8 @@ public static class PersistenceExtensions
 
     private static void SetupRepositories(IServiceCollection services)
     {
-        services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IListingRepository, ListingRepository>();
         services.AddScoped<IOrderBookRepository, OrderBookRepository>();
-        services.AddScoped<IBuyOrderRepository, BuyOrderRepository>();
-        services.AddScoped<ISellOrderRepository, SellOrderRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
     }
 }
