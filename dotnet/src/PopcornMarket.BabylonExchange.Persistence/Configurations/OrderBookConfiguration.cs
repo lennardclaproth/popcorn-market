@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PopcornMarket.BabylonExchange.Domain.Entities;
@@ -6,11 +5,11 @@ using PopcornMarket.BabylonExchange.Persistence.Constants;
 
 namespace PopcornMarket.BabylonExchange.Persistence.Configurations;
 
-internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<BabylonExchange.Domain.Entities.OrderBook>
+internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<OrderBook>
 {
-    public void Configure(EntityTypeBuilder<BabylonExchange.Domain.Entities.OrderBook> builder)
+    public void Configure(EntityTypeBuilder<OrderBook> builder)
     {
-        builder.ToTable(name: nameof(BabylonExchange.Domain.Entities.OrderBook), schema: SchemaConstants.Schema);
+        builder.ToTable(name: nameof(OrderBook), schema: SchemaConstants.Schema);
 
         builder.HasKey(ob => ob.Id);
 
@@ -20,6 +19,10 @@ internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<BabylonE
         builder.Property(ob => ob.Ticker)
             .IsRequired()
             .HasMaxLength(10);
+        
+        builder.Property(ob => ob.CurrentPrice)
+            .HasPrecision(18, 6)
+            .HasColumnType("NUMERIC(18,6)");
         
         builder.HasMany(ob => ob.Orders)
             .WithOne(o => o.OrderBook)

@@ -14,12 +14,10 @@ public class MatchingEngine : BackgroundService
     private readonly Channel<Order> _channel;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly Dictionary<string, CachedOrderBook> _loadedOrderBooks = new();
-    private readonly IMediator _mediator;
 
-    public MatchingEngine(Channel<Order> channel, IMediator mediator, IServiceScopeFactory scopeFactory)
+    public MatchingEngine(Channel<Order> channel, IServiceScopeFactory scopeFactory)
     {
         _channel = channel;
-        _mediator = mediator;
         _scopeFactory = scopeFactory;
     }
 
@@ -38,7 +36,7 @@ public class MatchingEngine : BackgroundService
         {
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IOrderBookRepository>();
-            
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             if (!_loadedOrderBooks.ContainsKey(order.StockSymbol))
             {
                 var book = await repo.GetByTickerIncludingPendingOrders(order.StockSymbol);
@@ -48,7 +46,7 @@ public class MatchingEngine : BackgroundService
             var orderBookCache = _loadedOrderBooks[order.StockSymbol];
             orderBookCache.LastAccessed = DateTimeOffset.Now;
             orderBookCache.OrderBook.MatchOrder(order);
-            await _mediator.DispatchDomainEventsAsync(orderBookCache.OrderBook, stoppingToken);
+            await mediator.DispatchDomainEventsAsync(orderBookCache.OrderBook, stoppingToken);
         }
     }
 }

@@ -43,18 +43,24 @@ internal sealed class OrderBookRepository : IOrderBookRepository
     public async Task<OrderBook?> GetByTickerIncludingPendingOrders(string ticker)
     {
         var buyOrders = await _context.Orders
-            .Where(o => o.StockSymbol == ticker && o.OrderSide == OrderSide.Buy && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled))
-            .OrderByDescending(o => o.Price)
-            .ThenBy(o => o.PlacedTimestamp)
+            .Where(o => o.StockSymbol == ticker 
+                        && o.OrderSide == OrderSide.Buy 
+                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled))
+            .OrderBy(o => o.OrderType == OrderType.MarketOrder ? 0 : 1) // market orders first
+            .ThenByDescending(o => o.Price)                             // higher price first for limits
+            .ThenBy(o => o.PlacedTimestamp)                             // FIFO
             .ToListAsync();
-
+        
         var sellOrders = await _context.Orders
-            .Where(o => o.StockSymbol == ticker && o.OrderSide == OrderSide.Sell && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled))
-            .OrderBy(o => o.Price)
-            .ThenBy(o => o.PlacedTimestamp)
+            .Where(o => o.StockSymbol == ticker 
+                        && o.OrderSide == OrderSide.Sell 
+                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled))
+            .OrderBy(o => o.OrderType == OrderType.MarketOrder ? 0 : 1) // market orders first
+            .ThenBy(o => o.Price)                                       // lower price first for limits
+            .ThenBy(o => o.PlacedTimestamp)                             // FIFO
             .ToListAsync();
 
-        var book = _context.OrderBooks.First(ob => ob.Ticker == ticker);
+        var book = await _context.OrderBooks.FirstAsync(ob => ob.Ticker == ticker);
 
         foreach (var o in buyOrders) book.AddOrder(o);
         foreach (var o in sellOrders) book.AddOrder(o);

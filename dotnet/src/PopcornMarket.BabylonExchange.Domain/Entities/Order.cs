@@ -1,3 +1,4 @@
+using System;
 using PopcornMarket.BabylonExchange.Domain.Enums;
 using PopcornMarket.SharedKernel.Primitives;
 
@@ -38,6 +39,7 @@ public class Order : Entity
         TraderId = traderId;
         Price = price;
         Quantity = quantity;
+        RemainingQuantity = quantity;
         PlacedTimestamp = DateTime.UtcNow;
         OrderType = orderType;
         Status = OrderStatus.Pending;
@@ -55,7 +57,8 @@ public class Order : Entity
     {
         if (string.IsNullOrWhiteSpace(stockSymbol)) throw new ArgumentException("Stock symbol is required.");
         if (quantity <= 0) throw new ArgumentException("Quantity must be greater than zero.");
-        if (price <= 0) throw new ArgumentException("Price must be greater than zero.");
+        if (price <= 0 && orderType == OrderType.LimitOrder) throw new ArgumentException("Price must be greater than zero on a limit order.");
+        if (price != 0 && orderType == OrderType.MarketOrder) throw new ArgumentException("Price must be zero on a market order.");
 
         return new Order(stockSymbol, traderId, price, quantity, orderType , orderBook, orderSide);
     }

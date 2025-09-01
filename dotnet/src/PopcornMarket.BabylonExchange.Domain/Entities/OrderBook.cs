@@ -27,19 +27,21 @@ public sealed class OrderBook : AggregateRoot
     [NotMapped]
     public IReadOnlyCollection<Order> SellOrders => _sellOrders;
     public IReadOnlyCollection<Order> Orders => _orders;
-    
-    private OrderBook(string ticker)
+    private OrderBook() { }
+    private OrderBook(string ticker, Listing listing)
     {
         Ticker = ticker;
+        ListingId = listing.Id;
+        
         _buyOrders = new SortedSet<Order>(new OrderComparer(true));
         _sellOrders = new SortedSet<Order>(new OrderComparer(false));
     }
 
-    public static Result<OrderBook> Create(string ticker)
+    public static Result<OrderBook> Create(Listing listing, string ticker)
     {
         if(string.IsNullOrWhiteSpace(ticker)) throw new ArgumentNullException(nameof(ticker));
-
-        return Result<OrderBook>.Success(new OrderBook(ticker));
+        
+        return Result<OrderBook>.Success(new OrderBook(ticker, listing));
     }
 
     public void AddOrder(Order order)
@@ -58,15 +60,77 @@ public sealed class OrderBook : AggregateRoot
         RaiseDomainEvent(orderPlacedEvent);
     }
 
-#pragma warning disable CA1822
-#pragma warning disable IDE0060
     public void MatchOrder(Order order)
-#pragma warning restore IDE0060
-#pragma warning restore CA1822
     {
-        return;
+        // Decide which book to match against
+        var oppositeOrders = order.OrderSide == OrderSide.Buy 
+            ? _sellOrders 
+            : _buyOrders;
+
+        while (order.RemainingQuantity > 0 && oppositeOrders.Count != 0)
+        {
+            var bestMatch = order.OrderSide == OrderSide.Buy
+                ? GetBestSellOrder()
+                : GetBestBuyOrder();
+
+            if (bestMatch == null)
+                // Should we rest the order here?
+                break;
+
+            // Price check (skip if limit price not satisfied)
+            if (!IsPriceMatch(order, bestMatch))
+            {
+                // Limit order cannot match, so it rests
+                if (order.OrderType == OrderType.LimitOrder)
+                {
+                    // Should use the RestOrder function
+                    AddOrder(order);
+                }
+                break;
+            }
+
+            // Execute trade
+            var tradeQuantity = Math.Min(order.RemainingQuantity, bestMatch.RemainingQuantity);
+            var tradePrice = bestMatch.Price; // Matching engine rule: execution at resting order price
+
+            order.PartiallyFulfillOrder(order.RemainingQuantity - tradeQuantity, tradePrice);
+            bestMatch.PartiallyFulfillOrder(bestMatch.RemainingQuantity - tradeQuantity, tradePrice);
+            
+            // Determine what events to publish
+            if (order.Status == OrderStatus.Fulfilled)
+                RaiseDomainEvent(new OrderFulfilled(order.Id, tradePrice, tradeQuantity));
+            else
+                RaiseDomainEvent(new OrderPartiallyFilled(order.Id, order.RemainingQuantity));
+
+            if (bestMatch.Status == OrderStatus.Fulfilled)
+                RaiseDomainEvent(new OrderFulfilled(bestMatch.Id, tradePrice, tradeQuantity));
+            else
+                RaiseDomainEvent(new OrderPartiallyFilled(bestMatch.Id, bestMatch.RemainingQuantity));
+
+            RaiseDomainEvent(new TradeExecuted(order.Id, bestMatch.Id, tradePrice, tradeQuantity));
+
+            if (bestMatch.Status == OrderStatus.Fulfilled)
+                oppositeOrders.Remove(bestMatch);
+        }
+
+        // If incoming limit order still has remaining quantity → rest in the book
+        if (order is { RemainingQuantity: > 0, OrderType: OrderType.LimitOrder })
+        {
+            // Should become rest function
+            AddOrder(order);
+        }
     }
 
+    private static bool IsPriceMatch(Order incoming, Order resting)
+    {
+        return incoming.OrderSide switch
+        {
+            OrderSide.Buy => incoming.OrderType == OrderType.MarketOrder || incoming.Price >= resting.Price,
+            OrderSide.Sell => incoming.OrderType == OrderType.MarketOrder || incoming.Price <= resting.Price,
+            _ => false
+        };
+    }
+    
     public Result SetReferencePrice(decimal referencePrice)
     {
         if (CurrentPrice != null)

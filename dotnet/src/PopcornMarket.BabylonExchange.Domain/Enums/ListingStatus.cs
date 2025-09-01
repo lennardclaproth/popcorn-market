@@ -3,7 +3,7 @@
 public enum ListingStatus
 {
     Requested = 1,
-    Pending = 2,
+    InReview = 2,
     Accepted = 3,
     Rejected = 4,
     Active = 5,

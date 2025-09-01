@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PopcornMarket.BabylonExchange.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class PopcornMakretOrderBookInitialCreate : Migration
+    public partial class PopcornMarketBabylonExchangeInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,18 +15,19 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 name: "OrderBook");
 
             migrationBuilder.CreateTable(
-                name: "Company",
+                name: "Listing",
                 schema: "OrderBook",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "UUID", nullable: false),
+                    Isin = table.Column<string>(type: "TEXT", maxLength: 12, nullable: false),
                     Ticker = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    StockPriceUSD = table.Column<decimal>(type: "NUMERIC(18,6)", precision: 18, scale: 6, nullable: false)
+                    Status = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Company", x => x.Id);
+                    table.PrimaryKey("PK_Listing", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -35,60 +36,46 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "UUID", nullable: false),
-                    Ticker = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false)
+                    Ticker = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    ListingId = table.Column<Guid>(type: "UUID", nullable: false),
+                    CurrentPrice = table.Column<decimal>(type: "NUMERIC(18,6)", precision: 18, scale: 6, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OrderBook", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "BuyOrder",
-                schema: "OrderBook",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "UUID", nullable: false),
-                    OrderType = table.Column<int>(type: "INTEGER", nullable: false),
-                    OrderBookId = table.Column<Guid>(type: "UUID", nullable: false),
-                    StockSymbol = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    TraderId = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Price = table.Column<decimal>(type: "NUMERIC(18,6)", precision: 18, scale: 6, nullable: false),
-                    Quantity = table.Column<int>(type: "INTEGER", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "TIMESTAMPTZ", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BuyOrder", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BuyOrder_OrderBook_OrderBookId",
-                        column: x => x.OrderBookId,
+                        name: "FK_OrderBook_Listing_ListingId",
+                        column: x => x.ListingId,
                         principalSchema: "OrderBook",
-                        principalTable: "OrderBook",
+                        principalTable: "Listing",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "SellOrder",
+                name: "Order",
                 schema: "OrderBook",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "UUID", nullable: false),
-                    OrderType = table.Column<int>(type: "INTEGER", nullable: false),
                     OrderBookId = table.Column<Guid>(type: "UUID", nullable: false),
                     StockSymbol = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
                     TraderId = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Price = table.Column<decimal>(type: "NUMERIC(18,6)", precision: 18, scale: 6, nullable: false),
+                    ExecutionPrice = table.Column<decimal>(type: "NUMERIC(18,6)", precision: 18, scale: 6, nullable: false),
                     Quantity = table.Column<int>(type: "INTEGER", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "TIMESTAMPTZ", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false)
+                    RemainingQuantity = table.Column<int>(type: "INTEGER", nullable: false),
+                    PlacedTimestamp = table.Column<DateTime>(type: "TIMESTAMPTZ", nullable: false),
+                    ExecutedTimestamp = table.Column<DateTime>(type: "TIMESTAMPTZ", nullable: true),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    OrderType = table.Column<int>(type: "INTEGER", nullable: false),
+                    OrderSide = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SellOrder", x => x.Id);
+                    table.PrimaryKey("PK_Order", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SellOrder_OrderBook_OrderBookId",
+                        name: "FK_Order_OrderBook_OrderBookId",
                         column: x => x.OrderBookId,
                         principalSchema: "OrderBook",
                         principalTable: "OrderBook",
@@ -97,53 +84,50 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_BuyOrder_OrderBookId",
+                name: "IX_Order_ExecutedTimestamp",
                 schema: "OrderBook",
-                table: "BuyOrder",
+                table: "Order",
+                column: "ExecutedTimestamp");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Order_OrderBookId",
+                schema: "OrderBook",
+                table: "Order",
                 column: "OrderBookId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BuyOrder_Timestamp",
+                name: "IX_Order_PlacedTimestamp",
                 schema: "OrderBook",
-                table: "BuyOrder",
-                column: "Timestamp");
+                table: "Order",
+                column: "PlacedTimestamp");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderBook_ListingId",
+                schema: "OrderBook",
+                table: "OrderBook",
+                column: "ListingId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderBook_Ticker",
                 schema: "OrderBook",
                 table: "OrderBook",
                 column: "Ticker");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SellOrder_OrderBookId",
-                schema: "OrderBook",
-                table: "SellOrder",
-                column: "OrderBookId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SellOrder_Timestamp",
-                schema: "OrderBook",
-                table: "SellOrder",
-                column: "Timestamp");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "BuyOrder",
-                schema: "OrderBook");
-
-            migrationBuilder.DropTable(
-                name: "Company",
-                schema: "OrderBook");
-
-            migrationBuilder.DropTable(
-                name: "SellOrder",
+                name: "Order",
                 schema: "OrderBook");
 
             migrationBuilder.DropTable(
                 name: "OrderBook",
+                schema: "OrderBook");
+
+            migrationBuilder.DropTable(
+                name: "Listing",
                 schema: "OrderBook");
         }
     }

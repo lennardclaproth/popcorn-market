@@ -16,6 +16,9 @@ public static class ListingErrors
     public static readonly Error ListingHasNoOrderBook = 
         Error.NotFound("Listing.NoOrderBook", "The listing has no order book.");
     
-    public static readonly Error ListingActivationFailedListingIsNotPending = 
-        Error.Validation("Listing.ActivationFailedListingIsNotPending", "The requested listing could not be activated while the current state is not pending.");
+    public static readonly Error ListingReviewFailedNotNew = 
+        Error.Validation("Listing.ReviewFailedNotNew", "The requested listing could not be reviewed while the current state is not new.");
+    
+    public static readonly Error ListingActivationFailedNotInReview = 
+        Error.Validation("Listing.ActivationFailedNotInReview", "The requested listing could not be activated while the current state is not pending.");
 }

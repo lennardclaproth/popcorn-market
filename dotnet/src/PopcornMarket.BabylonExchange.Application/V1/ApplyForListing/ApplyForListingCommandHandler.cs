@@ -34,7 +34,8 @@ internal sealed class ApplyForListingCommandHandler : ICommandHandler<ApplyForLi
         if(creationResult.IsFailure) return creationResult;
         
         Guard.Against.Null(creationResult.Value, nameof(creationResult.Value), "The creation result cannot be null.");
-        
+        var listing = creationResult.Value;
+        listing.Review();
         await _listingRepository.AddEntity(creationResult.Value);
         
         return Result.Success();

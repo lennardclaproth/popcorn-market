@@ -14,9 +14,9 @@ public sealed class Listing : AggregateRoot
     public string Ticker { get; private set; } = null!;
     public string Name { get; private set; } = null!;
     public ListingStatus Status { get; private set; }
-    public Guid? OrderBookId { get; private set; }
     public OrderBook? OrderBook { get; private set; } = null!;
-
+    private Listing() { }
+    
     /// <summary>
     /// Generates an Exchange unique ticker by combining the ticker with the exchange prefix and generates an Isin.
     /// </summary>
@@ -44,9 +44,9 @@ public sealed class Listing : AggregateRoot
 
     public Result Accept()
     {
-        if (Status != ListingStatus.Pending)
+        if (Status != ListingStatus.InReview)
         {
-            return Result.Failure(ListingErrors.ListingActivationFailedListingIsNotPending);
+            return Result.Failure(ListingErrors.ListingActivationFailedNotInReview);
         }
 
         var listingAcceptedEvent = new ListingAccepted
@@ -59,10 +59,21 @@ public sealed class Listing : AggregateRoot
         
         return Result.Success();
     }
+
+    public Result Review()
+    {
+        if (Status != ListingStatus.Requested)
+        {
+            return Result.Failure(ListingErrors.ListingReviewFailedNotNew);
+        }
+        
+        Status = ListingStatus.InReview;
+        return Result.Success();
+    }
     
     public Result Activate()
     {
-        if (OrderBookId == null || OrderBookId == Guid.Empty || OrderBook == null)
+        if (OrderBook == null)
         {
             return Result.Failure(ListingErrors.ListingHasNoOrderBook);
         }

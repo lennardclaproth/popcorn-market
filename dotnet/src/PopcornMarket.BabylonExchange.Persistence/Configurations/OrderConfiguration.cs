@@ -30,10 +30,20 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasPrecision(18, 6)
             .HasColumnType("NUMERIC(18,6)")
             .IsRequired();
+        
+        builder.Property(o => o.ExecutionPrice)
+            .HasPrecision(18, 6)
+            .HasColumnType("NUMERIC(18,6)")
+            .IsRequired();
             
         builder.Property(o => o.Quantity)
+            .HasColumnType("INTEGER")
             .IsRequired();
         
+        builder.Property(o => o.RemainingQuantity)
+            .HasColumnType("INTEGER")
+            .IsRequired();
+            
         builder.Property(o => o.PlacedTimestamp)
             .IsRequired()
             .HasColumnType("TIMESTAMPTZ");

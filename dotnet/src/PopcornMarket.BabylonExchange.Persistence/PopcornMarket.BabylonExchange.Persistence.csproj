@@ -18,4 +18,8 @@
       <ProjectReference Include="..\PopcornMarket.BabylonExchange.Domain\PopcornMarket.BabylonExchange.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
 </Project>

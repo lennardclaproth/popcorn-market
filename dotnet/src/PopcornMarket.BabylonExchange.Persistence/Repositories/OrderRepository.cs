@@ -28,7 +28,7 @@ internal sealed class OrderRepository : IOrderRepository
 
     public Task<Order?> GetById(Guid id)
     {
-        throw new NotImplementedException();
+        return _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
     }
 
     public Task<Dictionary<OrderType, List<Order>>> GetPendingBuyOrders(Guid orderBookId)
