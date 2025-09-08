@@ -14,7 +14,7 @@ namespace PopcornMarket.BabylonExchange.Domain.Entities;
 /// </summary>
 public sealed class OrderBook : AggregateRoot
 {
-    public string StockSymbol { get; private set; } = null!;
+    public string StockSymbl { get; private set; } = null!;
     private readonly SortedSet<Order> _buyOrders = new(new OrderComparer(true));
     private readonly SortedSet<Order> _sellOrders = new(new OrderComparer(false));
     private readonly List<Order> _orders = new();
