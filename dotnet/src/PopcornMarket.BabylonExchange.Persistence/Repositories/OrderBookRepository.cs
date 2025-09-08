@@ -18,13 +18,12 @@ internal sealed class OrderBookRepository : IOrderBookRepository
     public async Task AddEntity(OrderBook entity)
     {
         await _context.OrderBooks.AddAsync(entity);
-        await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateEntity(OrderBook entity)
+    public Task UpdateEntity(OrderBook entity)
     {
         _context.OrderBooks.Update(entity);
-        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
     public async Task<OrderBook?> GetById(Guid id)
@@ -40,7 +39,7 @@ internal sealed class OrderBookRepository : IOrderBookRepository
         return orderBook;
     }
 
-    public async Task<OrderBook?> GetByTickerIncludingPendingOrders(string ticker)
+    public async Task<OrderBook?> GetByTickerIncludingPendingOrdersAsNoTracking(string ticker)
     {
         var buyOrders = await _context.Orders
             .Where(o => o.StockSymbol == ticker 
@@ -60,10 +59,12 @@ internal sealed class OrderBookRepository : IOrderBookRepository
             .ThenBy(o => o.PlacedTimestamp)                             // FIFO
             .ToListAsync();
 
-        var book = await _context.OrderBooks.FirstAsync(ob => ob.Ticker == ticker);
+        var book = await _context.OrderBooks
+            .AsNoTracking()
+            .FirstAsync(ob => ob.Ticker == ticker);
 
-        foreach (var o in buyOrders) book.AddOrder(o);
-        foreach (var o in sellOrders) book.AddOrder(o);
+        foreach (var o in buyOrders) book.PlaceOrder(o);
+        foreach (var o in sellOrders) book.PlaceOrder(o);
 
         return book;
     }

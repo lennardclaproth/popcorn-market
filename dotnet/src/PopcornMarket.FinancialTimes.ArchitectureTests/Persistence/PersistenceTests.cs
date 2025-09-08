@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NetArchTest.Rules;
 using PopcornMarket.FinancialTimes.Persistence;
 using PopcornMarket.FinancialTimes.Persistence.Extensions;

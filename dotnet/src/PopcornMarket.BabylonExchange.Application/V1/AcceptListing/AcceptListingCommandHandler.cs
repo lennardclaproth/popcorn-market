@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.SharedKernel.CQRS;
@@ -11,11 +12,13 @@ internal sealed class AcceptListingCommandHandler : ICommandHandler<AcceptListin
 {
     private readonly IListingRepository _listingRepository;
     private readonly IMediator _mediator;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AcceptListingCommandHandler(IListingRepository listingRepository, IMediator mediator)
+    public AcceptListingCommandHandler(IListingRepository listingRepository, IMediator mediator, IUnitOfWork unitOfWork)
     {
         _listingRepository = listingRepository;
         _mediator = mediator;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result> Handle(AcceptListingCommand request, CancellationToken cancellationToken)
@@ -33,6 +36,7 @@ internal sealed class AcceptListingCommandHandler : ICommandHandler<AcceptListin
         await _listingRepository.UpdateEntity(listing);
         await _mediator.DispatchDomainEventsAsync(listing, cancellationToken);
         
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 }

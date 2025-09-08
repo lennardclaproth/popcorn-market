@@ -8,7 +8,7 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
         IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'OrderBook') THEN
             CREATE SCHEMA "OrderBook";
         END IF;
@@ -17,7 +17,7 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     CREATE TABLE "OrderBook"."Listing" (
         "Id" UUID NOT NULL,
         "Isin" TEXT NOT NULL,
@@ -31,7 +31,7 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     CREATE TABLE "OrderBook"."OrderBook" (
         "Id" UUID NOT NULL,
         "Ticker" TEXT NOT NULL,
@@ -45,7 +45,7 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     CREATE TABLE "OrderBook"."Order" (
         "Id" UUID NOT NULL,
         "OrderBookId" UUID NOT NULL,
@@ -58,6 +58,7 @@ BEGIN
         "PlacedTimestamp" TIMESTAMPTZ NOT NULL,
         "ExecutedTimestamp" TIMESTAMPTZ,
         "Status" INTEGER NOT NULL,
+        "StatusNote" TEXT,
         "OrderType" INTEGER NOT NULL,
         "OrderSide" INTEGER NOT NULL,
         CONSTRAINT "PK_Order" PRIMARY KEY ("Id"),
@@ -68,44 +69,76 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    CREATE TABLE "OrderBook"."Trade" (
+        "Id" TEXT NOT NULL,
+        "BuyOrderId" UUID NOT NULL,
+        "SellOrderId" UUID NOT NULL,
+        "StockSymbol" TEXT NOT NULL,
+        "Price" numeric(18,2) NOT NULL,
+        "Quantity" integer NOT NULL,
+        "ExecutedAt" TEXT NOT NULL,
+        CONSTRAINT "PK_Trade" PRIMARY KEY ("Id"),
+        CONSTRAINT "FK_Trade_Order_BuyOrderId" FOREIGN KEY ("BuyOrderId") REFERENCES "OrderBook"."Order" ("Id") ON DELETE RESTRICT,
+        CONSTRAINT "FK_Trade_Order_SellOrderId" FOREIGN KEY ("SellOrderId") REFERENCES "OrderBook"."Order" ("Id") ON DELETE RESTRICT
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     CREATE INDEX "IX_Order_ExecutedTimestamp" ON "OrderBook"."Order" ("ExecutedTimestamp");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     CREATE INDEX "IX_Order_OrderBookId" ON "OrderBook"."Order" ("OrderBookId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     CREATE INDEX "IX_Order_PlacedTimestamp" ON "OrderBook"."Order" ("PlacedTimestamp");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     CREATE UNIQUE INDEX "IX_OrderBook_ListingId" ON "OrderBook"."OrderBook" ("ListingId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     CREATE INDEX "IX_OrderBook_Ticker" ON "OrderBook"."OrderBook" ("Ticker");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250830152349_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    CREATE INDEX "IX_Trade_BuyOrderId" ON "OrderBook"."Trade" ("BuyOrderId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
+    CREATE INDEX "IX_Trade_SellOrderId" ON "OrderBook"."Trade" ("SellOrderId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20250908145353_PopcornMarket.BabylonExchange.InitialCreate') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20250830152349_PopcornMarket.BabylonExchange.InitialCreate', '9.0.3');
+    VALUES ('20250908145353_PopcornMarket.BabylonExchange.InitialCreate', '9.0.3');
     END IF;
 END $EF$;
 COMMIT;

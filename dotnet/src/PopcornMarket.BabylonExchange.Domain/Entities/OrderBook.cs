@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using PopcornMarket.BabylonExchange.Domain.Enums;
 using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.BabylonExchange.Domain.Events;
@@ -15,8 +15,8 @@ namespace PopcornMarket.BabylonExchange.Domain.Entities;
 public sealed class OrderBook : AggregateRoot
 {
     public string Ticker { get; private set; } = null!;
-    private readonly SortedSet<Order> _buyOrders = new();
-    private readonly SortedSet<Order> _sellOrders = new();
+    private readonly SortedSet<Order> _buyOrders = new(new OrderComparer(true));
+    private readonly SortedSet<Order> _sellOrders = new(new OrderComparer(false));
     private readonly List<Order> _orders = new();
     public Listing Listing { get; private set; } = null!;
     public Guid ListingId { get; private set; }
@@ -44,9 +44,17 @@ public sealed class OrderBook : AggregateRoot
         return Result<OrderBook>.Success(new OrderBook(ticker, listing));
     }
 
-    public void AddOrder(Order order)
+    public void PlaceOrder(Order order)
     {
         _orders.Add(order);
+
+        if (order.OrderSide == OrderSide.Buy)
+        {
+            _buyOrders.Add(order);
+        } else
+        {
+            _sellOrders.Add(order);
+        }
 
         var orderPlacedEvent = new OrderPlaced
         {
@@ -67,6 +75,8 @@ public sealed class OrderBook : AggregateRoot
             ? _sellOrders 
             : _buyOrders;
 
+        bool wasPartiallyFilled = false;
+
         while (order.RemainingQuantity > 0 && oppositeOrders.Count != 0)
         {
             var bestMatch = order.OrderSide == OrderSide.Buy
@@ -74,7 +84,6 @@ public sealed class OrderBook : AggregateRoot
                 : GetBestBuyOrder();
 
             if (bestMatch == null)
-                // Should we rest the order here?
                 break;
 
             // Price check (skip if limit price not satisfied)
@@ -83,52 +92,116 @@ public sealed class OrderBook : AggregateRoot
                 // Limit order cannot match, so it rests
                 if (order.OrderType == OrderType.LimitOrder)
                 {
-                    // Should use the RestOrder function
-                    AddOrder(order);
+                    RestOrder(order);
                 }
                 break;
             }
 
             // Execute trade
             var tradeQuantity = Math.Min(order.RemainingQuantity, bestMatch.RemainingQuantity);
-            var tradePrice = bestMatch.Price; // Matching engine rule: execution at resting order price
 
-            order.PartiallyFulfillOrder(order.RemainingQuantity - tradeQuantity, tradePrice);
-            bestMatch.PartiallyFulfillOrder(bestMatch.RemainingQuantity - tradeQuantity, tradePrice);
-            
+            // If sell order and bestmatch is market order than best price is sell order pri ce
+            // If buy order and bestmatch is market order than best price is buy order price
+            var tradePrice = bestMatch.Price;
+            if (bestMatch.OrderType == OrderType.MarketOrder)
+            {
+                if(order.OrderSide == OrderSide.Sell) tradePrice = order.Price;
+                if(order.OrderSide == OrderSide.Buy) tradePrice = order.Price;
+            }
+
+            order.TryFulfillOrder(tradePrice, tradeQuantity);
+            bestMatch.TryFulfillOrder(tradePrice, tradeQuantity);
+
+            // Track partial fill
+            if (tradeQuantity > 0) wasPartiallyFilled = true;
+
             // Determine what events to publish
             if (order.Status == OrderStatus.Fulfilled)
-                RaiseDomainEvent(new OrderFulfilled(order.Id, tradePrice, tradeQuantity));
+                RaiseDomainEvent(new OrderFulfilled(order.Id, tradePrice, tradeQuantity, DateTime.UtcNow));
             else
-                RaiseDomainEvent(new OrderPartiallyFilled(order.Id, order.RemainingQuantity));
+                RaiseDomainEvent(new OrderPartiallyFilled(order.Id, order.RemainingQuantity, tradePrice, DateTime.UtcNow));
 
             if (bestMatch.Status == OrderStatus.Fulfilled)
-                RaiseDomainEvent(new OrderFulfilled(bestMatch.Id, tradePrice, tradeQuantity));
+                RaiseDomainEvent(new OrderFulfilled(bestMatch.Id, tradePrice, tradeQuantity, DateTime.UtcNow));
             else
-                RaiseDomainEvent(new OrderPartiallyFilled(bestMatch.Id, bestMatch.RemainingQuantity));
+                RaiseDomainEvent(new OrderPartiallyFilled(bestMatch.Id, bestMatch.RemainingQuantity, tradePrice, DateTime.UtcNow));
 
-            RaiseDomainEvent(new TradeExecuted(order.Id, bestMatch.Id, tradePrice, tradeQuantity));
+            // Correctly assign BuyOrderId and SellOrderId
+            if (order.OrderSide == OrderSide.Buy)
+                RaiseDomainEvent(new TradeExecuted(order.Id, bestMatch.Id, tradePrice, tradeQuantity, Ticker, DateTime.UtcNow));
+            else
+                RaiseDomainEvent(new TradeExecuted(bestMatch.Id, order.Id, tradePrice, tradeQuantity, Ticker, DateTime.UtcNow));
 
             if (bestMatch.Status == OrderStatus.Fulfilled)
                 oppositeOrders.Remove(bestMatch);
+
+            if (order.Status == OrderStatus.Fulfilled)
+                return;
         }
 
-        // If incoming limit order still has remaining quantity → rest in the book
-        if (order is { RemainingQuantity: > 0, OrderType: OrderType.LimitOrder })
+        // Handle leftovers
+        if (order.RemainingQuantity > 0)
         {
-            // Should become rest function
-            AddOrder(order);
+            if (order.OrderType == OrderType.LimitOrder)
+            {
+                // Limit orders can still rest
+                RestOrder(order);
+            }
+            else
+            {
+                // Market order leftover = cancellation
+                if (wasPartiallyFilled)
+                {
+                    RaiseDomainEvent(new OrderPartiallyCancelled(order.Id, $"Not able to match orders completely, order partially fulfilled. Remaining quantity: {order.RemainingQuantity}", order.RemainingQuantity, DateTime.UtcNow));
+                    order.PartiallyCancelOrder($"Not able to match orders completely, order partially fulfilled. Remaining quantity: {order.RemainingQuantity}", order.RemainingQuantity, DateTime.UtcNow);
+                }
+                else
+                {
+                    RaiseDomainEvent(new OrderCancelled(order.Id, "Not able to match orders, no matching orders.", DateTime.UtcNow));
+                    order.CancelOrder("Not able to match orders, no matching orders.", DateTime.UtcNow);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rests an order on the orderbook, makes sure that it is added to the correct side. Also prevents
+    /// a domain event from being raised here, as this is done when the order is initially placed.
+    /// </summary>
+    /// <param name="order"></param>
+    public void RestOrder(Order order)
+    {
+        if (order.OrderSide == OrderSide.Buy)
+        {
+            _buyOrders.Add(order);
+        }
+        else
+        {
+            _sellOrders.Add(order);
         }
     }
 
     private static bool IsPriceMatch(Order incoming, Order resting)
     {
-        return incoming.OrderSide switch
+        if (incoming.OrderSide == OrderSide.Buy)
         {
-            OrderSide.Buy => incoming.OrderType == OrderType.MarketOrder || incoming.Price >= resting.Price,
-            OrderSide.Sell => incoming.OrderType == OrderType.MarketOrder || incoming.Price <= resting.Price,
-            _ => false
-        };
+            if (incoming.OrderType == OrderType.MarketOrder) return true;
+
+            if (incoming.Price >= resting.Price) return true;
+
+            return false;
+        }
+
+        if (incoming.OrderSide == OrderSide.Sell)
+        {
+            if (incoming.OrderType == OrderType.MarketOrder || resting.OrderType == OrderType.MarketOrder) return true;
+
+            if (incoming.Price <= resting.Price) return true;
+
+            return false;
+        }
+
+        return false;
     }
     
     public Result SetReferencePrice(decimal referencePrice)

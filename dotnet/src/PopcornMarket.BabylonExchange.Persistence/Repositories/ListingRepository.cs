@@ -17,13 +17,12 @@ internal sealed class ListingRepository : IListingRepository
     public async Task AddEntity(Listing entity)
     {
         await _context.Listings.AddAsync(entity);
-        await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateEntity(Listing entity)
+    public Task UpdateEntity(Listing entity)
     {
         _context.Listings.Update(entity);
-        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
     public async Task<Listing?> GetById(Guid id)

@@ -1,6 +1,8 @@
-﻿namespace PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
+﻿using PopcornMarket.BabylonExchange.Domain.Entities;
 
-public interface ITradeRepository
+namespace PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
+
+public interface ITradeRepository : IRepository<Trade>
 {
     
 }

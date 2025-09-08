@@ -1,5 +1,4 @@
-﻿using System;
-using PopcornMarket.BabylonExchange.Domain.Enums;
+﻿using PopcornMarket.BabylonExchange.Domain.Enums;
 using PopcornMarket.SharedKernel.Abstractions;
 
 namespace PopcornMarket.BabylonExchange.Domain.Events;

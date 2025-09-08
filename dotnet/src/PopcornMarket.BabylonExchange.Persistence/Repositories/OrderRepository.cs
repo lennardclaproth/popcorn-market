@@ -16,14 +16,15 @@ internal sealed class OrderRepository : IOrderRepository
         _context = context;
     }
 
-    public Task AddEntity(Order entity)
+    public async Task AddEntity(Order entity)
     {
-        throw new NotImplementedException();
+        await _context.Orders.AddAsync(entity);
     }
 
     public Task UpdateEntity(Order entity)
     {
-        throw new NotImplementedException();
+        _context.Orders.Update(entity);
+        return Task.CompletedTask;
     }
 
     public Task<Order?> GetById(Guid id)

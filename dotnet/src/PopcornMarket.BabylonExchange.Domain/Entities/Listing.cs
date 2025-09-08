@@ -1,4 +1,5 @@
-﻿using PopcornMarket.BabylonExchange.Domain.Constants;
+﻿using System.Xml.Linq;
+using PopcornMarket.BabylonExchange.Domain.Constants;
 using PopcornMarket.BabylonExchange.Domain.Enums;
 using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.BabylonExchange.Domain.Events;
@@ -16,7 +17,28 @@ public sealed class Listing : AggregateRoot
     public ListingStatus Status { get; private set; }
     public OrderBook? OrderBook { get; private set; } = null!;
     private Listing() { }
-    
+
+    /// <summary>
+    /// Constructor for tests.
+    /// </summary>
+    /// <param name="ticker"></param>
+    /// <param name="name"></param>
+    /// <param name="status"></param>
+    /// <param name="orderBook"></param>
+    private Listing(string ticker, string name, ListingStatus status, OrderBook? orderBook)
+    {
+        Isin = CreateIsin();
+        Ticker = ticker;
+        Name = name;
+        Status = status;
+        OrderBook = orderBook;
+    }
+
+    internal static Listing Build(string ticker, string name, ListingStatus status, OrderBook? orderBook)
+    {
+        return new Listing(ticker, name, status, orderBook);
+    }
+
     /// <summary>
     /// Generates an Exchange unique ticker by combining the ticker with the exchange prefix and generates an Isin.
     /// </summary>
@@ -26,14 +48,19 @@ public sealed class Listing : AggregateRoot
         string name
         ) : base(Guid.NewGuid())
     {
-        var random = new Random();
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        
-        Isin = new string(Enumerable.Repeat(chars, 12)
-            .Select(s => s[random.Next(s.Length)]).ToArray());
+        Isin = CreateIsin();
         Ticker = $"{ExchangeConstants.ExchangeIdentifier}:{ticker}";
         Name = name;
         Status = ListingStatus.Requested;
+    }
+
+    private static string CreateIsin()
+    {
+        var random = new Random();
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        return new string(Enumerable.Repeat(chars, 12)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
     public static Result<Listing> Create(string ticker, string name)

@@ -83,6 +83,9 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("StatusNote")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("StockSymbol")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -132,6 +135,40 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     b.ToTable("OrderBook", "OrderBook");
                 });
 
+            modelBuilder.Entity("PopcornMarket.BabylonExchange.Domain.Entities.Trade", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("BuyOrderId")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("ExecutedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SellOrderId")
+                        .HasColumnType("UUID");
+
+                    b.Property<string>("StockSymbol")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyOrderId");
+
+                    b.HasIndex("SellOrderId");
+
+                    b.ToTable("Trade", "OrderBook");
+                });
+
             modelBuilder.Entity("PopcornMarket.BabylonExchange.Domain.Entities.Order", b =>
                 {
                     b.HasOne("PopcornMarket.BabylonExchange.Domain.Entities.OrderBook", "OrderBook")
@@ -152,6 +189,25 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Listing");
+                });
+
+            modelBuilder.Entity("PopcornMarket.BabylonExchange.Domain.Entities.Trade", b =>
+                {
+                    b.HasOne("PopcornMarket.BabylonExchange.Domain.Entities.Order", "BuyOrder")
+                        .WithMany()
+                        .HasForeignKey("BuyOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PopcornMarket.BabylonExchange.Domain.Entities.Order", "SellOrder")
+                        .WithMany()
+                        .HasForeignKey("SellOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BuyOrder");
+
+                    b.Navigation("SellOrder");
                 });
 
             modelBuilder.Entity("PopcornMarket.BabylonExchange.Domain.Entities.Listing", b =>

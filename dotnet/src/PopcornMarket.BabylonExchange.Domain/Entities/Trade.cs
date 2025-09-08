@@ -16,7 +16,7 @@ public sealed class Trade : Entity
 
     private Trade() { } // Required by EF
 
-    private Trade(Guid buyOrderId, Guid sellOrderId, string stockSymbol, decimal price, int quantity) 
+    private Trade(Guid buyOrderId, Guid sellOrderId, string stockSymbol, decimal price, int quantity, DateTime executedAt) 
         : base(Guid.NewGuid())
     {
         // Change to result pattern
@@ -29,10 +29,10 @@ public sealed class Trade : Entity
         StockSymbol = stockSymbol;
         Price = price;
         Quantity = quantity;
-        ExecutedAt = DateTime.UtcNow;
+        ExecutedAt = executedAt;
     }
 
-    public static Trade Create(Guid buyOrderId, Guid sellOrderId, string stockSymbol, decimal price, int quantity)
-        => new Trade(buyOrderId, sellOrderId, stockSymbol, price, quantity);
+    public static Trade Create(Guid buyOrderId, Guid sellOrderId, string stockSymbol, decimal price, int quantity, DateTime executedAt)
+        => new Trade(buyOrderId, sellOrderId, stockSymbol, price, quantity, executedAt);
 }
 

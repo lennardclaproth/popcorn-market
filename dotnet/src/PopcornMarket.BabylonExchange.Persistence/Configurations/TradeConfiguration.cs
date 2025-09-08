@@ -9,7 +9,7 @@ public class TradeConfiguration : IEntityTypeConfiguration<Trade>
 {
     public void Configure(EntityTypeBuilder<Trade> builder)
     {
-        builder.ToTable("Trades", SchemaConstants.Schema);
+        builder.ToTable(nameof(Trade), SchemaConstants.Schema);
 
         builder.HasKey(t => t.Id);
 

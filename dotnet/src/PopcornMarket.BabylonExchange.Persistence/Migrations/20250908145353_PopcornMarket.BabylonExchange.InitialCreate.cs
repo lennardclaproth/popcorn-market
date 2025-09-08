@@ -68,6 +68,7 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     PlacedTimestamp = table.Column<DateTime>(type: "TIMESTAMPTZ", nullable: false),
                     ExecutedTimestamp = table.Column<DateTime>(type: "TIMESTAMPTZ", nullable: true),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    StatusNote = table.Column<string>(type: "TEXT", nullable: true),
                     OrderType = table.Column<int>(type: "INTEGER", nullable: false),
                     OrderSide = table.Column<int>(type: "INTEGER", nullable: false)
                 },
@@ -81,6 +82,38 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                         principalTable: "OrderBook",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Trade",
+                schema: "OrderBook",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    BuyOrderId = table.Column<Guid>(type: "UUID", nullable: false),
+                    SellOrderId = table.Column<Guid>(type: "UUID", nullable: false),
+                    StockSymbol = table.Column<string>(type: "TEXT", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    ExecutedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Trade", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Trade_Order_BuyOrderId",
+                        column: x => x.BuyOrderId,
+                        principalSchema: "OrderBook",
+                        principalTable: "Order",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Trade_Order_SellOrderId",
+                        column: x => x.SellOrderId,
+                        principalSchema: "OrderBook",
+                        principalTable: "Order",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -113,11 +146,27 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 schema: "OrderBook",
                 table: "OrderBook",
                 column: "Ticker");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trade_BuyOrderId",
+                schema: "OrderBook",
+                table: "Trade",
+                column: "BuyOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trade_SellOrderId",
+                schema: "OrderBook",
+                table: "Trade",
+                column: "SellOrderId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Trade",
+                schema: "OrderBook");
+
             migrationBuilder.DropTable(
                 name: "Order",
                 schema: "OrderBook");

@@ -1,6 +1,6 @@
 ﻿namespace PopcornMarket.FinancialTimes.Persistence.Constants;
 
-public static class DbConstants
+internal static class DbConstants
 {
     public const string DatabaseName = "popcornFinancialTimesDB";
     public const string CompanyArticleCollection = "company_articles";

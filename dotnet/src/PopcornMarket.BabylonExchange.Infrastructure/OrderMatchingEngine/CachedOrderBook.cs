@@ -1,8 +1,8 @@
 ﻿using PopcornMarket.BabylonExchange.Domain.Entities;
 
-namespace PopcornMarket.BabylonExchange.Infrastructure.OrderExecutionEngine;
+namespace PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
 
-public class CachedOrderBook
+internal sealed class CachedOrderBook
 {
     public OrderBook OrderBook { get;}
     public DateTimeOffset LastAccessed { get; set; }
@@ -12,4 +12,6 @@ public class CachedOrderBook
         OrderBook = orderBook;
         LastAccessed = DateTimeOffset.Now;
     }
+
+    public void Touch() => LastAccessed = DateTimeOffset.UtcNow;
 }

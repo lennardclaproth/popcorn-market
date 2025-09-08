@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using PopcornMarket.BabylonExchange.Domain.Enums;
 using PopcornMarket.SharedKernel.Primitives;
 
@@ -20,10 +20,11 @@ public class Order : Entity
     public DateTime PlacedTimestamp { get; private set; }
     public DateTime? ExecutedTimestamp { get; private set; }
     public OrderStatus Status { get; private set; }
+    public string? StatusNote { get; private set; }
     public OrderType OrderType { get; private set; }
     public OrderSide OrderSide { get; private set; }
 
-    protected Order() { } // Required for EF Core
+    private Order() { } // Required for EF Core
 
     protected Order(string stockSymbol,
         string traderId,
@@ -63,25 +64,66 @@ public class Order : Entity
         return new Order(stockSymbol, traderId, price, quantity, orderType , orderBook, orderSide);
     }
     
-    public void FulfillOrder(decimal price)
+    public void TryFulfillOrder(decimal price, int tradeQuantity)
     {
-        ExecutedTimestamp = DateTime.UtcNow;
-        ExecutionPrice = price;
-        Status = OrderStatus.Fulfilled;
-    }
+        var remainingQuantiy = Quantity - tradeQuantity;
+        if(remainingQuantiy < 0)
+            throw new InvalidOperationException("Trade quantity exceeds remaining order quantity.");
 
-    public void PartiallyFulfillOrder(int newQuantity, decimal price)
-    {
-        if (newQuantity <= 0)
+        if (remainingQuantiy == 0)
         {
-            // calculate price based on execution;
-            FulfillOrder(price);
-        }
-        else
+            ExecutedTimestamp = DateTime.UtcNow;
+            ExecutionPrice = price;
+            RemainingQuantity = 0;
+            Status = OrderStatus.Fulfilled;
+        } 
+        else if (remainingQuantiy > 0)
         {
-            // calculate new price based on 
-            RemainingQuantity = newQuantity;
+            RemainingQuantity = tradeQuantity;
             Status = OrderStatus.PartiallyFilled;
         }
+    }
+
+    public void FulfillOrder(decimal price, DateTime fulfilledAt)
+    {
+        if (Status == OrderStatus.Fulfilled)
+            throw new InvalidOperationException("Order is already fulfilled.");
+        RemainingQuantity = 0;
+        ExecutionPrice = price;
+        Status = OrderStatus.Fulfilled;
+        ExecutedTimestamp = fulfilledAt;
+    }
+
+    public void PartiallyFulfillOrder(decimal price, int tradeQuantity, DateTime fulfilledAt)
+    {
+        if (Status == OrderStatus.Fulfilled)
+            throw new InvalidOperationException("Order is already fulfilled.");
+        
+        RemainingQuantity -= tradeQuantity;
+        ExecutionPrice = price;
+        Status = OrderStatus.PartiallyFilled;
+        ExecutedTimestamp = fulfilledAt;
+    }
+
+    public void CancelOrder(string reason, DateTime cancelledAt)
+    {
+        if (Status == OrderStatus.Fulfilled)
+            throw new InvalidOperationException("Cannot cancel a fulfilled order.");
+        Status = OrderStatus.Canceled;
+        StatusNote = reason;
+        ExecutedTimestamp = cancelledAt;
+    }
+
+    public void PartiallyCancelOrder(string reason, int newQuantity, DateTime cancelledAt)
+    {
+        if (Status == OrderStatus.Fulfilled)
+            throw new InvalidOperationException("Cannot cancel a fulfilled order.");
+        if (newQuantity <= 0 || newQuantity > RemainingQuantity)
+            throw new ArgumentException("New quantity must be greater than zero and less than the remaining quantity.");
+        
+        RemainingQuantity = newQuantity;
+        Status = OrderStatus.PartiallyCanceled;
+        StatusNote = reason;
+        ExecutedTimestamp = cancelledAt;
     }
 }

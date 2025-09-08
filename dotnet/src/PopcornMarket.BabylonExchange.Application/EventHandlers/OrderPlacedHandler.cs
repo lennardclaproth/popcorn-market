@@ -1,4 +1,6 @@
-﻿using Ardalis.GuardClauses;
+﻿using System.Diagnostics;
+using Ardalis.GuardClauses;
+using Microsoft.Extensions.Logging;
 using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
@@ -10,11 +12,13 @@ public class OrderPlacedHandler : IDomainEventHandler<OrderPlaced>
 {
     private readonly IOrderQueue _orderQueue;
     private readonly IOrderRepository _orderRepository;
+    private readonly ILogger<OrderPlacedHandler> _logger;
 
-    public OrderPlacedHandler(IOrderQueue orderQueue, IOrderRepository orderRepository)
+    public OrderPlacedHandler(IOrderQueue orderQueue, IOrderRepository orderRepository, ILogger<OrderPlacedHandler> logger)
     {
         _orderQueue = orderQueue;
         _orderRepository = orderRepository;
+        _logger = logger;
     }
 
     /// <summary>
@@ -26,8 +30,11 @@ public class OrderPlacedHandler : IDomainEventHandler<OrderPlaced>
     /// <exception cref="NotImplementedException"></exception>
     public async Task Handle(OrderPlaced notification, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Handling OrderPlaced event for OrderId: {OrderId} to enqueue the order", notification.OrderId);
+        var startTime = Stopwatch.GetTimestamp();
         var order = await _orderRepository.GetById(notification.OrderId);
         Guard.Against.Null(order, nameof(order));
         await _orderQueue.Enqueue(order);
+        _logger.LogInformation("Order with OrderId: {OrderId} has been enqueued in {ElapsedTimeMs} ms", notification.OrderId, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
     }
 }

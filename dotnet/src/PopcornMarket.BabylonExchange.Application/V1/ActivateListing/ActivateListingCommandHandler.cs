@@ -1,4 +1,5 @@
-﻿using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
+﻿using PopcornMarket.BabylonExchange.Domain.Abstractions;
+using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.SharedKernel.CQRS;
 using PopcornMarket.SharedKernel.Exceptions;
@@ -9,10 +10,12 @@ namespace PopcornMarket.BabylonExchange.Application.V1.ActivateListing;
 public class ActivateListingCommandHandler : ICommandHandler<ActivateListingCommand>
 {
     private readonly IListingRepository _listingRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ActivateListingCommandHandler(IListingRepository listingRepository)
+    public ActivateListingCommandHandler(IListingRepository listingRepository, IUnitOfWork unitOfWork)
     {
         _listingRepository = listingRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result> Handle(ActivateListingCommand request, CancellationToken cancellationToken)
@@ -37,7 +40,8 @@ public class ActivateListingCommandHandler : ICommandHandler<ActivateListingComm
         }
         
         await _listingRepository.UpdateEntity(listing);
-        
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
         return Result.Success();
     }
 }

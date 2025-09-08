@@ -3,7 +3,7 @@ using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace PopcornMarket.FinancialAtlas.Persistence.Context;
 
-public class MongoDbContext
+internal sealed class MongoDbContext
 {
     private readonly IMongoDatabase _database;
 

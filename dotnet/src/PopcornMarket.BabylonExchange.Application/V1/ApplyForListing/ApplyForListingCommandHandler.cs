@@ -1,4 +1,5 @@
 ﻿using Ardalis.GuardClauses;
+using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Domain.Errors;
@@ -11,10 +12,12 @@ internal sealed class ApplyForListingCommandHandler : ICommandHandler<ApplyForLi
 {
     
     private readonly IListingRepository _listingRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ApplyForListingCommandHandler(IListingRepository listingRepository)
+    public ApplyForListingCommandHandler(IListingRepository listingRepository, IUnitOfWork unitOfWork)
     {
         _listingRepository = listingRepository;
+        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -37,7 +40,8 @@ internal sealed class ApplyForListingCommandHandler : ICommandHandler<ApplyForLi
         var listing = creationResult.Value;
         listing.Review();
         await _listingRepository.AddEntity(creationResult.Value);
-        
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
         return Result.Success();
     }
 }
