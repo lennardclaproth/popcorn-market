@@ -20,17 +20,10 @@ public class ActivateListingCommandHandler : ICommandHandler<ActivateListingComm
 
     public async Task<Result> Handle(ActivateListingCommand request, CancellationToken cancellationToken)
     {
-        var listing = await _listingRepository.GetById(request.Id);
+        var listing = await _listingRepository.GetByStockSymbol(request.stockSymbol);
         if (listing == null) return Result.Failure(ListingErrors.ListingWithIdNotFound);
         
         if (listing.OrderBook == null) throw new RequiredPropertyIsNullException(nameof(listing.OrderBook));
-        
-        var orderBookSetReferencePriceResult = listing.OrderBook.SetReferencePrice(request.ReferencePrice);
-
-        if (orderBookSetReferencePriceResult.IsFailure)
-        {
-            return orderBookSetReferencePriceResult;
-        }
         
         var listingActivationResult = listing.Activate();
 

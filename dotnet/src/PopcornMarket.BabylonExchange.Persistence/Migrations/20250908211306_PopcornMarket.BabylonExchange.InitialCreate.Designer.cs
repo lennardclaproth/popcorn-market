@@ -11,7 +11,7 @@ using PopcornMarket.BabylonExchange.Persistence.Context;
 namespace PopcornMarket.BabylonExchange.Persistence.Migrations
 {
     [DbContext(typeof(BabylonExchangeDbContext))]
-    [Migration("20250908145353_PopcornMarket.BabylonExchange.InitialCreate")]
+    [Migration("20250908211306_PopcornMarket.BabylonExchange.InitialCreate")]
     partial class PopcornMarketBabylonExchangeInitialCreate
     {
         /// <inheritdoc />
@@ -26,9 +26,24 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("UUID");
 
+                    b.Property<decimal>("ClosePrice")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("HighPrice")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("InitialPublicOfferingDate")
+                        .HasColumnType("timestamp");
+
                     b.Property<string>("Isin")
                         .IsRequired()
                         .HasMaxLength(12)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastUpdate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("LowPrice")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -36,15 +51,27 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("OpenPrice")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("PublicOfferingPrice")
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Ticker")
+                    b.Property<string>("StockSymbol")
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
+                    b.Property<long>("Volume")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("StockSymbol")
+                        .IsUnique();
 
                     b.ToTable("Listing", "OrderBook");
                 });
@@ -107,6 +134,8 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
 
                     b.HasIndex("PlacedTimestamp");
 
+                    b.HasIndex("StockSymbol");
+
                     b.ToTable("Order", "OrderBook");
                 });
 
@@ -116,14 +145,10 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("UUID");
 
-                    b.Property<decimal?>("CurrentPrice")
-                        .HasPrecision(18, 6)
-                        .HasColumnType("NUMERIC(18,6)");
-
                     b.Property<Guid>("ListingId")
                         .HasColumnType("UUID");
 
-                    b.Property<string>("Ticker")
+                    b.Property<string>("StockSymbol")
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("TEXT");
@@ -133,7 +158,7 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     b.HasIndex("ListingId")
                         .IsUnique();
 
-                    b.HasIndex("Ticker");
+                    b.HasIndex("StockSymbol");
 
                     b.ToTable("OrderBook", "OrderBook");
                 });
@@ -168,6 +193,8 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     b.HasIndex("BuyOrderId");
 
                     b.HasIndex("SellOrderId");
+
+                    b.HasIndex("StockSymbol");
 
                     b.ToTable("Trade", "OrderBook");
                 });

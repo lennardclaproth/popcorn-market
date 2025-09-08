@@ -14,34 +14,32 @@ namespace PopcornMarket.BabylonExchange.Domain.Entities;
 /// </summary>
 public sealed class OrderBook : AggregateRoot
 {
-    public string Ticker { get; private set; } = null!;
+    public string StockSymbol { get; private set; } = null!;
     private readonly SortedSet<Order> _buyOrders = new(new OrderComparer(true));
     private readonly SortedSet<Order> _sellOrders = new(new OrderComparer(false));
     private readonly List<Order> _orders = new();
     public Listing Listing { get; private set; } = null!;
     public Guid ListingId { get; private set; }
-    public decimal? CurrentPrice { get; private set; }
-
     [NotMapped]
     public IReadOnlyCollection<Order> BuyOrders => _buyOrders;
     [NotMapped]
     public IReadOnlyCollection<Order> SellOrders => _sellOrders;
     public IReadOnlyCollection<Order> Orders => _orders;
     private OrderBook() { }
-    private OrderBook(string ticker, Listing listing)
+    private OrderBook(string stockSymbol, Listing listing)
     {
-        Ticker = ticker;
+        StockSymbol = stockSymbol;
         ListingId = listing.Id;
         
         _buyOrders = new SortedSet<Order>(new OrderComparer(true));
         _sellOrders = new SortedSet<Order>(new OrderComparer(false));
     }
 
-    public static Result<OrderBook> Create(Listing listing, string ticker)
+    public static Result<OrderBook> Create(Listing listing, string stockSymbol)
     {
-        if(string.IsNullOrWhiteSpace(ticker)) throw new ArgumentNullException(nameof(ticker));
+        if(string.IsNullOrWhiteSpace(stockSymbol)) throw new ArgumentNullException(nameof(stockSymbol));
         
-        return Result<OrderBook>.Success(new OrderBook(ticker, listing));
+        return Result<OrderBook>.Success(new OrderBook(stockSymbol, listing));
     }
 
     public void PlaceOrder(Order order)
@@ -128,9 +126,9 @@ public sealed class OrderBook : AggregateRoot
 
             // Correctly assign BuyOrderId and SellOrderId
             if (order.OrderSide == OrderSide.Buy)
-                RaiseDomainEvent(new TradeExecuted(order.Id, bestMatch.Id, tradePrice, tradeQuantity, Ticker, DateTime.UtcNow));
+                RaiseDomainEvent(new TradeExecuted(order.Id, bestMatch.Id, tradePrice, tradeQuantity, StockSymbol, DateTime.UtcNow));
             else
-                RaiseDomainEvent(new TradeExecuted(bestMatch.Id, order.Id, tradePrice, tradeQuantity, Ticker, DateTime.UtcNow));
+                RaiseDomainEvent(new TradeExecuted(bestMatch.Id, order.Id, tradePrice, tradeQuantity, StockSymbol, DateTime.UtcNow));
 
             if (bestMatch.Status == OrderStatus.Fulfilled)
                 oppositeOrders.Remove(bestMatch);
@@ -202,16 +200,6 @@ public sealed class OrderBook : AggregateRoot
         }
 
         return false;
-    }
-    
-    public Result SetReferencePrice(decimal referencePrice)
-    {
-        if (CurrentPrice != null)
-        {
-            return Result.Failure(OrderBookErrors.OrderBookReferencePriceSet);
-        }
-        CurrentPrice = referencePrice;
-        return Result.Success();
     }
     
     public Order? GetBestBuyOrder() => _buyOrders.LastOrDefault();

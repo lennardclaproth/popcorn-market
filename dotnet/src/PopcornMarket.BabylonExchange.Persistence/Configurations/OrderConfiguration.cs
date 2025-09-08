@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Persistence.Constants;
@@ -21,7 +21,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.StockSymbol)
             .IsRequired()
             .HasMaxLength(10);
-            
+
+        builder.HasIndex(o => o.StockSymbol);
+
         builder.Property(o => o.TraderId)
             .IsRequired()
             .HasMaxLength(50);

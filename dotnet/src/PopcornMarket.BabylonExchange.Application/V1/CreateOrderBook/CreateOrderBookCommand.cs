@@ -4,5 +4,5 @@ namespace PopcornMarket.BabylonExchange.Application.V1.CreateOrderBook;
 
 public sealed record CreateOrderBookCommand : ICommand
 {
-    public required string Ticker { get; init; }
+    public required string StockSymbol { get; init; }
 }

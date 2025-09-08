@@ -21,9 +21,17 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "UUID", nullable: false),
                     Isin = table.Column<string>(type: "TEXT", maxLength: 12, nullable: false),
-                    Ticker = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    StockSymbol = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false)
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    PublicOfferingPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    InitialPublicOfferingDate = table.Column<DateTime>(type: "timestamp", nullable: true),
+                    OpenPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    HighPrice = table.Column<decimal>(type: "TEXT", nullable: false),
+                    LowPrice = table.Column<decimal>(type: "TEXT", nullable: false),
+                    ClosePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Volume = table.Column<long>(type: "INTEGER", nullable: false),
+                    LastUpdate = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -36,9 +44,8 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "UUID", nullable: false),
-                    Ticker = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    ListingId = table.Column<Guid>(type: "UUID", nullable: false),
-                    CurrentPrice = table.Column<decimal>(type: "NUMERIC(18,6)", precision: 18, scale: 6, nullable: true)
+                    StockSymbol = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    ListingId = table.Column<Guid>(type: "UUID", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -117,6 +124,13 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Listing_StockSymbol",
+                schema: "OrderBook",
+                table: "Listing",
+                column: "StockSymbol",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Order_ExecutedTimestamp",
                 schema: "OrderBook",
                 table: "Order",
@@ -135,6 +149,12 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 column: "PlacedTimestamp");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Order_StockSymbol",
+                schema: "OrderBook",
+                table: "Order",
+                column: "StockSymbol");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderBook_ListingId",
                 schema: "OrderBook",
                 table: "OrderBook",
@@ -142,10 +162,10 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderBook_Ticker",
+                name: "IX_OrderBook_StockSymbol",
                 schema: "OrderBook",
                 table: "OrderBook",
-                column: "Ticker");
+                column: "StockSymbol");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Trade_BuyOrderId",
@@ -158,6 +178,12 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 schema: "OrderBook",
                 table: "Trade",
                 column: "SellOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trade_StockSymbol",
+                schema: "OrderBook",
+                table: "Trade",
+                column: "StockSymbol");
         }
 
         /// <inheritdoc />

@@ -10,10 +10,10 @@ public class ActivateListingEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPatch("/api/v1/listing/{id}/activate",
-            async (ActivateListingRequest req, ISender sender, CancellationToken ct) =>
+        app.MapPatch("/api/v1/listing/{symbol}/activate",
+            async (string symbol, ISender sender, CancellationToken ct) =>
             {
-                var command = new ActivateListingCommand { Id = req.Id, ReferencePrice = req.ReferencePrice };
+                var command = new ActivateListingCommand { stockSymbol = symbol };
 
                 var result = await sender.Send(command, ct);
                 return result.IsFailure ? result.ToProblemDetails() : Results.Created();

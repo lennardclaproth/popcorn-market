@@ -31,15 +31,15 @@ internal sealed class OrderBookRepository : IOrderBookRepository
         return await _context.OrderBooks.FindAsync(id);
     }
     
-    public async Task<OrderBook?> GetByTicker(string ticker)
+    public async Task<OrderBook?> GetByStockSymbol(string ticker)
     {
         var orderBook = await _context.OrderBooks
-            .FirstOrDefaultAsync(ob => ob.Ticker == ticker);
+            .FirstOrDefaultAsync(ob => ob.StockSymbol == ticker);
         
         return orderBook;
     }
 
-    public async Task<OrderBook?> GetByTickerIncludingPendingOrdersAsNoTracking(string ticker)
+    public async Task<OrderBook?> GetByStockSymbolIncludingPendingOrdersAsNoTracking(string ticker)
     {
         var buyOrders = await _context.Orders
             .Where(o => o.StockSymbol == ticker 
@@ -61,7 +61,7 @@ internal sealed class OrderBookRepository : IOrderBookRepository
 
         var book = await _context.OrderBooks
             .AsNoTracking()
-            .FirstAsync(ob => ob.Ticker == ticker);
+            .FirstAsync(ob => ob.StockSymbol == ticker);
 
         foreach (var o in buyOrders) book.PlaceOrder(o);
         foreach (var o in sellOrders) book.PlaceOrder(o);

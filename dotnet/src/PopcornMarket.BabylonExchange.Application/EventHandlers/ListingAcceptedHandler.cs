@@ -30,10 +30,10 @@ public class ListingAcceptedHandler : IDomainEventHandler<ListingAccepted>
     {
         var startTime = Stopwatch.GetTimestamp();
         _logger.LogInformation("Handling ListingAccepted event for stock symbol: {StockSymbol}", notification.StockSymbol);
-        var listing = await _listingRepository.GetByTicker(notification.StockSymbol);
+        var listing = await _listingRepository.GetByStockSymbol(notification.StockSymbol);
         Guard.Against.Null(listing, nameof(listing));
 
-        var orderBook = await _orderBookRepository.GetByTicker(notification.StockSymbol);
+        var orderBook = await _orderBookRepository.GetByStockSymbol(notification.StockSymbol);
         if (orderBook != null) throw new EntityAlreadyExistsException<OrderBook>(notification.StockSymbol);
 
         var creationResult = OrderBook.Create(listing, notification.StockSymbol);

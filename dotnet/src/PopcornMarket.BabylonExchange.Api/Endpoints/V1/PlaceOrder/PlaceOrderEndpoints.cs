@@ -15,7 +15,7 @@ public class PlaceOrderEndpoints : IEndpoint
             {
                 var command = new PlaceOrderCommand()
                 {
-                    Ticker = req.Ticker,
+                    StockSymbol = req.StockSymbol,
                     TraderId = req.TraderId,
                     Quantity = req.Quantity,
                     Price = req.Price,

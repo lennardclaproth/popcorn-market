@@ -4,6 +4,6 @@ namespace PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 
 public interface IOrderBookRepository : IRepository<Entities.OrderBook>
 {
-    public Task<OrderBook?> GetByTicker(string ticker);
-    public Task<OrderBook?> GetByTickerIncludingPendingOrdersAsNoTracking(string ticker);
+    public Task<OrderBook?> GetByStockSymbol(string symbol);
+    public Task<OrderBook?> GetByStockSymbolIncludingPendingOrdersAsNoTracking(string symbol);
 }

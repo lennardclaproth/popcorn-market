@@ -32,7 +32,7 @@ internal sealed class OrderBookCache
         using var scope = _scopeFactory.CreateScope();
         var orderBookRepository = scope.ServiceProvider.GetRequiredService<IOrderBookRepository>();
 
-        var book = await orderBookRepository.GetByTickerIncludingPendingOrdersAsNoTracking(ticker);
+        var book = await orderBookRepository.GetByStockSymbolIncludingPendingOrdersAsNoTracking(ticker);
         if (book == null) return null;
 
         var newCached = new CachedOrderBook(book);

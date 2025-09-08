@@ -15,19 +15,38 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
 
         builder.Property(l => l.Id)
             .HasColumnType("UUID");
-        
-        builder.Property(l  => l.Ticker)
+
+        builder.Property(l => l.StockSymbol)
             .IsRequired()
             .HasMaxLength(10);
 
+        builder.HasIndex(l => l.StockSymbol)
+            .IsUnique();
+
         builder.HasOne(l => l.OrderBook)
-            .WithOne(o => o.Listing); 
-        
+            .WithOne(o => o.Listing)
+            .HasForeignKey<OrderBook>(o => o.ListingId);
+
         builder.Property(l => l.Name)
             .HasMaxLength(255);
 
         builder.Property(l => l.Isin)
             .IsRequired()
             .HasMaxLength(12);
+
+        builder.Property(l => l.OpenPrice)
+            .HasColumnType("numeric(18,2)")
+            .IsRequired();
+
+        builder.Property(l => l.ClosePrice)
+            .HasColumnType("numeric(18,2)")
+            .IsRequired();
+
+        builder.Property(l => l.PublicOfferingPrice)
+            .HasColumnType("numeric(18,2)")
+            .IsRequired();
+
+        builder.Property(l => l.InitialPublicOfferingDate)
+            .HasColumnType("timestamp");
     }
 }

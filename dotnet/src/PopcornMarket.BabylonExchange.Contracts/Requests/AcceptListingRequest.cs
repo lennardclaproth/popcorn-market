@@ -1,3 +1,11 @@
-﻿namespace PopcornMarket.BabylonExchange.Contracts.Requests;
+﻿using System.Text.Json.Serialization;
 
-public record AcceptListingRequest();
+namespace PopcornMarket.BabylonExchange.Contracts.Requests;
+
+public record AcceptListingRequest
+{
+    [JsonPropertyName("pop")]
+    public decimal PublicOfferingPrice { get; init; }
+    [JsonPropertyName("ipo_date")]
+    public DateTime InitialPublicOfferingDate { get; init; }
+}

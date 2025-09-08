@@ -23,10 +23,10 @@ internal sealed class AcceptListingCommandHandler : ICommandHandler<AcceptListin
 
     public async Task<Result> Handle(AcceptListingCommand request, CancellationToken cancellationToken)
     {
-        var listing = await _listingRepository.GetById(request.Id);
-        if (listing == null) return Result.Failure(ListingErrors.ListingWithIdNotFound);
+        var listing = await _listingRepository.GetByStockSymbol(request.StockSymbol);
+        if (listing == null) return Result.Failure(ListingErrors.ListingWithSymbolNotFound);
 
-        var listingActivationResult = listing.Accept();
+        var listingActivationResult = listing.Accept(request.PublicOfferingPrice, request.InitialPublicOfferingDate);
 
         if (listingActivationResult.IsFailure)
         {
@@ -34,9 +34,10 @@ internal sealed class AcceptListingCommandHandler : ICommandHandler<AcceptListin
         }
         
         await _listingRepository.UpdateEntity(listing);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
         await _mediator.DispatchDomainEventsAsync(listing, cancellationToken);
         
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 }

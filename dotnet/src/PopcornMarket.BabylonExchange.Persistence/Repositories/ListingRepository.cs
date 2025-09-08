@@ -32,13 +32,26 @@ internal sealed class ListingRepository : IListingRepository
             .FirstOrDefaultAsync();
     }
     
-    public async Task<Listing?> GetByTicker(string ticker)
+    public async Task<Listing?> GetByStockSymbol(string ticker)
     {
         var listing = await _context.Listings
-            .Where(l => l.Ticker == ticker)
+            .Where(l => l.StockSymbol == ticker)
             .Include(l => l.OrderBook)
-            .FirstOrDefaultAsync(c => c.Ticker == ticker);
+            .FirstOrDefaultAsync(c => c.StockSymbol == ticker);
         
         return listing;
+    }
+
+    public async Task<IReadOnlyCollection<Listing>> GetActiveListings(string? filter, int pageNumber, int pageSize)
+    {
+        var listings = await _context.Listings
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Where(l => l.Status == Domain.Enums.ListingStatus.Active)
+            .Where(l => filter == null || l.StockSymbol.Contains(filter) || l.Name.Contains(filter) || l.Isin.Contains(filter))
+            .OrderBy(l => l.StockSymbol)
+            .ToListAsync();
+
+        return listings;
     }
 }

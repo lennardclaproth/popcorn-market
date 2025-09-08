@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Persistence.Constants;
@@ -16,13 +16,9 @@ internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<OrderBoo
         builder.Property(ob => ob.Id)
             .HasColumnType("UUID");
 
-        builder.Property(ob => ob.Ticker)
+        builder.Property(ob => ob.StockSymbol)
             .IsRequired()
             .HasMaxLength(10);
-        
-        builder.Property(ob => ob.CurrentPrice)
-            .HasPrecision(18, 6)
-            .HasColumnType("NUMERIC(18,6)");
         
         builder.HasMany(ob => ob.Orders)
             .WithOne(o => o.OrderBook)
@@ -33,6 +29,6 @@ internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<OrderBoo
             .WithOne(l => l.OrderBook)
             .HasForeignKey<OrderBook>(ob => ob.ListingId);
         
-        builder.HasIndex(ob => ob.Ticker);
+        builder.HasIndex(ob => ob.StockSymbol);
     }
 }

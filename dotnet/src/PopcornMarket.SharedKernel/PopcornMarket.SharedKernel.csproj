@@ -7,9 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MediatR" Version="12.4.1" />
-      <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
-      <PackageReference Include="MongoDB.Driver" Version="3.2.0" />
+      <PackageReference Include="MediatR" />
+      <PackageReference Include="MediatR.Contracts" />
+      <PackageReference Include="MongoDB.Driver" />
     </ItemGroup>
 
 </Project>

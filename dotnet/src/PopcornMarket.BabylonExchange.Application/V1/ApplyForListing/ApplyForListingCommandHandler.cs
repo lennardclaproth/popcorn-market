@@ -1,6 +1,7 @@
 ﻿using Ardalis.GuardClauses;
 using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
+using PopcornMarket.BabylonExchange.Domain.Constants;
 using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.SharedKernel.CQRS;
@@ -24,15 +25,15 @@ internal sealed class ApplyForListingCommandHandler : ICommandHandler<ApplyForLi
     /// Checks if a listing already exists for a given ticker, if the listing does not exist
     /// it creates a new listing.
     /// </summary>
-    /// <param name="applyFor"></param>
+    /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<Result> Handle(ApplyForListingCommand applyFor, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ApplyForListingCommand request, CancellationToken cancellationToken)
     {
-        var company = await _listingRepository.GetByTicker(applyFor.Ticker);
+        var company = await _listingRepository.GetByStockSymbol($"{ExchangeConstants.ExchangeIdentifier}:{request.Ticker}");
         if(company != null) return Result.Failure(ListingErrors.ListingAlreadyExists);
         
-        var creationResult = Listing.Create(applyFor.Ticker, applyFor.Name);
+        var creationResult = Listing.Create(request.Ticker, request.Name);
         
         if(creationResult.IsFailure) return creationResult;
         

@@ -23,13 +23,13 @@ internal sealed class CreateOrderBookCommandHandler : ICommandHandler<CreateOrde
 
     public async Task<Result> Handle(CreateOrderBookCommand request, CancellationToken cancellationToken)
     {
-        var listing = await _listingRepository.GetByTicker(request.Ticker);
+        var listing = await _listingRepository.GetByStockSymbol(request.StockSymbol);
         if (listing == null) return Result.Failure(ListingErrors.ListingNotFound);
         
-        var orderBook = await _orderBookRepository.GetByTicker(request.Ticker);
+        var orderBook = await _orderBookRepository.GetByStockSymbol(request.StockSymbol);
         if (orderBook != null) return Result.Failure(OrderBookErrors.OrderBookAlreadyExists);
         
-        var creationResult = OrderBook.Create(listing, request.Ticker);
+        var creationResult = OrderBook.Create(listing, request.StockSymbol);
         
         if(creationResult.IsFailure) return creationResult;
         

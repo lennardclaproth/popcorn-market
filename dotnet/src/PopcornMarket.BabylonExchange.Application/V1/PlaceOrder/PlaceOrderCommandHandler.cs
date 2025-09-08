@@ -28,13 +28,13 @@ public class PlaceOrderCommandHandler : ICommandHandler<PlaceOrderCommand>
 
     public async Task<Result> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
     {
-        var orderBook = await _orderBookRepository.GetByTicker(request.Ticker);
+        var orderBook = await _orderBookRepository.GetByStockSymbol(request.StockSymbol);
         if(orderBook == null) return Result.Failure(OrderBookErrors.OrderBookNotFound);
 
         var orderType = _mapper.Map<OrderType>(request.Type);
         var orderSide = _mapper.Map<OrderSide>(request.Side);
         
-        var order = Order.Create(request.Ticker, request.TraderId, request.Price, request.Quantity, orderType, orderBook, orderSide );
+        var order = Order.Create(request.StockSymbol, request.TraderId, request.Price, request.Quantity, orderType, orderBook, orderSide );
         orderBook.PlaceOrder(order);
 
         await _orderBookRepository.UpdateEntity(orderBook);

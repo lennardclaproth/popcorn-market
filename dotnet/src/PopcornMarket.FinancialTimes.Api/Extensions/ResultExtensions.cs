@@ -1,5 +1,4 @@
-using FastEndpoints;
-using PopcornMarket.SharedKernel.ResultPattern;
+﻿using PopcornMarket.SharedKernel.ResultPattern;
 using PopcornMarket.SharedKernel.ResultPattern.Constants;
 
 namespace PopcornMarket.FinancialTimes.Api.Extensions;

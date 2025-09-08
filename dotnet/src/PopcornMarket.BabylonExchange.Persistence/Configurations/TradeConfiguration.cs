@@ -30,5 +30,7 @@ public class TradeConfiguration : IEntityTypeConfiguration<Trade>
             .WithMany()
             .HasForeignKey(t => t.SellOrderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(t => t.StockSymbol);
     }
 }
