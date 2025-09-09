@@ -1,0 +1,22 @@
+﻿using System.Text.Json.Serialization;
+
+namespace PopcornMarket.BabylonExchange.Contracts.Dtos;
+public sealed record ListingDto
+{
+    [JsonPropertyName("symbol")]
+    public required string StockSymbol { get; init; }
+    [JsonPropertyName("isin")]
+    public required string Isin { get; init; }
+    [JsonPropertyName("company_name")]
+    public required string CompanyName { get; init; }
+    [JsonPropertyName("last_price")]
+    public required decimal LastPrice { get; init; }
+    [JsonPropertyName("price_change")]
+    public required decimal PriceChange { get; init; }
+    [JsonPropertyName("price_change_perc")]
+    public required decimal PriceChangePercent { get; init; }
+    [JsonPropertyName("volume")]
+    public required long Volume { get; init; }
+    [JsonPropertyName("last_updated")]
+    public required DateTimeOffset LastUpdated { get; init; }
+}

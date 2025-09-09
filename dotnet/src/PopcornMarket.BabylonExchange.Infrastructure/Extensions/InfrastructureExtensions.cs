@@ -1,6 +1,8 @@
+﻿using System.Threading.Channels;
 using Confluent.Kafka.Extensions.OpenTelemetry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
@@ -9,6 +11,7 @@ using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Infrastructure.Caching;
 using PopcornMarket.BabylonExchange.Infrastructure.Messaging.Consumers;
 using PopcornMarket.BabylonExchange.Infrastructure.Messaging.Services;
+using PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
 using PopcornMarket.SharedKernel.Messaging;
 using StackExchange.Redis;
 
@@ -22,10 +25,26 @@ public static class InfrastructureExtensions
         services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConn!));
         services.AddSingleton<ICacheService, RedisCacheService>();
         
+        SetupOrderMatchingEngine(services);
         SetupKafkaMessaging(services);
         AddObservability(services, configuration);
         
         return services;
+    }
+
+    private static void SetupOrderMatchingEngine(IServiceCollection services)
+    {
+        services.AddSingleton(Channel.CreateUnbounded<Domain.Entities.Order>());
+        services.AddSingleton<OrderBookCache>(sp =>
+        {
+            var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+            var evictionTimeout = TimeSpan.FromMinutes(10);
+            var logger = sp.GetRequiredService<ILogger<OrderBookCache>>();
+            return new OrderBookCache(scopeFactory, evictionTimeout, logger);
+        });
+        services.AddSingleton<IOrderQueue, InMemoryOrderQueue>();
+        services.AddHostedService<CacheEvictionService>();
+        services.AddHostedService<MatchingEngine>();
     }
     
     private static void SetupKafkaMessaging(this IServiceCollection services)

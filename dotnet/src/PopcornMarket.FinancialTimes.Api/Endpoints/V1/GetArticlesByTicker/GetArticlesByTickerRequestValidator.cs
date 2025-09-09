@@ -1,10 +1,9 @@
-using FastEndpoints;
-using FluentValidation;
+﻿using FluentValidation;
 using PopcornMarket.FinancialTimes.Contracts.V1.Requests;
 
 namespace PopcornMarket.FinancialTimes.Api.Endpoints.V1.GetArticlesByTicker;
 
-public class GetArticlesByTickerRequestValidator : Validator<GetArticlesByTickerRequest>
+public class GetArticlesByTickerRequestValidator : AbstractValidator<GetArticlesByTickerRequest>
 {
     public GetArticlesByTickerRequestValidator()
     {

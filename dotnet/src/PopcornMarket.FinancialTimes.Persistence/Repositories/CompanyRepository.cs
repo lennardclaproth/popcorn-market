@@ -6,7 +6,7 @@ using PopcornMarket.FinancialTimes.Persistence.Context;
 
 namespace PopcornMarket.FinancialTimes.Persistence.Repositories;
 
-public class CompanyRepository : ICompanyRepository
+internal sealed class CompanyRepository : ICompanyRepository
 {
     private readonly IMongoCollection<Company> _collection;
 

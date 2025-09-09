@@ -1,10 +1,9 @@
-using FastEndpoints;
-using FluentValidation;
+﻿using FluentValidation;
 using PopcornMarket.FinancialTimes.Contracts.V1.Requests;
 
 namespace PopcornMarket.FinancialTimes.Api.Endpoints.V1.GetPoliticalArticles;
 
-internal sealed class GetPoliticalArticlesRequestValidator : Validator<GetPoliticalArticlesRequest>
+internal sealed class GetPoliticalArticlesRequestValidator : AbstractValidator<GetPoliticalArticlesRequest>
 {
     public GetPoliticalArticlesRequestValidator()
     {

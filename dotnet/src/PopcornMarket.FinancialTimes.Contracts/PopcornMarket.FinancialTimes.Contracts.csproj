@@ -10,8 +10,4 @@
       <Folder Include="V1\Constants\" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="FastEndpoints.Swagger" Version="6.0.0-beta.5" />
-    </ItemGroup>
-
 </Project>

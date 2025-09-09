@@ -1,10 +1,9 @@
-using FastEndpoints;
-using FluentValidation;
+﻿using FluentValidation;
 using PopcornMarket.FinancialTimes.Contracts.V1.Requests;
 
 namespace PopcornMarket.FinancialTimes.Api.Endpoints.V1.GetMacroEconomicArticles;
 
-internal sealed class GetMacroEconomicArticlesRequestValidator : Validator<GetMacroEconomicArticlesRequest>
+internal sealed class GetMacroEconomicArticlesRequestValidator : AbstractValidator<GetMacroEconomicArticlesRequest>
 {
     public GetMacroEconomicArticlesRequestValidator()
     {

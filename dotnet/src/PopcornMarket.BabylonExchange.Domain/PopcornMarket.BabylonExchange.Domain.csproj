@@ -11,4 +11,10 @@
       <ProjectReference Include="..\PopcornMarket.SharedKernel\PopcornMarket.SharedKernel.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+        <_Parameter1>PopcornMarket.BabylonExchange.Domain.UnitTests</_Parameter1>
+      </AssemblyAttribute>
+    </ItemGroup>
+
 </Project>

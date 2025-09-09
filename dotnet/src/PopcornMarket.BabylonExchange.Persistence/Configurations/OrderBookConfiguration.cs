@@ -1,34 +1,34 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Persistence.Constants;
 
 namespace PopcornMarket.BabylonExchange.Persistence.Configurations;
 
-internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<BabylonExchange.Domain.Entities.OrderBook>
+internal sealed class OrderBookConfiguration : IEntityTypeConfiguration<OrderBook>
 {
-    public void Configure(EntityTypeBuilder<BabylonExchange.Domain.Entities.OrderBook> builder)
+    public void Configure(EntityTypeBuilder<OrderBook> builder)
     {
-        builder.ToTable(name: nameof(BabylonExchange.Domain.Entities.OrderBook), schema: SchemaConstants.Schema);
+        builder.ToTable(name: nameof(OrderBook), schema: SchemaConstants.Schema);
 
         builder.HasKey(ob => ob.Id);
 
         builder.Property(ob => ob.Id)
             .HasColumnType("UUID");
 
-        builder.Property(ob => ob.Ticker)
+        builder.Property(ob => ob.StockSymbol)
             .IsRequired()
             .HasMaxLength(10);
         
-        builder.HasMany(ob => ob.BuyOrders)
+        builder.HasMany(ob => ob.Orders)
             .WithOne(o => o.OrderBook)
             .HasForeignKey(o => o.OrderBookId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(ob => ob.Listing)
+            .WithOne(l => l.OrderBook)
+            .HasForeignKey<OrderBook>(ob => ob.ListingId);
         
-        builder.HasMany(ob => ob.SellOrders)
-            .WithOne(o => o.OrderBook)
-            .HasForeignKey(o => o.OrderBookId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        builder.HasIndex(ob => ob.Ticker);
+        builder.HasIndex(ob => ob.StockSymbol);
     }
 }

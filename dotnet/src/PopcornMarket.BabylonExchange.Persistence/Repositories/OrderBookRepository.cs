@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
+using PopcornMarket.BabylonExchange.Domain.Entities;
+using PopcornMarket.BabylonExchange.Domain.Enums;
 using PopcornMarket.BabylonExchange.Persistence.Context;
 
 namespace PopcornMarket.BabylonExchange.Persistence.Repositories;
@@ -13,27 +15,57 @@ internal sealed class OrderBookRepository : IOrderBookRepository
         _context = context;
     }
 
-    public async Task AddEntity(BabylonExchange.Domain.Entities.OrderBook entity)
+    public async Task AddEntity(OrderBook entity)
     {
         await _context.OrderBooks.AddAsync(entity);
-        await _context.SaveChangesAsync();
     }
 
-    public Task UpdateEntity(BabylonExchange.Domain.Entities.OrderBook entity)
+    public Task UpdateEntity(OrderBook entity)
     {
-        throw new NotImplementedException();
+        _context.OrderBooks.Update(entity);
+        return Task.CompletedTask;
     }
 
-    public Task<BabylonExchange.Domain.Entities.OrderBook?> GetById(Guid id)
+    public async Task<OrderBook?> GetById(Guid id)
     {
-        throw new NotImplementedException();
+        return await _context.OrderBooks.FindAsync(id);
     }
     
-    public async Task<Domain.Entities.OrderBook?> GetByTicker(string ticker)
+    public async Task<OrderBook?> GetByStockSymbol(string ticker)
     {
         var orderBook = await _context.OrderBooks
-            .FirstOrDefaultAsync(ob => ob.Ticker == ticker);
+            .FirstOrDefaultAsync(ob => ob.StockSymbol == ticker);
         
         return orderBook;
+    }
+
+    public async Task<OrderBook?> GetByStockSymbolIncludingPendingOrdersAsNoTracking(string ticker)
+    {
+        var buyOrders = await _context.Orders
+            .Where(o => o.StockSymbol == ticker 
+                        && o.OrderSide == OrderSide.Buy 
+                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled))
+            .OrderBy(o => o.OrderType == OrderType.MarketOrder ? 0 : 1) // market orders first
+            .ThenByDescending(o => o.Price)                             // higher price first for limits
+            .ThenBy(o => o.PlacedTimestamp)                             // FIFO
+            .ToListAsync();
+        
+        var sellOrders = await _context.Orders
+            .Where(o => o.StockSymbol == ticker 
+                        && o.OrderSide == OrderSide.Sell 
+                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled))
+            .OrderBy(o => o.OrderType == OrderType.MarketOrder ? 0 : 1) // market orders first
+            .ThenBy(o => o.Price)                                       // lower price first for limits
+            .ThenBy(o => o.PlacedTimestamp)                             // FIFO
+            .ToListAsync();
+
+        var book = await _context.OrderBooks
+            .AsNoTracking()
+            .FirstAsync(ob => ob.StockSymbol == ticker);
+
+        foreach (var o in buyOrders) book.PlaceOrder(o);
+        foreach (var o in sellOrders) book.PlaceOrder(o);
+
+        return book;
     }
 }

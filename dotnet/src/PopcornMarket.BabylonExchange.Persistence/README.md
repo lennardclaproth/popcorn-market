@@ -11,8 +11,8 @@ if (migrationBuilder.ActiveProvider == "Npgsql.EntityFrameworkCore.PostgreSQL")
 
 To run a migration and create an SQL script execute the following command:
 ```bash
-dotnet ef migrations add PopcornMakret.BabylonExchange.MigrationName --project .\PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj
-dotnet ef migrations script --project .\PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj --startup-project .\PopcornMarket.BabylonExchange.Api\PopcornMarket.BabylonExchange.Api.csproj --idempotent -o ./sql/scripts/PopcornMarket.BabylonExchange.Deploy.sql
+dotnet ef migrations add PopcornMarket.BabylonExchange.MigrationName --project .\PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj
+dotnet ef migrations script --project .\PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj --startup-project .\PopcornMarket.BabylonExchange.Api\PopcornMarket.BabylonExchange.Api.csproj --idempotent -o ./sql/scripts/PopcornMarket.BabylonExchange.Migrations.sql
 ```
 
 The SQL scripts will be created in ./src/sql
