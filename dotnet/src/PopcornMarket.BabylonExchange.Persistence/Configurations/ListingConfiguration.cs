@@ -42,11 +42,22 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
             .HasColumnType("numeric(18,2)")
             .IsRequired();
 
+        builder.Property(l => l.HighPrice)
+            .HasColumnType("numeric(18,2)")
+            .IsRequired();
+
+        builder.Property(l => l.LowPrice)
+            .HasColumnType("numeric(18,2)")
+            .IsRequired();
+
         builder.Property(l => l.PublicOfferingPrice)
             .HasColumnType("numeric(18,2)")
             .IsRequired();
 
         builder.Property(l => l.InitialPublicOfferingDate)
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamptz");
+
+        builder.Property(l => l.LastUpdate)
+            .HasColumnType("timestamptz");
     }
 }

@@ -31,6 +31,7 @@ public sealed class OrderBook : AggregateRoot
         StockSymbol = stockSymbol;
         ListingId = listing.Id;
         
+
         _buyOrders = new SortedSet<Order>(new OrderComparer(true));
         _sellOrders = new SortedSet<Order>(new OrderComparer(false));
     }

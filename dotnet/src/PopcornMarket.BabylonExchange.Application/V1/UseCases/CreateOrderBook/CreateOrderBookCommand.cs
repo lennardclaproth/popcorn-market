@@ -1,0 +1,8 @@
+﻿using PopcornMarket.SharedKernel.CQRS;
+
+namespace PopcornMarket.BabylonExchange.Application.V1.UseCases.CreateOrderBook;
+
+public sealed record CreateOrderBookCommand : ICommand
+{
+    public required string StockSymbol { get; init; }
+}

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PopcornMarket.BabylonExchange.Api.Abstractions;
 using PopcornMarket.BabylonExchange.Api.Extensions;
 using PopcornMarket.BabylonExchange.Application.V1.GetActiveListings;
-using PopcornMarket.BabylonExchange.Contracts.Requests;
+using PopcornMarket.BabylonExchange.Contracts.Responses;
 
 namespace PopcornMarket.BabylonExchange.Api.Endpoints.V1.GetActiveListings;
 
@@ -22,7 +22,28 @@ public class ApplyForListingEndpoint : IEndpoint
                 };
 
                 var result = await sender.Send(command, ct);
-                return result.IsFailure ? result.ToProblemDetails() : Results.Created();
+
+                if (result.IsFailure)
+                {
+                    return result.ToProblemDetails();
+                }
+                
+                if (result.Value == null || !result.Value.Any())
+                {
+                    return Results.NoContent();
+                }
+
+                var response = new GetActiveListingsResponse
+                {
+                    Listings = result.Value,
+                    PageNumber = pageNumber,
+                    PageCount = (int)Math.Ceiling((double)(result.Value.Count()) / pageSize),
+
+                    // Should become total count of set.
+                    TotalCount = result.Value.Count()
+                };
+
+                return Results.Ok(response);
             }).AllowAnonymous();
     }
 }

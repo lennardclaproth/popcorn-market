@@ -1,0 +1,99 @@
+definitions:
+  rest.CreateUserRequest:
+    properties:
+      city:
+        example: Berlin
+        type: string
+      country:
+        example: Germany
+        type: string
+      date_of_birth:
+        example: "2000-01-31"
+        format: date
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+      password:
+        example: SuperSecret123
+        type: string
+      state:
+        example: Berlin
+        type: string
+      street:
+        example: 123 Main St
+        type: string
+      zip_code:
+        example: "10115"
+        type: string
+    type: object
+  rest.CreateUserResponse:
+    type: object
+  rest.OpenAccountRequest:
+    properties:
+      balance:
+        type: number
+      uid:
+        type: string
+    type: object
+  rest.OpenAccountResponse:
+    properties:
+      balance:
+        type: number
+      id:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /accounts:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new account with initial balance
+      parameters:
+      - description: Account info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/rest.OpenAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.OpenAccountResponse'
+      summary: Create account
+      tags:
+      - accounts
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user
+      parameters:
+      - description: Create User
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/rest.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.CreateUserResponse'
+      summary: Create user
+      tags:
+      - users
+swagger: "2.0"

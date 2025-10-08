@@ -45,11 +45,11 @@ internal sealed class ListingRepository : IListingRepository
     public async Task<IReadOnlyCollection<Listing>> GetActiveListings(string? filter, int pageNumber, int pageSize)
     {
         var listings = await _context.Listings
+            .OrderBy(l => l.StockSymbol)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Where(l => l.Status == Domain.Enums.ListingStatus.Active)
             .Where(l => filter == null || l.StockSymbol.Contains(filter) || l.Name.Contains(filter) || l.Isin.Contains(filter))
-            .OrderBy(l => l.StockSymbol)
             .ToListAsync();
 
         return listings;

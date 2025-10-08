@@ -15,13 +15,13 @@ public sealed class Listing : AggregateRoot
     public ListingStatus Status { get; private set; }
     public OrderBook? OrderBook { get; private set; } = null!;
     public decimal PublicOfferingPrice { get; private set; } 
-    public DateTime? InitialPublicOfferingDate { get; private set; }
+    public DateTimeOffset? InitialPublicOfferingDate { get; private set; }
     public decimal OpenPrice { get; private set; }
     public decimal HighPrice { get; private set; }
     public decimal LowPrice { get; private set; }
     public decimal ClosePrice { get; private set; }
     public long Volume { get; private set; }
-    public DateTime LastUpdate { get; private set; }
+    public DateTimeOffset LastUpdate { get; private set; }
     private Listing() { }
 
     /// <summary>
@@ -38,6 +38,7 @@ public sealed class Listing : AggregateRoot
         Name = name;
         Status = status;
         OrderBook = orderBook;
+        LastUpdate = DateTime.UtcNow;
     }
 
     internal static Listing Build(string stockSymbol, string name, ListingStatus status, OrderBook? orderBook)
@@ -101,6 +102,7 @@ public sealed class Listing : AggregateRoot
         PublicOfferingPrice = publicOfferingPrice;
         InitialPublicOfferingDate = initialPublicOfferingDate;
         Status = ListingStatus.Accepted;
+        LastUpdate = DateTime.UtcNow;
 
         RaiseDomainEvent(listingAcceptedEvent);
         
@@ -115,6 +117,7 @@ public sealed class Listing : AggregateRoot
         }
         
         Status = ListingStatus.InReview;
+        LastUpdate = DateTime.UtcNow;
         return Result.Success();
     }
     
@@ -132,6 +135,7 @@ public sealed class Listing : AggregateRoot
 
         Status = ListingStatus.Active;
         OpenPrice = PublicOfferingPrice;
+        LastUpdate = DateTime.UtcNow;
         return Result.Success();
     }
 
