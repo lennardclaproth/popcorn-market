@@ -20,7 +20,8 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
-
+#SonarQube
+.scannerwork/
 .idea
 ### Csharp ###
 ## Ignore Visual Studio temporary files, build results, and
