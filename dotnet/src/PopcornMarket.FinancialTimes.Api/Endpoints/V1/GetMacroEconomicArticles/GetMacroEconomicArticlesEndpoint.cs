@@ -1,7 +1,7 @@
-using MediatR;
+﻿using MediatR;
 using PopcornMarket.FinancialTimes.Api.Abstractions;
 using PopcornMarket.FinancialTimes.Api.Extensions;
-using PopcornMarket.FinancialTimes.Application.V1.GetMacroEconomicArticles;
+using PopcornMarket.FinancialTimes.Application.V1.UseCases.GetMacroEconomicArticles;
 using PopcornMarket.FinancialTimes.Contracts.V1.Dtos;
 using PopcornMarket.FinancialTimes.Contracts.V1.Requests;
 using PopcornMarket.FinancialTimes.Contracts.V1.Responses;

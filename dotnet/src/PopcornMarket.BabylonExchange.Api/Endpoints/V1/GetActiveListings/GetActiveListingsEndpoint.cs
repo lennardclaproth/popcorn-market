@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PopcornMarket.BabylonExchange.Api.Abstractions;
 using PopcornMarket.BabylonExchange.Api.Extensions;
-using PopcornMarket.BabylonExchange.Application.V1.GetActiveListings;
+using PopcornMarket.BabylonExchange.Application.V1.UseCases.GetActiveListings;
 using PopcornMarket.BabylonExchange.Contracts.Responses;
 
 namespace PopcornMarket.BabylonExchange.Api.Endpoints.V1.GetActiveListings;

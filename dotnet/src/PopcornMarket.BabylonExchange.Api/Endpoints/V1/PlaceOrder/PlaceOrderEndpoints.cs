@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using PopcornMarket.BabylonExchange.Api.Abstractions;
 using PopcornMarket.BabylonExchange.Api.Extensions;
-using PopcornMarket.BabylonExchange.Application.V1.PlaceOrder;
+using PopcornMarket.BabylonExchange.Application.V1.UseCases.PlaceOrder;
 using PopcornMarket.BabylonExchange.Contracts.Requests;
 
 namespace PopcornMarket.BabylonExchange.Api.Endpoints.V1.PlaceOrder;

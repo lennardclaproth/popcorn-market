@@ -2,8 +2,7 @@
 using PopcornMarket.FinancialTimes.Api.Abstractions;
 using PopcornMarket.FinancialTimes.Api.Endpoints.V1.GetArticlesBySector;
 using PopcornMarket.FinancialTimes.Api.Extensions;
-using PopcornMarket.FinancialTimes.Application.V1.GetMacroEconomicArticlesByRegion;
-using PopcornMarket.FinancialTimes.Application.V1.GetPoliticalArticlesByRegion;
+using PopcornMarket.FinancialTimes.Application.V1.UseCases.GetMacroEconomicArticlesByRegion;
 using PopcornMarket.FinancialTimes.Contracts.V1.Dtos;
 using PopcornMarket.FinancialTimes.Contracts.V1.Requests;
 using PopcornMarket.FinancialTimes.Contracts.V1.Responses;

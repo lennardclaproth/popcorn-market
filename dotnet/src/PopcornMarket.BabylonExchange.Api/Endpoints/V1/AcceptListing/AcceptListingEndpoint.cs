@@ -1,8 +1,7 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using PopcornMarket.BabylonExchange.Api.Abstractions;
 using PopcornMarket.BabylonExchange.Api.Extensions;
-using PopcornMarket.BabylonExchange.Application.V1.AcceptListing;
+using PopcornMarket.BabylonExchange.Application.V1.UseCases.AcceptListing;
 using PopcornMarket.BabylonExchange.Contracts.Requests;
 
 namespace PopcornMarket.BabylonExchange.Api.Endpoints.V1.AcceptListing;

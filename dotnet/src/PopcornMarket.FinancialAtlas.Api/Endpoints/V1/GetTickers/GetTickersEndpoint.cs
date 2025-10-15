@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using PopcornMarket.FinancialAtlas.Api.Abstractions;
 using PopcornMarket.FinancialAtlas.Api.Extensions;
-using PopcornMarket.FinancialAtlas.Application.V1.GetTickers;
+using PopcornMarket.FinancialAtlas.Application.V1.UseCases.GetTickers;
 using PopcornMarket.FinancialAtlas.Contracts.Responses;
 
 namespace PopcornMarket.FinancialAtlas.Api.Endpoints.V1.GetTickers;

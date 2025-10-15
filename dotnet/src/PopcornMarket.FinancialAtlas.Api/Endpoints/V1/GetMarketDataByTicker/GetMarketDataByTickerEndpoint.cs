@@ -2,7 +2,7 @@
 using MediatR;
 using PopcornMarket.FinancialAtlas.Api.Abstractions;
 using PopcornMarket.FinancialAtlas.Api.Extensions;
-using PopcornMarket.FinancialAtlas.Application.V1.GetMarketDataByTicker;
+using PopcornMarket.FinancialAtlas.Application.V1.UseCases.GetMarketDataByTicker;
 using PopcornMarket.FinancialAtlas.Contracts.Requests;
 using PopcornMarket.FinancialAtlas.Contracts.Responses;
 
