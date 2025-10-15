@@ -1,11 +1,11 @@
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 using MediatR;
 using PopcornMarket.FinancialTimes.Api.Abstractions;
 using PopcornMarket.FinancialTimes.Api.Extensions;
-using PopcornMarket.FinancialTimes.Application.V1.PublishCompanyArticle;
-using PopcornMarket.FinancialTimes.Application.V1.PublishMacroEconomicArticle;
-using PopcornMarket.FinancialTimes.Application.V1.PublishPoliticalArticle;
-using PopcornMarket.FinancialTimes.Application.V1.PublishSectorArticle;
+using PopcornMarket.FinancialTimes.Application.V1.UseCases.PublishCompanyArticle;
+using PopcornMarket.FinancialTimes.Application.V1.UseCases.PublishMacroEconomicArticle;
+using PopcornMarket.FinancialTimes.Application.V1.UseCases.PublishPoliticalArticle;
+using PopcornMarket.FinancialTimes.Application.V1.UseCases.PublishSectorArticle;
 using PopcornMarket.FinancialTimes.Contracts.V1.Enums;
 using PopcornMarket.FinancialTimes.Contracts.V1.Requests;
 using PopcornMarket.FinancialTimes.Contracts.V1.Responses;

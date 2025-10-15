@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using PopcornMarket.FinancialTimes.Application.V1.CreateCompany;
+using PopcornMarket.FinancialTimes.Application.V1.UseCases.CreateCompany;
 using PopcornMarket.Messaging.Contracts.V1.Events;
 using PopcornMarket.SharedKernel.Messaging;
 

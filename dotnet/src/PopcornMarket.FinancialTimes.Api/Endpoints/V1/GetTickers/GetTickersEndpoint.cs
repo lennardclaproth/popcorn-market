@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using PopcornMarket.FinancialTimes.Api.Abstractions;
 using PopcornMarket.FinancialTimes.Api.Extensions;
-using PopcornMarket.FinancialTimes.Application.V1.GetTickers;
+using PopcornMarket.FinancialTimes.Application.V1.UseCases.GetTickers;
 using PopcornMarket.FinancialTimes.Contracts.V1.Responses;
 
 namespace PopcornMarket.FinancialTimes.Api.Endpoints.V1.GetTickers;

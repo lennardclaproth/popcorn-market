@@ -1,9 +1,9 @@
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PopcornMarket.FinancialAtlas.Api.Abstractions;
 using PopcornMarket.FinancialAtlas.Api.Extensions;
-using PopcornMarket.FinancialAtlas.Application.V1.GetFinancialStatementByTicker;
+using PopcornMarket.FinancialAtlas.Application.V1.UseCases.GetFinancialStatementByTicker;
 using PopcornMarket.FinancialAtlas.Contracts.Requests;
 using PopcornMarket.FinancialAtlas.Contracts.Responses;
 

@@ -1,7 +1,7 @@
-using MediatR;
+﻿using MediatR;
 using PopcornMarket.FinancialAtlas.Api.Abstractions;
 using PopcornMarket.FinancialAtlas.Api.Extensions;
-using PopcornMarket.FinancialAtlas.Application.V1.PublishFinancialStatement;
+using PopcornMarket.FinancialAtlas.Application.V1.UseCases.PublishFinancialStatement;
 using PopcornMarket.FinancialAtlas.Contracts.Requests;
 using PopcornMarket.FinancialAtlas.Contracts.Responses;
 
