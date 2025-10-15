@@ -1,0 +1,103 @@
+definitions:
+  http.createUserRequest:
+    properties:
+      city:
+        example: Berlin
+        type: string
+      country:
+        example: Germany
+        type: string
+      date_of_birth:
+        example: "2000-01-31"
+        format: date
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+      password:
+        example: SuperSecret123
+        type: string
+      state:
+        example: Berlin
+        type: string
+      street:
+        example: 123 Main St
+        type: string
+      zip_code:
+        example: "10115"
+        type: string
+    type: object
+  http.createUserResponse:
+    properties:
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  http.openAccountRequest:
+    properties:
+      balance:
+        type: number
+      uid:
+        type: string
+    type: object
+  http.openAccountResponse:
+    properties:
+      balance:
+        type: number
+      id:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/accounts/open:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new account with initial balance
+      parameters:
+      - description: Account info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.openAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.openAccountResponse'
+      summary: Create account
+      tags:
+      - accounts
+  /api/v1/users/create:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user
+      parameters:
+      - description: Create User
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.createUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.createUserResponse'
+      summary: Create user
+      tags:
+      - users
+swagger: "2.0"

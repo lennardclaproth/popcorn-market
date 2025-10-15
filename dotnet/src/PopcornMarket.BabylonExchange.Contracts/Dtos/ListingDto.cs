@@ -11,6 +11,14 @@ public sealed record ListingDto
     public required string CompanyName { get; init; }
     [JsonPropertyName("last_price")]
     public required decimal LastPrice { get; init; }
+    [JsonPropertyName("price_open")]
+    public required decimal PriceOpen { get; init; }
+    [JsonPropertyName("price_close")]
+    public required decimal PriceClose { get; init; }
+    [JsonPropertyName("price_high")]
+    public required decimal PriceHigh { get; init; }
+    [JsonPropertyName("price_low")]
+    public required decimal PriceLow { get; init; }
     [JsonPropertyName("price_change")]
     public required decimal PriceChange { get; init; }
     [JsonPropertyName("price_change_perc")]

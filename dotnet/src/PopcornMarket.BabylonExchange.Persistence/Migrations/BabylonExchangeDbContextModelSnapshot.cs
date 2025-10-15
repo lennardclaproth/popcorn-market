@@ -27,21 +27,21 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                         .HasColumnType("numeric(18,2)");
 
                     b.Property<decimal>("HighPrice")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("numeric(18,2)");
 
-                    b.Property<DateTime?>("InitialPublicOfferingDate")
-                        .HasColumnType("timestamp");
+                    b.Property<DateTimeOffset?>("InitialPublicOfferingDate")
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("Isin")
                         .IsRequired()
                         .HasMaxLength(12)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("LastUpdate")
-                        .HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("LastUpdate")
+                        .HasColumnType("timestamptz");
 
                     b.Property<decimal>("LowPrice")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
