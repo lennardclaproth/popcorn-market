@@ -6,7 +6,7 @@ using PopcornMarket.FinancialAtlas.Contracts.Responses;
 
 namespace PopcornMarket.FinancialAtlas.Api.Endpoints.V1.GetTickers;
 
-internal sealed class GetTickersEndpoint : IEndpoint
+internal sealed class GetTickersEndpoint : IEndpoin
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
