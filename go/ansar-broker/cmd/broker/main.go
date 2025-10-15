@@ -21,8 +21,12 @@ func run(ctx context.Context, args []string) error {
 	log := logging.NewSlogLogger(slog.LevelInfo)
 	app := application.NewApp(db, log)
 
-	server := http.NewServer(":6000", app, log)
-	server.Run()
+	server := http.NewServer(":6060", app, log)
+
+	if err := server.Run(ctx); err != nil {
+		return fmt.Errorf("server error: %w", err)
+	}
+
 	return nil
 }
 

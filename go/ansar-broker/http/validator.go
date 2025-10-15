@@ -1,25 +1,23 @@
 package http
 
 import (
+	"context"
 	"time"
-
-	"github.com/go-playground/validator/v10"
 )
 
-func NewValidator() *validator.Validate {
-	v := validator.New()
-	v.RegisterValidation("dateonly", DateOnlyValidator)
-
-	return v
+// Validator is an object that can be validated.
+type Validator interface {
+	// Valid checks the object and returns any
+	// problems. If len(problems) == 0 then
+	// the object is valid.
+	Valid(ctx context.Context) (problems map[string]string)
 }
 
-func DateOnlyValidator(fl validator.FieldLevel) bool {
-	value := fl.Field().String() // Get the field as a string
-
-	if value == "" {
+func ValidateDateOnly(d string) bool {
+	if d == "" {
 		return false
 	}
 
-	_, err := time.Parse(time.DateOnly, value)
+	_, err := time.Parse(time.DateOnly, d)
 	return err == nil
 }

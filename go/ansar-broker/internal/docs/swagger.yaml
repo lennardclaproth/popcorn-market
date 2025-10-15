@@ -1,5 +1,5 @@
 definitions:
-  rest.CreateUserRequest:
+  http.createUserRequest:
     properties:
       city:
         example: Berlin
@@ -33,16 +33,20 @@ definitions:
         example: "10115"
         type: string
     type: object
-  rest.CreateUserResponse:
+  http.createUserResponse:
+    properties:
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
     type: object
-  rest.OpenAccountRequest:
+  http.openAccountRequest:
     properties:
       balance:
         type: number
       uid:
         type: string
     type: object
-  rest.OpenAccountResponse:
+  http.openAccountResponse:
     properties:
       balance:
         type: number
@@ -52,7 +56,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /accounts:
+  /api/v1/accounts/open:
     post:
       consumes:
       - application/json
@@ -63,18 +67,18 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/rest.OpenAccountRequest'
+          $ref: '#/definitions/http.openAccountRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.OpenAccountResponse'
+            $ref: '#/definitions/http.openAccountResponse'
       summary: Create account
       tags:
       - accounts
-  /users:
+  /api/v1/users/create:
     post:
       consumes:
       - application/json
@@ -85,14 +89,14 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/rest.CreateUserRequest'
+          $ref: '#/definitions/http.createUserRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/rest.CreateUserResponse'
+            $ref: '#/definitions/http.createUserResponse'
       summary: Create user
       tags:
       - users

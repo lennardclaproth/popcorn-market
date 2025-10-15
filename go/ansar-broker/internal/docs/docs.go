@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/accounts": {
+        "/api/v1/accounts/open": {
             "post": {
                 "description": "Creates a new account with initial balance",
                 "consumes": [
@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.OpenAccountRequest"
+                            "$ref": "#/definitions/http.openAccountRequest"
                         }
                     }
                 ],
@@ -43,13 +43,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.OpenAccountResponse"
+                            "$ref": "#/definitions/http.openAccountResponse"
                         }
                     }
                 }
             }
         },
-        "/users": {
+        "/api/v1/users/create": {
             "post": {
                 "description": "Creates a new user",
                 "consumes": [
@@ -69,7 +69,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/rest.CreateUserRequest"
+                            "$ref": "#/definitions/http.createUserRequest"
                         }
                     }
                 ],
@@ -77,7 +77,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/rest.CreateUserResponse"
+                            "$ref": "#/definitions/http.createUserResponse"
                         }
                     }
                 }
@@ -85,7 +85,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "rest.CreateUserRequest": {
+        "http.createUserRequest": {
             "type": "object",
             "properties": {
                 "city": {
@@ -131,10 +131,16 @@ const docTemplate = `{
                 }
             }
         },
-        "rest.CreateUserResponse": {
-            "type": "object"
+        "http.createUserResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
         },
-        "rest.OpenAccountRequest": {
+        "http.openAccountRequest": {
             "type": "object",
             "properties": {
                 "balance": {
@@ -145,7 +151,7 @@ const docTemplate = `{
                 }
             }
         },
-        "rest.OpenAccountResponse": {
+        "http.openAccountResponse": {
             "type": "object",
             "properties": {
                 "balance": {
