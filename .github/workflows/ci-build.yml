@@ -27,3 +27,19 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+
+  go-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: go
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24'
+    - name: Build-Ansar-Broker
+      run: go build -v ./ansar-broker
+    - name: Test-Ansar-Broker
+      run: go test -v ./ansar-broker
