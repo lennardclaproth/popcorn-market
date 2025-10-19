@@ -13,6 +13,7 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
       <PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
       <PackageReference Include="Npgsql.OpenTelemetry" />
       <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
@@ -23,14 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj" />
       <ProjectReference Include="..\PopcornMarket.Messaging.Contracts\PopcornMarket.Messaging.Contracts.csproj" />
       <ProjectReference Include="..\PopcornMarket.BabylonExchange.Application\PopcornMarket.BabylonExchange.Application.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
-        <HintPath>..\..\..\..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.15\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
 </Project>

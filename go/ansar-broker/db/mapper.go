@@ -1,6 +1,8 @@
 package db
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/lennardclaproth/ansar-broker/internal/account"
 	"github.com/lennardclaproth/ansar-broker/internal/order"
@@ -81,11 +83,14 @@ func ToDomainAccount(a Account) (account.Account, error) {
 	}
 
 	return account.Account{
-		ID:        a.ID,
-		UserID:    a.UserID,
-		Balance:   a.Balance,
-		Status:    account.AccountStatus(a.Status),
-		Portfolio: portfolio,
+		ID:         a.ID,
+		UserID:     a.UserID,
+		Number:     a.Number,
+		OpenedDate: a.OpenedDate,
+		Balance:    a.Balance,
+		Status:     account.AccountStatus(a.Status),
+		Portfolio:  portfolio,
+		IsActive:   a.IsActive,
 	}, nil
 }
 
@@ -93,11 +98,15 @@ func ToSchemaAccount(d account.Account) Account {
 	acc := Account{
 		ID:            d.ID,
 		UserID:        d.UserID,
+		Number:        d.Number,
+		OpenedDate:    d.OpenedDate,
 		Balance:       d.Balance,
 		Status:        AccountStatus(d.Status),
 		TotalValue:    d.Portfolio.TotalValue,
 		UnrealizedPnL: d.Portfolio.UnrealizedPnL,
 		RealizedPnL:   d.Portfolio.RealizedPnL,
+		IsActive:      d.IsActive,
+		UpdatedAt:     time.Now(),
 	}
 
 	if d.Portfolio.Holdings != nil {
@@ -130,6 +139,7 @@ func ToDomainHolding(h Holding) account.Holding {
 func ToDomainOrder(o Order) order.Order {
 	return order.Order{
 		ID:        o.ID,
+		OrderId:   o.OrderId,
 		AccountID: o.AccountID,
 		Ticker:    o.Ticker,
 		Quantity:  o.Quantity,
@@ -143,6 +153,7 @@ func ToDomainOrder(o Order) order.Order {
 func ToSchemaOrder(d order.Order) Order {
 	return Order{
 		ID:        d.ID,
+		OrderId:   d.OrderId,
 		AccountID: d.AccountID,
 		Ticker:    d.Ticker,
 		Quantity:  d.Quantity,
@@ -150,5 +161,6 @@ func ToSchemaOrder(d order.Order) Order {
 		Side:      OrderSide(d.Side),
 		Type:      OrderType(d.Type),
 		Status:    OrderStatus(d.Status),
+		UpdatedAt: time.Now(),
 	}
 }

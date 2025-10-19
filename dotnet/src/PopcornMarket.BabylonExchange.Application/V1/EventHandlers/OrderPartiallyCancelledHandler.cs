@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
+using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
 using PopcornMarket.SharedKernel.Abstractions;
@@ -9,12 +10,16 @@ namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
 internal sealed class OrderPartiallyCancelledHandler : IDomainEventHandler<OrderPartiallyCancelled>
 {
     private readonly IOrderRepository _orderRepository;
+    private readonly IOutboxService _outboxService;
     private readonly ILogger<OrderPartiallyCancelledHandler> _logger;
 
-    public OrderPartiallyCancelledHandler(IOrderRepository orderRepository, ILogger<OrderPartiallyCancelledHandler> logger)
+    public OrderPartiallyCancelledHandler(IOrderRepository orderRepository,
+        ILogger<OrderPartiallyCancelledHandler> logger,
+        IOutboxService outboxService)
     {
         _orderRepository = orderRepository;
         _logger = logger;
+        _outboxService = outboxService;
     }
 
     public async Task Handle(OrderPartiallyCancelled notification, CancellationToken cancellationToken)
@@ -27,6 +32,6 @@ internal sealed class OrderPartiallyCancelledHandler : IDomainEventHandler<Order
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
         _logger.LogInformation("Order with OrderId: {OrderId} partial cancellation has been persisted in {ElapsedTimeMs}", notification.OrderId, elapsedTimeMs);
-
+        await _outboxService.Add(notification, cancellationToken);
     }
 }

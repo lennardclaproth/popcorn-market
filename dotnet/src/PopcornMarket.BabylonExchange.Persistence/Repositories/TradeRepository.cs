@@ -15,7 +15,7 @@ public class TradeRepository : ITradeRepository
 
     public async Task AddEntity(Trade entity)
     {
-        await _dbContext.trades.AddAsync(entity);
+        await _dbContext.Trades.AddAsync(entity);
     }
 
     public Task<Trade?> GetById(Guid id)

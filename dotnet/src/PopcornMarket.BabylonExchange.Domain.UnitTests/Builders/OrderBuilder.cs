@@ -1,6 +1,5 @@
 ﻿using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Domain.Enums;
-using System;
 
 namespace PopcornMarket.BabylonExchange.Domain.UnitTests.Builders;
 

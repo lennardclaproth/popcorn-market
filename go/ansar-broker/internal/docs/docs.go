@@ -49,6 +49,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/securities/search": {
+            "get": {
+                "description": "Retrieves a paginated list of securities matching the filter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "securities"
+                ],
+                "summary": "Search securities",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by company or symbol",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.SearchSecuritiesResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/create": {
             "post": {
                 "description": "Creates a new user",
@@ -85,6 +153,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "http.SearchSecuritiesResponse": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "symbol": {
+                    "type": "string"
+                }
+            }
+        },
         "http.createUserRequest": {
             "type": "object",
             "properties": {
@@ -154,9 +233,6 @@ const docTemplate = `{
         "http.openAccountResponse": {
             "type": "object",
             "properties": {
-                "balance": {
-                    "type": "number"
-                },
                 "id": {
                     "type": "string"
                 }

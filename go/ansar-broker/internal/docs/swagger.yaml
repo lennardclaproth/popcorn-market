@@ -1,4 +1,11 @@
 definitions:
+  http.SearchSecuritiesResponse:
+    properties:
+      name:
+        type: string
+      symbol:
+        type: string
+    type: object
   http.createUserRequest:
     properties:
       city:
@@ -48,8 +55,6 @@ definitions:
     type: object
   http.openAccountResponse:
     properties:
-      balance:
-        type: number
       id:
         type: string
     type: object
@@ -78,6 +83,52 @@ paths:
       summary: Create account
       tags:
       - accounts
+  /api/v1/securities/search:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of securities matching the filter
+      parameters:
+      - description: Filter by company or symbol
+        in: query
+        name: filter
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.SearchSecuritiesResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search securities
+      tags:
+      - securities
   /api/v1/users/create:
     post:
       consumes:
