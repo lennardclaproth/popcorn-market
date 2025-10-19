@@ -36,7 +36,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.24'
-    - name: Build-Ansar-Broker
-      run: go build -v ./go/ansar-broker/cmd/api
-    - name: Test-Ansar-Broker
-      run: go test -v ./go/ansar-broker/cmd/api
+    - name: Build Ansar Broker
+      run: go -C go/ansar-broker build -v ./cmd/api
+    - name: Test Ansar Broker
+      run: go -C go/ansar-broker test -v ./...
