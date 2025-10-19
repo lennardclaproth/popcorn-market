@@ -37,6 +37,6 @@ jobs:
       with:
         go-version: '1.24'
     - name: Build-Ansar-Broker
-      run: go build -v go/ansar-broker/cmd/api
+      run: go build -v ./go/ansar-broker/cmd/api
     - name: Test-Ansar-Broker
-      run: go test -v go/ansar-broker/cmd/api
+      run: go test -v ./go/ansar-broker/cmd/api
