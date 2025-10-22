@@ -20,7 +20,8 @@ func NewOrderStoreSqlx(db *sqlx.DB) *OrderStore {
 
 func (os *OrderStore) Create(ctx context.Context, o *order.Order) error {
 	schemaOrder := ToSchemaOrder(*o)
-	query := fmt.Sprintf(`INSERT INTO %s id,
+	query := fmt.Sprintf(`INSERT INTO %s (
+		id,
 		order_id,
 		account_id,
 		ticker,
@@ -39,7 +40,7 @@ func (os *OrderStore) Create(ctx context.Context, o *order.Order) error {
 		:price,
 		:order_side,
 		:order_type,
-		:order_status
+		:order_status,
 		:updated_at
 	)`, TableOrders)
 
@@ -49,8 +50,8 @@ func (os *OrderStore) Create(ctx context.Context, o *order.Order) error {
 
 func (os *OrderStore) UpdateOrderPlaced(ctx context.Context, o *order.Order) error {
 	schema := ToSchemaOrder(*o)
-	query := fmt.Sprintf(`UPDATE %s SET order_status=?, updated_at=?,  WHERE id=?, order_status=?`, TableOrders)
+	query := fmt.Sprintf(`UPDATE %s SET order_status=?, updated_at=? WHERE id=?`, TableOrders)
 	_, err := os.db.ExecContext(ctx, query,
-		schema.Status, schema.UpdatedAt, schema.ID, schema.Status)
+		schema.Status, schema.UpdatedAt, schema.ID)
 	return err
 }

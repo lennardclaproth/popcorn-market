@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,6 +53,7 @@ type Account struct {
 	OpenedDate    time.Time     `db:"opened_at"`
 	IsActive      bool          `db:"is_active"`
 	UpdatedAt     time.Time     `db:"updated_at"`
+	DeletedAt     sql.NullTime  `db:"deleted_at"`
 }
 
 type Holding struct {

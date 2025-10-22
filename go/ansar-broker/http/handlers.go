@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lennardclaproth/ansar-broker/internal/account"
+	"github.com/lennardclaproth/ansar-broker/internal/order"
 	"github.com/lennardclaproth/ansar-broker/internal/security"
 	"github.com/lennardclaproth/ansar-broker/internal/user"
 	"github.com/lennardclaproth/ansar-broker/logging"
@@ -160,19 +161,6 @@ type SearchSecuritiesResponse struct {
 	Name   string `json:"name"`
 }
 
-// handleSearchSecurities godoc
-// @Summary      Search securities
-// @Description  Retrieves a paginated list of securities matching the filter
-// @Tags         securities
-// @Accept       json
-// @Produce      json
-// @Param        filter  query  string  false  "Filter by company or symbol"
-// @Param        page    query  int     true   "Page number"   default(1)
-// @Param        count   query  int     true   "Items per page" default(10)
-// @Success      200  {array}  SearchSecuritiesResponse
-// @Failure      400  {object}  map[string]string
-// @Failure      500  {object}  map[string]string
-// @Router       /api/v1/securities/search [get]
 func (r *SearchSecuritiesRequest) Valid(ctx context.Context) map[string]string {
 	problems := make(map[string]string)
 
@@ -189,6 +177,19 @@ func (r *SearchSecuritiesRequest) Valid(ctx context.Context) map[string]string {
 	return problems
 }
 
+// handleSearchSecurities godoc
+// @Summary      Search securities
+// @Description  Retrieves a paginated list of securities matching the filter
+// @Tags         securities
+// @Accept       json
+// @Produce      json
+// @Param        filter  query  string  false  "Filter by company or symbol"
+// @Param        page    query  int     true   "Page number"   default(1)
+// @Param        count   query  int     true   "Items per page" default(10)
+// @Success      200  {array}  SearchSecuritiesResponse
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/v1/securities/search [get]
 func handleSearchSecurities(s security.Service, log logging.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parse query parameters with sensible defaults
@@ -228,5 +229,96 @@ func handleSearchSecurities(s security.Service, log logging.Logger) http.Handler
 		}
 
 		encode(w, http.StatusOK, res)
+	}
+}
+
+type OrderType int
+type OrderSide int
+
+const (
+	OrderSideBuy OrderSide = iota
+	OrderSideSell
+)
+
+const (
+	OrderTypeMarket OrderType = iota
+	OrderTypeLimit
+)
+
+// swagger:model
+type placeOrderRequest struct {
+	AccountID     uuid.UUID `json:"account_id"`
+	AccountNumber string    `json:"account_number"`
+	Ticker        string    `json:"ticker"`
+	Quantity      int       `json:"quantity"`
+	Price         float64   `json:"price"`
+	Side          OrderSide `json:"order_side"` // Buy is 0 Sell is 1
+	Type          OrderType `json:"order_type"` // Market is 0 Limit is 1
+}
+
+func (req *placeOrderRequest) Valid(ctx context.Context) map[string]string {
+	problems := make(map[string]string)
+	if req.Quantity <= 0 {
+		problems["quantity"] = "quantity must be greater than zero"
+	}
+
+	// Check market order, market order cannot have a value.
+	if req.Type == OrderTypeMarket && req.Price != 0 {
+		problems["price"] = "price cannot have a value when placing a market order"
+	}
+
+	if req.Type == OrderTypeLimit && req.Price <= 0 {
+		problems["price"] = "price cannot be smaller or equal to zero when placing a limit order"
+	}
+
+	return problems
+}
+
+type placeOrderResponse struct {
+	OrderId string
+}
+
+// Create godoc
+// @Summary      Place order
+// @Description  Places a new order on an exchange
+// @Tags         orders
+// @Accept       json
+// @Produce      json
+// @Param        input  body  placeOrderRequest  true  "Place Order"
+// @Success      200  {object}  placeOrderResponse
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/v1/orders/place [post]
+func handlePlaceOrder(o order.Service, log logging.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		req, problems, err := decodeValid[*placeOrderRequest](r)
+		if err != nil && problems != nil {
+			encode(w, http.StatusBadRequest, problems)
+		}
+
+		if err != nil {
+			encode(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+
+		cmd := order.PlaceOrderCommand{
+			AccountID:     req.AccountID,
+			AccountNumber: req.AccountNumber,
+			Quantity:      req.Quantity,
+			Price:         req.Price,
+			Ticker:        req.Ticker,
+			Side:          order.OrderSide(req.Side),
+			Type:          order.OrderType(req.Type),
+		}
+
+		res, err := o.PlaceOrder(r.Context(), cmd)
+		if err != nil {
+			log.Error(r.Context(), "place order", err)
+			encode(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
+			return
+		}
+
+		_ = encode(w, http.StatusCreated, placeOrderResponse{
+			OrderId: res,
+		})
 	}
 }

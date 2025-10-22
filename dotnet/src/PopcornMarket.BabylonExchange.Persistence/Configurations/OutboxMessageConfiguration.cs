@@ -8,8 +8,17 @@ public class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage
     public void Configure(EntityTypeBuilder<OutboxMessage> builder)
     {
         builder.ToTable("OutboxMessages");
+
+        builder.Property(o => o.Id)
+            .HasColumnType("UUID")
+            .IsRequired()
+            .ValueGeneratedNever();
+
+        builder.Property(x => x.Type)
+            .IsRequired()
+            .HasMaxLength(250);
+
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Type).IsRequired().HasMaxLength(250);
     }
 }
 

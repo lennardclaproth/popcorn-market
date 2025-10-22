@@ -35,7 +35,31 @@ func (as *accountStore) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (as *accountStore) GetByID(ctx context.Context, id uuid.UUID) (*account.Account, error) {
-	panic("unimplemented")
+	var schemaAccounts []Account
+
+	query := fmt.Sprintf(
+		`SELECT * 
+		FROM %s 
+		WHERE id = ?`,
+		TableAccounts,
+	)
+
+	err := as.db.SelectContext(ctx, &schemaAccounts, query, id.String())
+	if err != nil {
+		return nil, fmt.Errorf("get account by id %s: %w", id, err)
+	}
+
+	accounts := make([]account.Account, 0, len(schemaAccounts))
+
+	for _, sa := range schemaAccounts {
+		da, err := ToDomainAccount(sa)
+		if err != nil {
+			return nil, fmt.Errorf("convert schema account %s: %w", sa.ID, err)
+		}
+		accounts = append(accounts, da)
+	}
+
+	return &accounts[0], nil
 }
 
 func (as *accountStore) GetByUserID(ctx context.Context, userID uuid.UUID) (*[]account.Account, error) {

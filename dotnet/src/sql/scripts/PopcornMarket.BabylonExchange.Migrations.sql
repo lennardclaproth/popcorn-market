@@ -205,5 +205,20 @@ BEGIN
     VALUES ('20251019153938_PopcornMarket.BabylonExchange.OutboxPattern', '9.0.3');
     END IF;
 END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251021212835_PopcornMarket.BabylonExchange.OutboxUUID') THEN
+    ALTER TABLE "OutboxMessages" ALTER COLUMN "Id" TYPE UUID;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251021212835_PopcornMarket.BabylonExchange.OutboxUUID') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20251021212835_PopcornMarket.BabylonExchange.OutboxUUID', '9.0.3');
+    END IF;
+END $EF$;
 COMMIT;
 

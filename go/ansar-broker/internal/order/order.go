@@ -101,22 +101,23 @@ var (
 
 // PlaceOrder creates a new order and adds it to the database than sends it to the correct exchange to
 // be processed.
-func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (uuid.UUID, error) {
+func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (string, error) {
 	// canPlaceOrder, err := s.accounts.CanPlaceOrder(ctx, cmd.AccountID, cmd.Price)
 
 	acc, err := s.accounts.GetAccountInfo(ctx, cmd.AccountID)
 
 	if err != nil {
-		return uuid.Nil, err
+		return "", err
 	}
 
 	if acc.Balance < cmd.Price || !acc.IsActive {
-		return uuid.Nil, fmt.Errorf("%w: account %s cannot place order at price %.2f",
+		return "", fmt.Errorf("%w: account %s cannot place order at price %.2f",
 			ErrAccountCannotPlaceOrder, cmd.AccountID, cmd.Price)
 	}
 
 	// Create a new order and store it in the database to make sure that
-	// it can be handled correctly if errors occur.
+	// it can be handled correctly if an errors occur. Deduct the funds
+	// when the order has been saved.
 	o := &Order{
 		ID:        uuid.New(),
 		AccountID: cmd.AccountID,
@@ -128,12 +129,10 @@ func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (uuid.U
 		Type:      cmd.Type,
 		Status:    OrderStatusNew,
 	}
-
 	err = s.store.Create(ctx, o)
 	if err != nil {
-		return uuid.Nil, err
+		return "", err
 	}
-
 	s.accounts.DeductFunds(ctx, acc.ID, o.Price)
 
 	// place the order on the exchange and make sure to set the orderId
@@ -141,16 +140,14 @@ func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (uuid.U
 	// we can map it back when the exchange publishes updates on the order.
 	oid, err := s.exchange.PlaceOrder(o)
 	if err != nil {
-		return uuid.Nil, err
+		return "", err
 	}
-
 	o.OrderId = oid
 	o.Status = OrderStatusPending
 	err = s.store.UpdateOrderPlaced(ctx, o)
-
 	if err != nil {
-		return uuid.Nil, err
+		return "", err
 	}
 
-	return o.ID, nil
+	return o.OrderId, nil
 }

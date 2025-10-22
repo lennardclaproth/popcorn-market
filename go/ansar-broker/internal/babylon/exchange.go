@@ -30,8 +30,7 @@ func NewService(cfg *config.Configuration) *Service {
 
 // PlaceOrder sends an order to the exchange via a POST request
 func (s *Service) PlaceOrder(o *order.Order) (string, error) {
-	url := fmt.Sprintf("%s/orders", s.baseURL)
-
+	url := fmt.Sprintf("%s/api/v1/order", s.baseURL)
 	// Build request payload based on the external API schema
 	request := struct {
 		TraderId string  `json:"trader_id"`

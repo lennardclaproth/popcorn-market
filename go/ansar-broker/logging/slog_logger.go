@@ -11,7 +11,10 @@ type SlogLogger struct {
 }
 
 func NewSlogLogger(level slog.Leveler) *SlogLogger {
-	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: level})
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     level,
+		AddSource: true,
+	})
 	return &SlogLogger{logger: slog.New(handler)}
 }
 
