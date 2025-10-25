@@ -12,7 +12,7 @@ type ConnectionType string
 
 const (
 	Sqlite  ConnectionType = "sqlite"
-	Postgre ConnectionType = "postgres"
+	Postgres ConnectionType = "postgres"
 )
 
 func NewDB(connStr string, connType ConnectionType) *sqlx.DB {

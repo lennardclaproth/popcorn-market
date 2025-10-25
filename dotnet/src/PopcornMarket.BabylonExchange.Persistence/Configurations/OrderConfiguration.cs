@@ -52,12 +52,19 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         
         builder.Property(o => o.ExecutedTimestamp)
             .HasColumnType("TIMESTAMPTZ");
-        
+
+        builder.Property(o => o.OrderId)
+            .IsRequired()
+            .HasMaxLength(50);
+
         builder.Property(o => o.Status)
             .IsRequired();
         
         builder.HasIndex(o => o.PlacedTimestamp);
-        
+
+        builder.HasIndex(o => o.OrderId)
+            .IsUnique();
+
         builder.HasIndex(o => o.ExecutedTimestamp);
     }
 }

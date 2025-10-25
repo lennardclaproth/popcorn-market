@@ -9,9 +9,12 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Infrastructure.Caching;
-using PopcornMarket.BabylonExchange.Infrastructure.Messaging.Consumers;
-using PopcornMarket.BabylonExchange.Infrastructure.Messaging.Services;
+using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Consumers;
 using PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
+using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Abstractions;
+using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.BackgroundJobs;
+using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Producers;
+using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Services;
 using PopcornMarket.SharedKernel.Messaging;
 using StackExchange.Redis;
 
@@ -50,8 +53,10 @@ public static class InfrastructureExtensions
     private static void SetupKafkaMessaging(this IServiceCollection services)
     {
         services.AddSingleton<IConsumer, KafkaConsumer>();
-        services.AddHostedService<ConsumerService>();
-        
+        services.AddSingleton<IProducer, KafkaProducer>();
+        services.AddHostedService<ConsumerJob>();
+        services.AddHostedService<OutboxJob>();
+
         var handlers = InfrastructureAssemblyReference.Assembly
             .GetTypes()
             .Where(type => !type.IsAbstract && !type.IsInterface)
@@ -60,6 +65,9 @@ public static class InfrastructureExtensions
                     .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>))
                     .Select(i => new { Type = i, HandlerType = type }))
             .ToList();
+
+        // Should maybe become part of setup ServiceBus
+        services.AddScoped<IOutboxService, EfCoreOutboxService>();
 
         foreach (var handler in handlers)
         {

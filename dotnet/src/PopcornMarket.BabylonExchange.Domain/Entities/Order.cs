@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Globalization;
+using PopcornMarket.BabylonExchange.Domain.Constants;
 using PopcornMarket.BabylonExchange.Domain.Enums;
 using PopcornMarket.SharedKernel.Primitives;
 
@@ -9,6 +10,7 @@ namespace PopcornMarket.BabylonExchange.Domain.Entities;
 /// </summary>
 public class Order : Entity
 {
+    public string OrderId { get; private set; } = null!;
     public Guid OrderBookId { get; private set; }
     public OrderBook OrderBook { get; private set; } = null!;
     public string StockSymbol { get; private set; } = null!;
@@ -34,6 +36,11 @@ public class Order : Entity
         OrderBook orderBook,
         OrderSide orderSide) : base(Guid.NewGuid())
     {
+        var now = DateTime.UtcNow;
+        var millis = now.Millisecond.ToString("D3", new CultureInfo("en-US"));
+        var random = new Random().Next(0, 999).ToString("D3", new CultureInfo("en-US"));
+
+        OrderId = $"ORD-{now:yyyyMMddHHmmss}{millis}-{random}-{ExchangeConstants.ExchangeIdentifier}";
         OrderBook = orderBook;
         OrderBookId = orderBook.Id;
         StockSymbol = stockSymbol;
@@ -56,12 +63,13 @@ public class Order : Entity
         OrderBook orderBook,
         OrderSide orderSide)
     {
+        // Validation of input parameters
         if (string.IsNullOrWhiteSpace(stockSymbol)) throw new ArgumentException("Stock symbol is required.");
         if (quantity <= 0) throw new ArgumentException("Quantity must be greater than zero.");
         if (price <= 0 && orderType == OrderType.LimitOrder) throw new ArgumentException("Price must be greater than zero on a limit order.");
         if (price != 0 && orderType == OrderType.MarketOrder) throw new ArgumentException("Price must be zero on a market order.");
 
-        return new Order(stockSymbol, traderId, price, quantity, orderType , orderBook, orderSide);
+        return new Order( stockSymbol, traderId, price, quantity, orderType , orderBook, orderSide);
     }
     
     public void TryFulfillOrder(decimal price, int tradeQuantity)

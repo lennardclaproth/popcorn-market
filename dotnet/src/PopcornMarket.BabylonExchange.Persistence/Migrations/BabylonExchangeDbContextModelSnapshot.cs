@@ -88,6 +88,11 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     b.Property<Guid>("OrderBookId")
                         .HasColumnType("UUID");
 
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("OrderSide")
                         .HasColumnType("INTEGER");
 
@@ -128,6 +133,9 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     b.HasIndex("ExecutedTimestamp");
 
                     b.HasIndex("OrderBookId");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.HasIndex("PlacedTimestamp");
 
@@ -194,6 +202,31 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     b.HasIndex("StockSymbol");
 
                     b.ToTable("Trade", "OrderBook");
+                });
+
+            modelBuilder.Entity("PopcornMarket.BabylonExchange.Persistence.Entities.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("UUID");
+
+                    b.Property<DateTime>("OccurredOnUtc")
+                        .HasColumnType("timestamptz");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("timestamptz");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OutboxMessages", (string)null);
                 });
 
             modelBuilder.Entity("PopcornMarket.BabylonExchange.Domain.Entities.Order", b =>

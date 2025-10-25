@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
+using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
 using PopcornMarket.SharedKernel.Abstractions;
@@ -9,12 +10,16 @@ namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
 internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPartiallyFilled>
 {
     private readonly IOrderRepository _orderRepository;
+    private readonly IOutboxService _outboxService;
     private readonly ILogger<OrderPartiallyFilledHandler> _logger;
 
-    public OrderPartiallyFilledHandler(IOrderRepository orderRepository, ILogger<OrderPartiallyFilledHandler> logger)
+    public OrderPartiallyFilledHandler(IOrderRepository orderRepository,
+        ILogger<OrderPartiallyFilledHandler> logger,
+        IOutboxService outboxService)
     {
         _orderRepository = orderRepository;
         _logger = logger;
+        _outboxService = outboxService;
     }
 
     public async Task Handle(OrderPartiallyFilled notification, CancellationToken cancellationToken)
@@ -26,5 +31,6 @@ internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPar
         order.PartiallyFulfillOrder(notification.TradePrice, notification.RemainingQuantity, notification.FulfilledAt);
         await _orderRepository.UpdateEntity(order);
         _logger.LogInformation("Order with OrderId: {OrderId} partial fill has been persisted in {ElapsedTimeMs} ms", notification.Id, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
+        await _outboxService.Add(notification, cancellationToken);
     }
 }

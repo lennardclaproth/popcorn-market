@@ -3,7 +3,7 @@ using PopcornMarket.SharedKernel.CQRS;
 
 namespace PopcornMarket.BabylonExchange.Application.V1.UseCases.PlaceOrder;
 
-public record PlaceOrderCommand : ICommand
+public record PlaceOrderCommand : ICommand<string>
 {
     public string TraderId { get; init; } = null!;
     public string StockSymbol { get; init; } = null!;

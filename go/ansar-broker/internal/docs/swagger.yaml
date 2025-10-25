@@ -1,4 +1,27 @@
 definitions:
+  http.OrderSide:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - OrderSideBuy
+    - OrderSideSell
+  http.OrderType:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - OrderTypeMarket
+    - OrderTypeLimit
+  http.SearchSecuritiesResponse:
+    properties:
+      name:
+        type: string
+      symbol:
+        type: string
+    type: object
   http.createUserRequest:
     properties:
       city:
@@ -48,9 +71,33 @@ definitions:
     type: object
   http.openAccountResponse:
     properties:
-      balance:
-        type: number
       id:
+        type: string
+    type: object
+  http.placeOrderRequest:
+    properties:
+      account_id:
+        type: string
+      account_number:
+        type: string
+      order_side:
+        allOf:
+        - $ref: '#/definitions/http.OrderSide'
+        description: Buy is 0 Sell is 1
+      order_type:
+        allOf:
+        - $ref: '#/definitions/http.OrderType'
+        description: Market is 0 Limit is 1
+      price:
+        type: number
+      quantity:
+        type: integer
+      ticker:
+        type: string
+    type: object
+  http.placeOrderResponse:
+    properties:
+      orderId:
         type: string
     type: object
 info:
@@ -78,6 +125,86 @@ paths:
       summary: Create account
       tags:
       - accounts
+  /api/v1/orders/place:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user
+      parameters:
+      - description: Create User
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/http.placeOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.placeOrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create user
+      tags:
+      - users
+  /api/v1/securities/search:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of securities matching the filter
+      parameters:
+      - description: Filter by company or symbol
+        in: query
+        name: filter
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.SearchSecuritiesResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search securities
+      tags:
+      - securities
   /api/v1/users/create:
     post:
       consumes:

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,16 +12,17 @@ const (
 	TableUsers    = "users"
 	TableAccounts = "accounts"
 	TableHoldings = "holdings"
+	TableOrders   = "orders"
 )
 
-type AccountStatus string
+type AccountStatus int
 
 const (
-	AccountStatusActive    AccountStatus = "active"
-	AccountStatusPending   AccountStatus = "pending"
-	AccountStatusInactive  AccountStatus = "inactive"
-	AccountStatusSuspended AccountStatus = "suspended"
-	AccountStatusClosed    AccountStatus = "closed"
+	AccountStatusActive AccountStatus = iota
+	AccountStatusPending
+	AccountStatusInactive
+	AccountStatusSuspended
+	AccountStatusClosed
 )
 
 type User struct {
@@ -49,6 +51,9 @@ type Account struct {
 	RealizedPnL   float64       `db:"realized_pnl"`
 	Holdings      []Holding     `db:"holdings"`
 	OpenedDate    time.Time     `db:"opened_at"`
+	IsActive      bool          `db:"is_active"`
+	UpdatedAt     time.Time     `db:"updated_at"`
+	DeletedAt     sql.NullTime  `db:"deleted_at"`
 }
 
 type Holding struct {
@@ -64,35 +69,38 @@ type Security struct {
 	Name   string `db:"name"`
 }
 
-type OrderSide string
+type OrderSide int
 
 const (
-	OrderSideBuy  OrderSide = "buy"
-	OrderSideSell OrderSide = "sell"
+	OrderSideBuy OrderSide = iota
+	OrderSideSell
 )
 
-type OrderType string
+type OrderType int
 
 const (
-	OrderTypeMarket OrderType = "market"
-	OrderTypeLimit  OrderType = "limit"
+	OrderTypeMarket OrderType = iota
+	OrderTypeLimit
 )
 
-type OrderStatus string
+type OrderStatus int
 
 const (
-	OrderStatusPending   OrderStatus = "pending"
-	OrderStatusCompleted OrderStatus = "completed"
-	OrderStatusCanceled  OrderStatus = "canceled"
+	OrderStatusPending OrderStatus = iota
+	OrderStatusCompleted
+	OrderStatusCanceled
 )
 
 type Order struct {
-	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
-	AccountID uuid.UUID `gorm:"type:uuid;index;not null"`
-	Ticker    string
-	Quantity  float64
-	Price     float64
-	Side      OrderSide
-	Type      OrderType
-	Status    OrderStatus
+	ID        uuid.UUID   `db:"id"`
+	OrderId   string      `db:"order_id"`
+	PlacedAt  time.Time   `db:"placed_at"`
+	AccountID uuid.UUID   `db:"account_id"`
+	Ticker    string      `db:"ticker"`
+	Quantity  int         `db:"quantity"`
+	Price     float64     `db:"price"`
+	Side      OrderSide   `db:"order_side"`
+	Type      OrderType   `db:"order_type"`
+	Status    OrderStatus `db:"order_status"`
+	UpdatedAt time.Time   `db:"updated_at"`
 }

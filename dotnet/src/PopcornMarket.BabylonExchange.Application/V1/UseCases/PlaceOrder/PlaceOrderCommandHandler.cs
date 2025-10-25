@@ -11,7 +11,7 @@ using PopcornMarket.SharedKernel.ResultPattern;
 
 namespace PopcornMarket.BabylonExchange.Application.V1.UseCases.PlaceOrder;
 
-public class PlaceOrderCommandHandler : ICommandHandler<PlaceOrderCommand>
+public class PlaceOrderCommandHandler : ICommandHandler<PlaceOrderCommand, string>
 {
     private readonly IOrderBookRepository _orderBookRepository;
     private readonly IMediator _mediator;
@@ -26,15 +26,15 @@ public class PlaceOrderCommandHandler : ICommandHandler<PlaceOrderCommand>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
     {
         var orderBook = await _orderBookRepository.GetByStockSymbol(request.StockSymbol);
-        if(orderBook == null) return Result.Failure(OrderBookErrors.OrderBookNotFound);
+        if(orderBook == null) return Result<string>.Failure(OrderBookErrors.OrderBookNotFound);
 
         var orderType = _mapper.Map<OrderType>(request.Type);
         var orderSide = _mapper.Map<OrderSide>(request.Side);
-        
-        var order = Order.Create(request.StockSymbol, request.TraderId, request.Price, request.Quantity, orderType, orderBook, orderSide );
+
+        var order = Order.Create(request.StockSymbol, request.TraderId, request.Price, request.Quantity, orderType, orderBook, orderSide);
         orderBook.PlaceOrder(order);
 
         await _orderBookRepository.UpdateEntity(orderBook);
@@ -42,6 +42,6 @@ public class PlaceOrderCommandHandler : ICommandHandler<PlaceOrderCommand>
 
         await _mediator.DispatchDomainEventsAsync(orderBook, cancellationToken);
 
-        return Result.Success();
+        return Result<string>.Success(order.OrderId);
     }
 }
