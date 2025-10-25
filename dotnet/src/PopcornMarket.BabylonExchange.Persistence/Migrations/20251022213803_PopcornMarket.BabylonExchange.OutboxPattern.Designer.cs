@@ -11,7 +11,7 @@ using PopcornMarket.BabylonExchange.Persistence.Context;
 namespace PopcornMarket.BabylonExchange.Persistence.Migrations
 {
     [DbContext(typeof(BabylonExchangeDbContext))]
-    [Migration("20251019153938_PopcornMarket.BabylonExchange.OutboxPattern")]
+    [Migration("20251022213803_PopcornMarket.BabylonExchange.OutboxPattern")]
     partial class PopcornMarketBabylonExchangeOutboxPattern
     {
         /// <inheritdoc />
@@ -210,18 +210,17 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
             modelBuilder.Entity("PopcornMarket.BabylonExchange.Persistence.Entities.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("UUID");
 
                     b.Property<DateTime>("OccurredOnUtc")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("Payload")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ProcessedOnUtc")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("Type")
                         .IsRequired()

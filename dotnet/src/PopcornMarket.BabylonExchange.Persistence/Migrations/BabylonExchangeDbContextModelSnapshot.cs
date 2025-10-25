@@ -210,14 +210,14 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                         .HasColumnType("UUID");
 
                     b.Property<DateTime>("OccurredOnUtc")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("Payload")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ProcessedOnUtc")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("Type")
                         .IsRequired()

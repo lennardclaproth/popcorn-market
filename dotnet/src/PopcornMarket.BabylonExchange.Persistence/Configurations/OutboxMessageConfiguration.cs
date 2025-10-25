@@ -14,6 +14,12 @@ public class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage
             .IsRequired()
             .ValueGeneratedNever();
 
+        builder.Property(x => x.OccurredOnUtc)
+            .HasColumnType("timestamptz");
+
+        builder.Property(x => x.ProcessedOnUtc)
+            .HasColumnType("timestamptz");
+
         builder.Property(x => x.Type)
             .IsRequired()
             .HasMaxLength(250);

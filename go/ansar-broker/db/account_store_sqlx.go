@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lennardclaproth/ansar-broker/errorx"
 	"github.com/lennardclaproth/ansar-broker/internal/account"
 )
 
@@ -99,5 +100,33 @@ func (as *accountStore) GetByUserID(ctx context.Context, userID uuid.UUID) (*[]a
 }
 
 func (as *accountStore) Update(ctx context.Context, account *account.Account) error {
-	panic("unimplemented")
+	schemaAccount := ToSchemaAccount(*account)
+
+	query := fmt.Sprintf(`
+		UPDATE %s
+		SET
+			balance = ?,
+			status = ?,
+			total_value = ?,
+			unrealized_pnl = ?,
+			is_active = ?
+		WHERE id = ?
+	`, TableAccounts)
+
+	_, err := as.db.ExecContext(
+		ctx,
+		query,
+		schemaAccount.Balance,
+		schemaAccount.Status,
+		schemaAccount.TotalValue,
+		schemaAccount.UnrealizedPnL,
+		schemaAccount.IsActive,
+		schemaAccount.ID,
+	)
+
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("update account failed: %w", err))
+	}
+
+	return nil
 }

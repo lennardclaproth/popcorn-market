@@ -20,7 +20,7 @@ internal sealed class EfCoreOutboxService : IOutboxService
         {
             OccurredOnUtc = DateTime.UtcNow,
             Type = @event.GetType().AssemblyQualifiedName!,
-            Payload = JsonSerializer.Serialize(@event)
+            Payload = JsonSerializer.Serialize(@event, @event.GetType())
         };
         _dbContext.OutboxMessages.Add(message);
         return _dbContext.SaveChangesAsync(ct);

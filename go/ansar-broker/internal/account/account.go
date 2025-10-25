@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lennardclaproth/ansar-broker/crypto"
+	"github.com/lennardclaproth/ansar-broker/errorx"
 	"github.com/lennardclaproth/ansar-broker/internal/security"
 	"github.com/lennardclaproth/ansar-broker/logging"
 )
@@ -63,7 +64,9 @@ type Service struct {
 }
 
 var (
-	ErrUserCannotOpenAccount = errors.New("User cannot open account")
+	ErrUserCannotOpenAccount = errors.New("user cannot open account")
+	ErrInactiveAccount       = errors.New("account is not active")
+	ErrInsufficientFunds     = errors.New("account has insufficient funds")
 )
 
 type UserHandler interface {
@@ -91,7 +94,7 @@ type OpenAccountCommand struct {
 	InitialBalance float64
 }
 
-func (s *Service) Open(ctx context.Context, cmd OpenAccountCommand) (uuid.UUID, error) {
+func (s *Service) Open(ctx context.Context, cmd OpenAccountCommand) (string, error) {
 	// Check if there are already existing accounts for this user
 	// If there is an existing account for this user the newly created
 	// account will not be the active account. The user would need
@@ -99,18 +102,18 @@ func (s *Service) Open(ctx context.Context, cmd OpenAccountCommand) (uuid.UUID, 
 	canOpenAccount, err := s.userHandler.CanOpenAccount(ctx, cmd.UserID)
 
 	if err != nil {
-		return uuid.Nil, err
+		return "", errorx.Trace(fmt.Errorf("open: failed to execute: %w", err))
 	}
 
 	if !canOpenAccount {
-		return uuid.Nil, fmt.Errorf("%w: user %s cannot open account",
-			ErrUserCannotOpenAccount, cmd.UserID)
+		return "", errorx.Trace(fmt.Errorf("%w: user %s cannot open account",
+			ErrUserCannotOpenAccount, cmd.UserID))
 	}
 
 	accounts, err := s.store.GetByUserID(ctx, cmd.UserID)
 
 	if err != nil {
-		return uuid.Nil, err
+		return "", errorx.Trace(fmt.Errorf("open: failed to execute: %w", err))
 	}
 
 	hasActiveAccount := false
@@ -143,20 +146,22 @@ func (s *Service) Open(ctx context.Context, cmd OpenAccountCommand) (uuid.UUID, 
 
 	err = s.store.Create(ctx, a)
 	if err != nil {
-		return uuid.Nil, err
+		return "", errorx.Trace(fmt.Errorf("open: failed to execute: %w", err))
 	}
 
-	return a.ID, nil
+	return a.Number, nil
 }
 
 func (s *Service) CanPlaceOrder(ctx context.Context, accId uuid.UUID, price float64) (bool, error) {
 	return true, nil
 }
 
+// getAccountInfo returns the info of an account.
 func (s *Service) GetAccountInfo(ctx context.Context, accId uuid.UUID) (AccountInfo, error) {
+	// access the store to get the account by the account ID
 	acc, err := s.store.GetByID(ctx, accId)
 	if err != nil {
-		return AccountInfo{}, err
+		return AccountInfo{}, errorx.Trace(fmt.Errorf("getAccountInfo: failed to execute: %w", err))
 	}
 
 	return AccountInfo{
@@ -170,5 +175,42 @@ func (s *Service) GetAccountInfo(ctx context.Context, accId uuid.UUID) (AccountI
 }
 
 func (s *Service) DeductFunds(ctx context.Context, accId uuid.UUID, price float64) error {
+	acc, err := s.store.GetByID(ctx, accId)
+
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("deductFunds: failed to get account by id: %w", err))
+	}
+
+	if !acc.IsActive {
+		return ErrInactiveAccount
+	}
+
+	if acc.Balance < price {
+		return ErrInsufficientFunds
+	}
+
+	acc.Balance -= price
+	err = s.store.Update(ctx, acc)
+
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("deductFunds: failed to persist changes in the store: %w", err))
+	}
+
 	return nil
+}
+
+func (s *Service) Refund(ctx context.Context, accId uuid.UUID, price float64) error {
+	acc, err := s.store.GetByID(ctx, accId)
+
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("refund: failed to get account by id: %w", err))
+	}
+
+	acc.Balance += price
+	err = s.store.Update(ctx, acc)
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("refund: failed to persist changes in the store: %w", err))
+	}
+
+	return err
 }

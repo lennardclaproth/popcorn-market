@@ -172,20 +172,20 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251019153938_PopcornMarket.BabylonExchange.OutboxPattern') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251022213803_PopcornMarket.BabylonExchange.OutboxPattern') THEN
     ALTER TABLE "OrderBook"."Order" ADD "OrderId" TEXT NOT NULL DEFAULT '';
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251019153938_PopcornMarket.BabylonExchange.OutboxPattern') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251022213803_PopcornMarket.BabylonExchange.OutboxPattern') THEN
     CREATE TABLE "OutboxMessages" (
-        "Id" TEXT NOT NULL,
-        "OccurredOnUtc" TEXT NOT NULL,
+        "Id" UUID NOT NULL,
+        "OccurredOnUtc" timestamptz NOT NULL,
         "Type" TEXT NOT NULL,
         "Payload" TEXT NOT NULL,
-        "ProcessedOnUtc" TEXT,
+        "ProcessedOnUtc" timestamptz,
         CONSTRAINT "PK_OutboxMessages" PRIMARY KEY ("Id")
     );
     END IF;
@@ -193,31 +193,16 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251019153938_PopcornMarket.BabylonExchange.OutboxPattern') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251022213803_PopcornMarket.BabylonExchange.OutboxPattern') THEN
     CREATE UNIQUE INDEX "IX_Order_OrderId" ON "OrderBook"."Order" ("OrderId");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251019153938_PopcornMarket.BabylonExchange.OutboxPattern') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251022213803_PopcornMarket.BabylonExchange.OutboxPattern') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20251019153938_PopcornMarket.BabylonExchange.OutboxPattern', '9.0.3');
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251021212835_PopcornMarket.BabylonExchange.OutboxUUID') THEN
-    ALTER TABLE "OutboxMessages" ALTER COLUMN "Id" TYPE UUID;
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251021212835_PopcornMarket.BabylonExchange.OutboxUUID') THEN
-    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20251021212835_PopcornMarket.BabylonExchange.OutboxUUID', '9.0.3');
+    VALUES ('20251022213803_PopcornMarket.BabylonExchange.OutboxPattern', '9.0.3');
     END IF;
 END $EF$;
 COMMIT;

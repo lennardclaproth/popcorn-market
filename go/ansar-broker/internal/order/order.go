@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lennardclaproth/ansar-broker/errorx"
 	"github.com/lennardclaproth/ansar-broker/internal/account"
 	"github.com/lennardclaproth/ansar-broker/logging"
 )
@@ -56,20 +57,19 @@ type Service struct {
 }
 
 type ExchangeHandler interface {
-	// PlaceOrder tries to place an order on the exchange.
 	PlaceOrder(o *Order) (string, error)
 }
 
 type AccountHandler interface {
-	// CanPlaceOrder checkes if the account is able to place an order for that
-	// account.
 	GetAccountInfo(ctx context.Context, accountId uuid.UUID) (account.AccountInfo, error)
 	DeductFunds(ctx context.Context, accountId uuid.UUID, price float64) error
+	Refund(ctx context.Context, accountId uuid.UUID, price float64) error
 }
 
 type Store interface {
 	Create(ctx context.Context, o *Order) error
 	UpdateOrderPlaced(ctx context.Context, o *Order) error
+	Update(ctx context.Context, o *Order) error
 }
 
 func NewService(s Store, log logging.Logger, ah AccountHandler, eh ExchangeHandler) *Service {
@@ -102,17 +102,12 @@ var (
 // PlaceOrder creates a new order and adds it to the database than sends it to the correct exchange to
 // be processed.
 func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (string, error) {
-	// canPlaceOrder, err := s.accounts.CanPlaceOrder(ctx, cmd.AccountID, cmd.Price)
-
-	acc, err := s.accounts.GetAccountInfo(ctx, cmd.AccountID)
-
+	// deduct funds first to check if the account is able
+	// to place the order.
+	totalprice := cmd.Price * float64(cmd.Quantity)
+	err := s.accounts.DeductFunds(ctx, cmd.AccountID, totalprice)
 	if err != nil {
-		return "", err
-	}
-
-	if acc.Balance < cmd.Price || !acc.IsActive {
-		return "", fmt.Errorf("%w: account %s cannot place order at price %.2f",
-			ErrAccountCannotPlaceOrder, cmd.AccountID, cmd.Price)
+		return "", errorx.Trace(fmt.Errorf("placeOrder: failed to deduct funds: %w", err))
 	}
 
 	// Create a new order and store it in the database to make sure that
@@ -131,15 +126,27 @@ func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (string
 	}
 	err = s.store.Create(ctx, o)
 	if err != nil {
+		err = errorx.Trace(fmt.Errorf("placeOrder: failed to create order: %w", err))
+		refundErr := s.accounts.Refund(ctx, cmd.AccountID, totalprice)
+		err = errorx.Trace(fmt.Errorf("placeOrder: failed to refund : %w: %w", refundErr, err))
 		return "", err
 	}
-	s.accounts.DeductFunds(ctx, acc.ID, o.Price)
 
 	// place the order on the exchange and make sure to set the orderId
 	// of the order to the orderId that is returned from the exchange so
 	// we can map it back when the exchange publishes updates on the order.
 	oid, err := s.exchange.PlaceOrder(o)
 	if err != nil {
+		err = errorx.Trace(fmt.Errorf("placeOrder: failed to place order: %w", err))
+		refundErr := s.accounts.Refund(ctx, cmd.AccountID, totalprice)
+		if refundErr != nil {
+			err = errorx.Trace(fmt.Errorf("placeOrder: failed to refund : %w: %w", refundErr, err))
+		}
+		o.Status = OrderStatusError
+		orderErr := s.store.Update(ctx, o)
+		if orderErr != nil {
+			err = errorx.Trace(fmt.Errorf("placeOrder: failed to update order status to error: %w: %w", orderErr, err))
+		}
 		return "", err
 	}
 	o.OrderId = oid

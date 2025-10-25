@@ -1,24 +1,24 @@
-package http
+package httpx
 
 import "net/http"
 
 type responseWriter struct {
 	http.ResponseWriter
-	statusCode int
-	size       int
+	StatusCode int
+	Size       int
 }
 
-func newResponseWriter(w http.ResponseWriter) *responseWriter {
-	return &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+func NewResponseWriter(w http.ResponseWriter) *responseWriter {
+	return &responseWriter{ResponseWriter: w, StatusCode: http.StatusOK}
 }
 
 func (rw *responseWriter) WriteHeader(code int) {
-	rw.statusCode = code
+	rw.StatusCode = code
 	rw.ResponseWriter.WriteHeader(code)
 }
 
 func (rw *responseWriter) Write(b []byte) (int, error) {
 	n, err := rw.ResponseWriter.Write(b)
-	rw.size += n
+	rw.Size += n
 	return n, err
 }

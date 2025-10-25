@@ -40,7 +40,7 @@ public class Order : Entity
         var millis = now.Millisecond.ToString("D3", new CultureInfo("en-US"));
         var random = new Random().Next(0, 999).ToString("D3", new CultureInfo("en-US"));
 
-        OrderId = $"ORD-{now:yyyyMMdd}-{now:yyyyMMddHHmmss}-{millis}{random}-{ExchangeConstants.ExchangeIdentifier}";
+        OrderId = $"ORD-{now:yyyyMMddHHmmss}{millis}-{random}-{ExchangeConstants.ExchangeIdentifier}";
         OrderBook = orderBook;
         OrderBookId = orderBook.Id;
         StockSymbol = stockSymbol;

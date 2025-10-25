@@ -24,11 +24,11 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                 name: "OutboxMessages",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    OccurredOnUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Id = table.Column<Guid>(type: "UUID", nullable: false),
+                    OccurredOnUtc = table.Column<DateTime>(type: "timestamptz", nullable: false),
                     Type = table.Column<string>(type: "TEXT", maxLength: 250, nullable: false),
                     Payload = table.Column<string>(type: "TEXT", nullable: false),
-                    ProcessedOnUtc = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    ProcessedOnUtc = table.Column<DateTime>(type: "timestamptz", nullable: true)
                 },
                 constraints: table =>
                 {

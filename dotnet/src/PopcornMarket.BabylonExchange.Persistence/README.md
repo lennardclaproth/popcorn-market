@@ -16,3 +16,8 @@ dotnet ef migrations script --project .\PopcornMarket.BabylonExchange.Persistenc
 ```
 
 The SQL scripts will be created in ./src/sql
+
+To remove a migration run:
+```bash
+dotnet ef migrations remove --project .\PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj
+```

@@ -20,13 +20,12 @@ func run(ctx context.Context, args []string) error {
 
 	cfg := config.ReadConfig()
 
-	// db := db.NewDB("file:db/ansar-broker.db?_foreign_keys=on", db.Sqlite)
 	db := db.NewDB(cfg.Database.ConnStr, db.ConnectionType(cfg.Database.Type))
-	// log := logging.NewSlogLogger(slog.LevelInfo)
+
 	log := logging.NewSlogLogger(slog.LevelInfo)
 	app := application.NewApp(db, log, cfg)
 
-	server := http.NewServer(":6060", app, log)
+	server := http.NewServer(fmt.Sprintf(":%d", cfg.Server.Port), app, log)
 
 	if err := server.Run(ctx); err != nil {
 		return fmt.Errorf("server error: %w", err)

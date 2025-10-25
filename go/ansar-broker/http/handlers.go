@@ -2,11 +2,13 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lennardclaproth/ansar-broker/errorx"
+	"github.com/lennardclaproth/ansar-broker/http/httpx"
 	"github.com/lennardclaproth/ansar-broker/internal/account"
 	"github.com/lennardclaproth/ansar-broker/internal/order"
 	"github.com/lennardclaproth/ansar-broker/internal/security"
@@ -44,30 +46,23 @@ func (r openAccountRequest) Valid(ctx context.Context) map[string]string {
 // @Accept       json
 // @Produce      json
 // @Param        input  body  openAccountRequest  true  "Account info"
-// @Success      200  {object}  openAccountResponse
+// @Success      201  {object}  openAccountResponse
 // @Router       /api/v1/accounts/open [post]
 func handleOpenAccount(accounts account.Service, log logging.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		req, problems, err := decodeValid[openAccountRequest](r)
-		if err != nil && problems != nil {
-			encode(w, http.StatusBadRequest, problems)
-		}
+	return httpx.Handle(httpx.JSONDecoder[openAccountRequest],
+		log,
+		func(ctx context.Context, req openAccountRequest) (int, *openAccountResponse, error) {
+			accountId, err := accounts.Open(ctx, account.OpenAccountCommand{UserID: req.UserId, InitialBalance: req.Balance})
 
-		if err != nil {
-			encode(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
-		}
-		accountId, err := accounts.Open(r.Context(), account.OpenAccountCommand{UserID: req.UserId, InitialBalance: req.Balance})
+			if err != nil {
+				err = errorx.Trace(fmt.Errorf("failed to open account: %w", err))
+				return 0, nil, err
+			}
 
-		if err != nil {
-			log.Error(r.Context(), "creation failed", err)
-			_ = encode(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-			return
-		}
-
-		_ = encode(w, http.StatusCreated, openAccountResponse{
-			ID: accountId.String(),
+			return http.StatusCreated, &openAccountResponse{
+				ID: accountId,
+			}, nil
 		})
-	}
 }
 
 // createUserRequest represents the request body for creating a user.
@@ -88,7 +83,7 @@ type createUserRequest struct {
 func (r createUserRequest) Valid(ctx context.Context) map[string]string {
 	problems := make(map[string]string)
 
-	if !ValidateDateOnly(r.DateOfBirth) {
+	if !httpx.ValidateDateOnly(r.DateOfBirth) {
 		problems["date_of_birth"] = "date of birth is not in a valid date only format."
 	}
 
@@ -113,41 +108,33 @@ type createUserResponse struct {
 // @Success      200  {object}  createUserResponse
 // @Router       /api/v1/users/create [post]
 func handleCreateUser(users user.Service, log logging.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		req, problems, err := decodeValid[createUserRequest](r)
-		if err != nil && problems != nil {
-			encode(w, http.StatusBadRequest, problems)
-		}
+	return httpx.Handle(httpx.JSONDecoder[createUserRequest],
+		log,
+		func(ctx context.Context, req createUserRequest) (int, *createUserResponse, error) {
+			dob, _ := time.Parse(time.DateOnly, req.DateOfBirth)
+			com := user.CreateUserCommand{
+				DateOfBirth: dob,
+				Email:       req.Email,
+				FirstName:   req.FirstName,
+				LastName:    req.LastName,
+				Street:      req.Street,
+				City:        req.City,
+				State:       req.State,
+				ZipCode:     req.ZipCode,
+				Country:     req.Country,
+				Password:    req.Password,
+			}
 
-		if err != nil {
-			encode(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
-		}
+			userId, err := users.CreateUser(ctx, com)
+			if err != nil {
+				err = errorx.Trace(fmt.Errorf("failed to create user %w", err))
+				return 0, nil, err
+			}
 
-		dob, _ := time.Parse(time.DateOnly, req.DateOfBirth)
-		com := user.CreateUserCommand{
-			DateOfBirth: dob,
-			Email:       req.Email,
-			FirstName:   req.FirstName,
-			LastName:    req.LastName,
-			Street:      req.Street,
-			City:        req.City,
-			State:       req.State,
-			ZipCode:     req.ZipCode,
-			Country:     req.Country,
-			Password:    req.Password,
-		}
-
-		userId, err := users.CreateUser(r.Context(), com)
-		if err != nil {
-			log.Error(r.Context(), "creation failed", err)
-			_ = encode(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-			return
-		}
-
-		_ = encode(w, http.StatusCreated, createUserResponse{
-			ID: userId.String(),
+			return http.StatusCreated, &createUserResponse{
+				ID: userId.String(),
+			}, nil
 		})
-	}
 }
 
 type SearchSecuritiesRequest struct {
@@ -191,45 +178,31 @@ func (r *SearchSecuritiesRequest) Valid(ctx context.Context) map[string]string {
 // @Failure      500  {object}  map[string]string
 // @Router       /api/v1/securities/search [get]
 func handleSearchSecurities(s security.Service, log logging.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Parse query parameters with sensible defaults
-		page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-		count, _ := strconv.Atoi(r.URL.Query().Get("count"))
+	return httpx.Handle(httpx.QueryDecoder[SearchSecuritiesRequest],
+		log,
+		func(ctx context.Context, req SearchSecuritiesRequest) (int, []SearchSecuritiesResponse, error) {
+			query := security.GetListingsQuery{
+				Filter: req.Filter,
+				Page:   req.Page,
+				Count:  req.Count,
+			}
 
-		req := SearchSecuritiesRequest{
-			Filter: r.URL.Query().Get("filter"),
-			Page:   page,
-			Count:  count,
-		}
+			listings, err := s.SearchSecurities(ctx, query)
+			if err != nil {
+				return 0, nil, err
+			}
 
-		if problems := req.Valid(r.Context()); problems != nil {
-			encode(w, http.StatusBadRequest, problems)
-			return
-		}
+			res := make([]SearchSecuritiesResponse, len(listings))
+			for i, l := range listings {
+				res[i] = SearchSecuritiesResponse{Symbol: l.Symbol, Name: l.CompanyName}
+			}
 
-		query := security.GetListingsQuery{
-			Filter: req.Filter,
-			Page:   req.Page,
-			Count:  req.Count,
-		}
+			if len(res) == 0 {
+				return http.StatusNoContent, nil, nil
+			}
 
-		listings, err := s.SearchSecurities(r.Context(), query)
-		if err != nil {
-			log.Error(r.Context(), "search securities", err)
-			encode(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
-			return
-		}
-
-		res := make([]SearchSecuritiesResponse, 0, len(listings))
-		for _, l := range listings {
-			res = append(res, SearchSecuritiesResponse{
-				Symbol: l.Symbol,
-				Name:   l.CompanyName,
-			})
-		}
-
-		encode(w, http.StatusOK, res)
-	}
+			return http.StatusOK, res, nil
+		})
 }
 
 type OrderType int
@@ -290,35 +263,27 @@ type placeOrderResponse struct {
 // @Failure      500  {object}  map[string]string
 // @Router       /api/v1/orders/place [post]
 func handlePlaceOrder(o order.Service, log logging.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		req, problems, err := decodeValid[*placeOrderRequest](r)
-		if err != nil && problems != nil {
-			encode(w, http.StatusBadRequest, problems)
-		}
+	return httpx.Handle(httpx.JSONDecoder[placeOrderRequest],
+		log,
+		func(ctx context.Context, req placeOrderRequest) (int, *placeOrderResponse, error) {
+			cmd := order.PlaceOrderCommand{
+				AccountID:     req.AccountID,
+				AccountNumber: req.AccountNumber,
+				Quantity:      req.Quantity,
+				Price:         req.Price,
+				Ticker:        req.Ticker,
+				Side:          order.OrderSide(req.Side),
+				Type:          order.OrderType(req.Type),
+			}
 
-		if err != nil {
-			encode(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
-		}
+			res, err := o.PlaceOrder(ctx, cmd)
+			if err != nil {
+				err = errorx.Trace(err)
+				return 0, nil, err
+			}
 
-		cmd := order.PlaceOrderCommand{
-			AccountID:     req.AccountID,
-			AccountNumber: req.AccountNumber,
-			Quantity:      req.Quantity,
-			Price:         req.Price,
-			Ticker:        req.Ticker,
-			Side:          order.OrderSide(req.Side),
-			Type:          order.OrderType(req.Type),
-		}
-
-		res, err := o.PlaceOrder(r.Context(), cmd)
-		if err != nil {
-			log.Error(r.Context(), "place order", err)
-			encode(w, http.StatusInternalServerError, map[string]string{"error": "internal server error"})
-			return
-		}
-
-		_ = encode(w, http.StatusCreated, placeOrderResponse{
-			OrderId: res,
+			return http.StatusCreated, &placeOrderResponse{
+				OrderId: res,
+			}, nil
 		})
-	}
 }
