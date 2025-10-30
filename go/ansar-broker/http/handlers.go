@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lennardclaproth/ansar-broker/errorx"
-	"github.com/lennardclaproth/ansar-broker/http/httpx"
+	"github.com/lennardclaproth/ansar-broker/httpx"
 	"github.com/lennardclaproth/ansar-broker/internal/account"
 	"github.com/lennardclaproth/ansar-broker/internal/order"
 	"github.com/lennardclaproth/ansar-broker/internal/security"
