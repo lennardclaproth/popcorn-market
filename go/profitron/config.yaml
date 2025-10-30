@@ -1,0 +1,10 @@
+mongo:
+  uri: "mongodb://localhost:27017"
+  db_name: "popcornProfitronDB"
+  app_name: ""
+  min_pool: 5
+  max_pool: 50
+  conn_timeout: 10s
+
+broker:
+  uri: http://localhost:6060
