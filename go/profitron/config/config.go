@@ -33,8 +33,7 @@ func ReadConfig() *Config {
 	f, err := os.ReadFile(configPath)
 
 	if err != nil {
-		fmt.Printf("Error opening config file: %v", err)
-		panic(err)
+		panic(fmt.Errorf("config: error reading config at %s: %w", configPath, err))
 	}
 
 	var cfg Config
@@ -42,8 +41,7 @@ func ReadConfig() *Config {
 	err = yaml.Unmarshal(f, &cfg)
 
 	if err != nil {
-		fmt.Printf("Error decoding config: %v", err)
-		panic(err)
+		panic(fmt.Errorf("config: error unmarshalling to yaml: %w", err))
 	}
 
 	return &cfg

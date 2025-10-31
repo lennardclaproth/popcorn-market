@@ -22,8 +22,6 @@ func NewScheduler(ctx context.Context, logger logging.Logger) *Scheduler {
 		logger:   logger,
 	}
 
-	s.start(ctx)
-
 	return s
 }
 

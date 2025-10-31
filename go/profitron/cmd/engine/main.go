@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -14,37 +15,23 @@ import (
 	"github.com/lennardclaproth/profitron/logging"
 )
 
-// main is intentionally minimal — it just executes run() and handles its error.
-func main() {
-	if err := run(); err != nil {
-		slog.Error("fatal error", "err", err)
-		os.Exit(1)
-	}
-}
-
 // run contains the program’s actual logic and returns an error if something fails.
-func run() error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+func run(ctx context.Context, args []string) error {
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	logger := logging.NewSlogLogger(slog.LevelDebug)
+	// app initialization
 	cfg := config.ReadConfig()
-
-	dbInstance, err := db.NewDB(ctx, db.Config(cfg.Mongo))
-	if err != nil {
-		return err
-	}
-
-	store, err := db.NewTraderStore(dbInstance)
-	if err != nil {
-		return err
-	}
-
+	dbInstance := db.NewDB(ctx, cfg.Mongo)
+	logger := logging.NewSlogLogger(slog.LevelDebug)
+	store := db.NewTraderStore(dbInstance)
 	b := broker.NewBroker(cfg.Broker.URI)
 	mgr := engine.NewManager(ctx, store, *b, logger)
 
+	// Starts the scheduler
 	mgr.StartScheduler(ctx)
 
+	// load the traders
 	if err := mgr.LoadTraders(ctx); err != nil {
 		return err
 	}
@@ -54,4 +41,13 @@ func run() error {
 
 	mgr.StopScheduler(ctx)
 	return nil
+}
+
+func main() {
+	ctx := context.Background()
+	if err := run(ctx, os.Args); err != nil {
+		slog.Error("fatal error", "err", err)
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
 }

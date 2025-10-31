@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/lennardclaproth/profitron/internal/trader"
@@ -24,18 +25,17 @@ var (
 
 // NewTraderStore wires the collection and ensures indexes.
 // You can pass db.Collection("traders") from your bootstrap.
-func NewTraderStore(db *mongo.Database) (*MongoTraderStore, error) {
+func NewTraderStore(db *mongo.Database) *MongoTraderStore {
 	col := db.Collection("traders")
 
-	// Create indexes once at startup
 	if err := ensureTraderIndexes(context.Background(), col); err != nil {
-		return nil, err
+		panic(fmt.Errorf("db: failed to ensure trader indexes exist: %w", err))
 	}
 
 	return &MongoTraderStore{
 		col:            col,
-		defaultTimeout: 5 * time.Second, // sane default; override via setter if needed
-	}, nil
+		defaultTimeout: 5 * time.Second,
+	}
 }
 
 func ensureTraderIndexes(ctx context.Context, col *mongo.Collection) error {
@@ -61,13 +61,6 @@ func ensureTraderIndexes(ctx context.Context, col *mongo.Collection) error {
 
 	_, err := col.Indexes().CreateMany(cctx, models)
 	return err
-}
-
-// WithTimeout lets you override the default per-call deadline.
-func (s *MongoTraderStore) WithTimeout(d time.Duration) *MongoTraderStore {
-	cp := *s
-	cp.defaultTimeout = d
-	return &cp
 }
 
 func (s *MongoTraderStore) Create(t trader.Trader) error {

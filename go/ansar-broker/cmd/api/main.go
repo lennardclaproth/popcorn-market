@@ -15,8 +15,8 @@ import (
 )
 
 func run(ctx context.Context, args []string) error {
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
+	defer stop()
 
 	cfg := config.ReadConfig()
 

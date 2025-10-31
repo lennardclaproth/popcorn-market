@@ -2,23 +2,14 @@ package db
 
 import (
 	"context"
-	"time"
+	"fmt"
 
+	"github.com/lennardclaproth/profitron/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Config is now declared here for simplicity sake, should move to YAML configuration.
-type Config struct {
-	URI         string        // e.g. "mongodb://localhost:27017"
-	DBName      string        // e.g. "popcorn"
-	AppName     string        // e.g. "financial-atlas"
-	MinPool     uint64        // e.g. 5
-	MaxPool     uint64        // e.g. 50
-	ConnTimeout time.Duration // e.g. 10 * time.Second
-}
-
-func NewDB(ctx context.Context, cfg Config) (*mongo.Database, error) {
+func NewDB(ctx context.Context, cfg config.MongoConfig) *mongo.Database {
 	dialCtx, cancel := context.WithTimeout(ctx, cfg.ConnTimeout)
 	defer cancel()
 
@@ -30,14 +21,14 @@ func NewDB(ctx context.Context, cfg Config) (*mongo.Database, error) {
 
 	m, err := mongo.Connect(dialCtx, opts)
 	if err != nil {
-		return nil, err
+		panic(fmt.Errorf("db: failed to connect to mongodb: %w", err))
 	}
 
 	if err := m.Ping(dialCtx, nil); err != nil {
 		_ = m.Disconnect(context.Background())
-		return nil, err
+		panic(fmt.Errorf("db: failed to ping database: %w", err))
 	}
-	return m.Database(cfg.DBName), nil
+	return m.Database(cfg.DBName)
 }
 
 func Close(ctx context.Context, db *mongo.Database) {
