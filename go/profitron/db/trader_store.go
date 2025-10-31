@@ -6,25 +6,22 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/lennardclaproth/profitron/errorx"
 	"github.com/lennardclaproth/profitron/internal/trader"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// MongoTraderStore implements Create + Fetch on top of MongoDB.
 type MongoTraderStore struct {
 	col            *mongo.Collection
 	defaultTimeout time.Duration
 }
 
 var (
-	// Surface a friendly error when email is already taken
 	ErrDuplicateEmail = errors.New("trader with this email already exists")
 )
 
-// NewTraderStore wires the collection and ensures indexes.
-// You can pass db.Collection("traders") from your bootstrap.
 func NewTraderStore(db *mongo.Database) *MongoTraderStore {
 	col := db.Collection("traders")
 
@@ -69,35 +66,27 @@ func (s *MongoTraderStore) Create(t trader.Trader) error {
 
 	_, err := s.col.InsertOne(ctx, t)
 	if err != nil {
-		var we mongo.WriteException
-		if errors.As(err, &we) {
-			for _, e := range we.WriteErrors {
-				if e.Code == 11000 {
-					return ErrDuplicateEmail
-				}
-			}
-		}
-		return err
+		return errorx.Trace(fmt.Errorf("db: failed to store new trader: %w", err))
 	}
 	return nil
 }
 
-// Fetch returns all traders (bounded by reasonable server-side timeout).
-// You can add filters/pagination later without changing the interface.
 func (s *MongoTraderStore) Fetch(ctx context.Context) ([]trader.Trader, error) {
-	// Respect caller context but guard with a soft deadline if none present.
+	// if a context has a deadline, respect that deadline otherwise spawn
+	// a context with a timeout.
 	if _, hasDeadline := ctx.Deadline(); !hasDeadline {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, s.defaultTimeout)
 		defer cancel()
 	}
 
+	// gets a mongodb cursor
 	cur, err := s.col.Find(ctx, bson.D{}, nil)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Trace(fmt.Errorf("db: failed to fetch trader: %w", err))
 	}
 	defer cur.Close(ctx)
-
+	// loop over the results of the cursoer and decode into a trader.
 	var out []trader.Trader
 	for cur.Next(ctx) {
 		var t trader.Trader
@@ -113,5 +102,8 @@ func (s *MongoTraderStore) UpdateUserID(ctx context.Context, traderID string, us
 	filter := bson.M{"trader_id": traderID}
 	update := bson.M{"$set": bson.M{"user_id": userID}}
 	_, err := s.col.UpdateOne(ctx, filter, update)
-	return err
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("db: failed to update user id on a trader: %w", err))
+	}
+	return nil
 }

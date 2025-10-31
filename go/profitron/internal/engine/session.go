@@ -42,8 +42,8 @@ func NewSession(trader *trader.Trader, logger logging.Logger) *Session {
 // Start begins the session's operations.
 func (s *Session) Start(ctx context.Context) {
 	s.state = SessionStateRunning
-	s.logger.Info(ctx, "Session started", "trader_id", s.trader.ID, "tick", s.tick)
-	go s.runSessionLoop(ctx)
+	s.logger.Info(ctx, "Session started", "trader_id", s.trader.ID)
+	go s.run(ctx)
 }
 
 // Stop ends the session's operations.
@@ -52,12 +52,17 @@ func (s *Session) Stop(ctx context.Context) {
 	s.logger.Info(ctx, "Session stopped", "trader_id", s.trader.ID)
 }
 
-func (s *Session) runSessionLoop(ctx context.Context) {
-	for s.state == SessionStateRunning {
-		// Here would be the logic to fetch data, analyze, and trade
-		s.logger.Debug(ctx, "Session tick", "trader_id", s.trader.ID)
-		s.trader.Trade()
-		time.Sleep(s.tick)
+func (s *Session) run(ctx context.Context) {
+	ticker := time.NewTicker(s.tick)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			s.logger.Debug(ctx, "Session tick", "trader_id", s.trader.ID)
+			s.trader.Trade()
+		}
 	}
 }
 
