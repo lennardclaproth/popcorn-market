@@ -42,5 +42,5 @@ jobs:
       run: go -C go/ansar-broker test -v ./...
     - name: Build Profitron
       run: go -C go/profitron build -v ./cmd/engine
-    - name: Test Ansar Broker
+    - name: Test Profitron
       run: go -C go/profitron test -v ./...

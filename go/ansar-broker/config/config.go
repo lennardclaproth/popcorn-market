@@ -45,7 +45,7 @@ func ReadConfig() *Configuration {
 	err = yaml.Unmarshal(f, &cfg)
 
 	if err != nil {
-		panic(fmt.Errorf("readConfig: error decoding config: %w", err))
+		panic(fmt.Errorf("config: error decoding config: %w", err))
 	}
 
 	return &cfg
