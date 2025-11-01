@@ -78,7 +78,7 @@ public class Order : Entity
         if(remainingQuantity < 0)
             throw new InvalidOperationException("Trade quantity exceeds remaining order quantity.");
 
-        if (remainingQuantity != 0)
+        if (remainingQuantity > 0)
         {
             RemainingQuantity = tradeQuantity;
             Status = OrderStatus.PartiallyFilled;
