@@ -2,6 +2,7 @@
 using System.Threading.Channels;
 using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Entities;
+using PopcornMarket.SharedKernel.Abstractions;
 
 namespace PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
 
@@ -15,8 +16,17 @@ public class InMemoryOrderQueue : IOrderQueue
         _channel = channel;
     }
 
-    public async Task Enqueue(Order order)
+    public Task<int> GetQueueCount()
     {
-        await _channel.Writer.WriteAsync(order);
+        return Task.FromResult(_channel.Reader.Count);
+    }
+
+    public Task Enqueue(Order order)
+    {
+        if (!_channel.Writer.TryWrite(order))
+        {
+            return Task.CompletedTask;
+        }
+        return Task.CompletedTask;
     }
 }

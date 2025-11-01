@@ -99,13 +99,26 @@ public sealed class OrderBook : AggregateRoot
             // Execute trade
             var tradeQuantity = Math.Min(order.RemainingQuantity, bestMatch.RemainingQuantity);
 
-            // If sell order and bestmatch is market order than best price is sell order pri ce
-            // If buy order and bestmatch is market order than best price is buy order price
-            var tradePrice = bestMatch.Price;
-            if (bestMatch.OrderType == OrderType.MarketOrder)
+            // Default to the price of the limit order (the liquidity provider)
+            decimal tradePrice;
+
+            if (order.OrderType == OrderType.MarketOrder && bestMatch.OrderType == OrderType.LimitOrder)
             {
-                if(order.OrderSide == OrderSide.Sell) tradePrice = order.Price;
-                if(order.OrderSide == OrderSide.Buy) tradePrice = order.Price;
+                tradePrice = bestMatch.Price;
+            }
+            else if (order.OrderType == OrderType.LimitOrder && bestMatch.OrderType == OrderType.MarketOrder)
+            {
+                tradePrice = order.Price;
+            }
+            else if (order.OrderType == OrderType.LimitOrder && bestMatch.OrderType == OrderType.LimitOrder)
+            {
+                // For two limit orders, trade at the resting (bestMatch) price
+                tradePrice = bestMatch.Price;
+            }
+            else
+            {
+                // Both are market orders → no valid trade
+                throw new InvalidOperationException("Cannot execute a trade between two market orders.");
             }
 
             order.TryFulfillOrder(tradePrice, tradeQuantity);
@@ -127,15 +140,47 @@ public sealed class OrderBook : AggregateRoot
 
             // Correctly assign BuyOrderId and SellOrderId
             if (order.OrderSide == OrderSide.Buy)
-                RaiseDomainEvent(new TradeExecuted(order.Id, bestMatch.Id, tradePrice, tradeQuantity, StockSymbol, DateTime.UtcNow));
+                RaiseDomainEvent(new TradeExecuted()
+                {
+                    BuyOrderId = order.Id,
+                    SellOrderId = bestMatch.Id,
+                    TradePrice = tradePrice,
+                    TradeQuantity = tradeQuantity,
+                    StockSymbol = StockSymbol,
+                    ExecutedAt = DateTime.UtcNow
+                });
             else
-                RaiseDomainEvent(new TradeExecuted(bestMatch.Id, order.Id, tradePrice, tradeQuantity, StockSymbol, DateTime.UtcNow));
-
-            if (bestMatch.Status == OrderStatus.Fulfilled)
+            {
+                RaiseDomainEvent(new TradeExecuted()
+                {
+                    BuyOrderId = bestMatch.Id,
+                    SellOrderId = order.Id,
+                    TradePrice = tradePrice,
+                    TradeQuantity = tradeQuantity,
+                    StockSymbol = StockSymbol,
+                    ExecutedAt = DateTime.UtcNow
+                });
+            }
+            if (bestMatch.Status == OrderStatus.Fulfilled ||
+                bestMatch.Status == OrderStatus.Canceled ||
+                bestMatch.Status == OrderStatus.PartiallyCanceled)
+            {
                 oppositeOrders.Remove(bestMatch);
+                _orders.Remove(bestMatch);
+            }
 
-            if (order.Status == OrderStatus.Fulfilled)
-                return;
+            if (order.Status == OrderStatus.Fulfilled ||
+                order.Status == OrderStatus.Canceled ||
+                order.Status == OrderStatus.PartiallyCanceled)
+            {
+                // If order itself is done, remove it as well
+                if (order.OrderSide == OrderSide.Buy)
+                    _buyOrders.Remove(order);
+                else
+                    _sellOrders.Remove(order);
+
+                _orders.Remove(order);
+            }
         }
 
         // Handle leftovers
@@ -151,7 +196,13 @@ public sealed class OrderBook : AggregateRoot
                 // Market order leftover = cancellation
                 if (wasPartiallyFilled)
                 {
-                    RaiseDomainEvent(new OrderPartiallyCancelled(order.Id, $"Not able to match orders completely, order partially fulfilled. Remaining quantity: {order.RemainingQuantity}", order.RemainingQuantity, DateTime.UtcNow));
+                    RaiseDomainEvent(new OrderPartiallyCancelled
+                    {
+                        OrderId = order.Id,
+                        Reason = $"Not able to match orders completely, order partially fulfilled. Remaining quantity: {order.RemainingQuantity}",
+                        CancelledAt = DateTime.UtcNow,
+                        RemainingQuantity = order.RemainingQuantity
+                    });
                     order.PartiallyCancelOrder($"Not able to match orders completely, order partially fulfilled. Remaining quantity: {order.RemainingQuantity}", order.RemainingQuantity, DateTime.UtcNow);
                 }
                 else
@@ -202,7 +253,7 @@ public sealed class OrderBook : AggregateRoot
 
         return false;
     }
-    
-    public Order? GetBestBuyOrder() => _buyOrders.LastOrDefault();
-    public Order? GetBestSellOrder() => _sellOrders.FirstOrDefault();
+
+    public Order? GetBestBuyOrder() => _buyOrders.LastOrDefault(o => o.OrderType == OrderType.LimitOrder);
+    public Order? GetBestSellOrder() => _sellOrders.FirstOrDefault(o => o.OrderType == OrderType.LimitOrder);
 }

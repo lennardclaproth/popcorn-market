@@ -15,6 +15,7 @@ using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Abstractions;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.BackgroundJobs;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Producers;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Services;
+using PopcornMarket.SharedKernel.Abstractions;
 using PopcornMarket.SharedKernel.Messaging;
 using StackExchange.Redis;
 
@@ -37,7 +38,24 @@ public static class InfrastructureExtensions
 
     private static void SetupOrderMatchingEngine(IServiceCollection services)
     {
-        services.AddSingleton(Channel.CreateUnbounded<Domain.Entities.Order>());
+        services.AddSingleton(
+            Channel.CreateBounded<Domain.Entities.Order>(new BoundedChannelOptions(10_000)
+            {
+                FullMode = BoundedChannelFullMode.DropWrite, // Changed from Wait to prevent blocking
+                SingleReader = true,
+                SingleWriter = false
+            })
+        );
+
+        services.AddSingleton(
+            Channel.CreateBounded<IDomainEvent>(new BoundedChannelOptions(10_000) // Increased capacity for events
+            {
+                FullMode = BoundedChannelFullMode.DropWrite, // Changed from Wait to prevent blocking
+                SingleReader = true,
+                SingleWriter = false
+            })
+        );
+
         services.AddSingleton<OrderBookCache>(sp =>
         {
             var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
@@ -45,9 +63,19 @@ public static class InfrastructureExtensions
             var logger = sp.GetRequiredService<ILogger<OrderBookCache>>();
             return new OrderBookCache(scopeFactory, evictionTimeout, logger);
         });
-        services.AddSingleton<IOrderQueue, InMemoryOrderQueue>();
+        services.AddSingleton<IOrderQueue>(sp =>
+        {
+            var channel = sp.GetRequiredService<Channel<Domain.Entities.Order>>();
+            return new InMemoryOrderQueue(channel);
+        });
+        services.AddSingleton<IDomainEventQueue>(sp =>
+        {
+            var channel = sp.GetRequiredService<Channel<IDomainEvent>>();
+            return new MatchingEngineEventQueue(channel);
+        });
         services.AddHostedService<CacheEvictionService>();
         services.AddHostedService<MatchingEngine>();
+        services.AddHostedService<MatchingEngineEventDispatcher>();
     }
     
     private static void SetupKafkaMessaging(this IServiceCollection services)

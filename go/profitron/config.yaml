@@ -8,3 +8,5 @@ mongo:
 
 broker:
   uri: http://localhost:6060
+
+max_traders: 10

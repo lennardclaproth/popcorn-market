@@ -16,11 +16,13 @@ import (
 	"github.com/lennardclaproth/ansar-broker/logging"
 )
 
+// swagger:model
 type openAccountRequest struct {
 	UserId  uuid.UUID `json:"uid"`
 	Balance float64   `json:"balance"`
 }
 
+// swagger:model
 type openAccountResponse struct {
 	ID string `json:"id"`
 }
@@ -94,6 +96,7 @@ func (r createUserRequest) Valid(ctx context.Context) map[string]string {
 	return problems
 }
 
+// swagger:model
 type createUserResponse struct {
 	ID string `json:"id" example:"123e4567-e89b-12d3-a456-426614174000"`
 }
@@ -137,18 +140,30 @@ func handleCreateUser(users user.Service, log logging.Logger) http.HandlerFunc {
 		})
 }
 
-type SearchSecuritiesRequest struct {
+// swagger:model
+type SearchListingsRequest struct {
 	Filter string `json:"filter" form:"filter" query:"filter"`
 	Page   int    `json:"page" form:"page" query:"page"`
 	Count  int    `json:"count" form:"count" query:"count"`
 }
 
-type SearchSecuritiesResponse struct {
-	Symbol string `json:"symbol"`
-	Name   string `json:"name"`
+// swagger:model
+type SearchListingsResponse struct {
+	Symbol                string    `json:"symbol"`
+	Isin                  string    `json:"isin"`
+	CompanyName           string    `json:"companyName"`
+	LastPrice             float64   `json:"lastPrice"`
+	PriceOpen             float64   `json:"priceOpen"`
+	PriceClose            float64   `json:"priceClose"`
+	PriceHigh             float64   `json:"priceHigh"`
+	PriceLow              float64   `json:"priceLow"`
+	PriceChange           float64   `json:"priceChange"`
+	PriceChangePercentage float64   `json:"priceChangePercentage"`
+	Volume                int       `json:"volume"`
+	LastUpdated           time.Time `json:"lastUpdated"`
 }
 
-func (r *SearchSecuritiesRequest) Valid(ctx context.Context) map[string]string {
+func (r *SearchListingsRequest) Valid(ctx context.Context) map[string]string {
 	problems := make(map[string]string)
 
 	if r.Page <= 0 {
@@ -164,37 +179,50 @@ func (r *SearchSecuritiesRequest) Valid(ctx context.Context) map[string]string {
 	return problems
 }
 
-// handleSearchSecurities godoc
+// handleSearchListings godoc
 // @Summary      Search securities
-// @Description  Retrieves a paginated list of securities matching the filter
+// @Description  Retrieves a paginated list of listings matching the filter
 // @Tags         securities
 // @Accept       json
 // @Produce      json
 // @Param        filter  query  string  false  "Filter by company or symbol"
 // @Param        page    query  int     true   "Page number"   default(1)
 // @Param        count   query  int     true   "Items per page" default(10)
-// @Success      200  {array}  SearchSecuritiesResponse
+// @Success      200  {array}  SearchListingsResponse
 // @Failure      400  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /api/v1/securities/search [get]
-func handleSearchSecurities(s security.Service, log logging.Logger) http.HandlerFunc {
-	return httpx.Handle(httpx.QueryDecoder[SearchSecuritiesRequest],
+func handleSearchListings(s security.Service, log logging.Logger) http.HandlerFunc {
+	return httpx.Handle(httpx.QueryDecoder[SearchListingsRequest],
 		log,
-		func(ctx context.Context, req SearchSecuritiesRequest) (int, []SearchSecuritiesResponse, error) {
+		func(ctx context.Context, req SearchListingsRequest) (int, []SearchListingsResponse, error) {
 			query := security.GetListingsQuery{
 				Filter: req.Filter,
 				Page:   req.Page,
 				Count:  req.Count,
 			}
 
-			listings, err := s.SearchSecurities(ctx, query)
+			listings, err := s.SearchListings(ctx, query)
 			if err != nil {
 				return 0, nil, err
 			}
 
-			res := make([]SearchSecuritiesResponse, len(listings))
+			res := make([]SearchListingsResponse, len(listings))
 			for i, l := range listings {
-				res[i] = SearchSecuritiesResponse{Symbol: l.Symbol, Name: l.CompanyName}
+				res[i] = SearchListingsResponse{
+					Symbol:                l.Symbol,
+					Isin:                  l.Isin,
+					CompanyName:           l.CompanyName,
+					LastPrice:             l.LastPrice,
+					PriceOpen:             l.PriceOpen,
+					PriceClose:            l.PriceClose,
+					PriceHigh:             l.PriceHigh,
+					PriceLow:              l.PriceLow,
+					PriceChange:           l.PriceChange,
+					PriceChangePercentage: l.PriceChangePercentage,
+					Volume:                l.Volume,
+					LastUpdated:           l.LastUpdated,
+				}
 			}
 
 			if len(res) == 0 {
@@ -286,4 +314,55 @@ func handlePlaceOrder(o order.Service, log logging.Logger) http.HandlerFunc {
 				OrderId: res,
 			}, nil
 		})
+}
+
+type getActiveAccountRequest struct {
+	UserID string `json:"user_id" form:"user_id" query:"user_id"`
+}
+
+type getActiveAccountResponse struct {
+	ID         uuid.UUID `json:"id"`
+	Number     string    `json:"number"`
+	Balance    float64   `json:"balance"`
+	OpenedDate time.Time `json:"opened_date"`
+	IsActive   bool      `json:"is_active"`
+	Status     int       `json:"status"`
+}
+
+// handleGetActiveAccount godoc
+// @Summary      Get active account
+// @Description  Retrieves the active account information for a given user
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        user_id  query     string  true  "User ID (UUID)"
+// @Success      200      {object}  getActiveAccountResponse
+// @Failure      400      {object}  map[string]string
+// @Failure      404      {object}  map[string]string
+// @Failure      500      {object}  map[string]string
+// @Router       /api/v1/accounts/active [get]
+func handleGetActiveAccount(a account.Service, log logging.Logger) http.HandlerFunc {
+	return httpx.Handle(httpx.QueryDecoder[getActiveAccountRequest], log, func(ctx context.Context, req getActiveAccountRequest) (int, *getActiveAccountResponse, error) {
+		uId, err := uuid.Parse(req.UserID)
+		if err != nil {
+			return http.StatusBadRequest, nil, fmt.Errorf("invalid user_id: %w", err)
+		}
+
+		acc, err := a.GetActiveAccount(ctx, uId)
+		if err != nil {
+			err = errorx.Trace(err)
+			return 0, nil, err
+		}
+
+		res := &getActiveAccountResponse{
+			ID:         acc.ID,
+			Number:     acc.Number,
+			Balance:    acc.Balance,
+			OpenedDate: acc.OpenedDate,
+			IsActive:   acc.IsActive,
+			Status:     acc.Status,
+		}
+
+		return http.StatusOK, res, nil
+	})
 }

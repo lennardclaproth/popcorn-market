@@ -19,18 +19,20 @@ type TraderStore interface {
 }
 
 type Manager struct {
-	store     TraderStore
-	broker    broker.Broker
-	scheduler Scheduler
-	log       logging.Logger
+	store      TraderStore
+	broker     broker.Broker
+	scheduler  Scheduler
+	log        logging.Logger
+	maxTraders int
 }
 
-func NewManager(ctx context.Context, s TraderStore, b broker.Broker, log logging.Logger) *Manager {
+func NewManager(ctx context.Context, s TraderStore, b broker.Broker, log logging.Logger, maxT int) *Manager {
 	return &Manager{
-		store:     s,
-		broker:    b,
-		log:       log,
-		scheduler: *NewScheduler(ctx, log),
+		store:      s,
+		broker:     b,
+		log:        log,
+		maxTraders: maxT,
+		scheduler:  *NewScheduler(ctx, log),
 	}
 }
 
@@ -50,11 +52,11 @@ func (mgr *Manager) LoadTraders(ctx context.Context) error {
 		return errorx.Trace(fmt.Errorf("loadTraders: failed to execute: %w", err))
 	}
 
-	// if traderCnt is smaller than the set limit 
-	// we still need to generate new traders and save them 
+	// if traderCnt is smaller than the set limit
+	// we still need to generate new traders and save them
 	// int the database.
 	traderCnt := len(traders)
-	if traderCnt < 100 {
+	if traderCnt < mgr.maxTraders {
 		newTraders, err := mgr.generateTraders(100-traderCnt, traderCnt)
 
 		if err != nil {
@@ -67,7 +69,7 @@ func (mgr *Manager) LoadTraders(ctx context.Context) error {
 	// here we load the traders, if the trader does not
 	// have a user id yet it means that they have not been
 	// onboarded yet.
-	for _, trader := range traders {
+	for _, trader := range traders[:mgr.maxTraders] {
 		trader.Load(&mgr.broker)
 		if trader.UserID == uuid.Nil {
 			mgr.onBoardTrader(ctx, trader)
@@ -78,7 +80,7 @@ func (mgr *Manager) LoadTraders(ctx context.Context) error {
 	return nil
 }
 
-func (mgr *Manager) startSession(ctx context.Context, t trader.Trader){
+func (mgr *Manager) startSession(ctx context.Context, t trader.Trader) {
 	session := NewSession(&t, mgr.log)
 	mgr.scheduler.AddSession(ctx, t.ID, session)
 }

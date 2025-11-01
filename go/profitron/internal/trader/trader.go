@@ -71,8 +71,118 @@ func (t *Trader) Load(br *broker.Broker) {
 	t.broker = br
 }
 
-func (t *Trader) Trade() {
-	// t.broker.PlaceOrder()
+func (t *Trader) Trade(ctx context.Context) error {
+	t.Status = TraderStatusFetching
+
+	// 1. Fetch a random batch of securities
+	// securities, err := t.broker.FetchSecurities(ctx, "", 1, 20)
+	// if err != nil {
+	// 	return errorx.Trace(fmt.Errorf("failed to fetch securities: %w", err))
+	// }
+	// if len(securities) == 0 {
+	// 	return fmt.Errorf("no securities available for trading")
+	// }
+
+	// 2. Pick one randomly
+	// sec := securities[rng.Intn(len(securities))]
+
+	// 3. Get active account
+	t.Status = TraderStatusAnalyzing
+	activeAccount, err := t.broker.GetActiveAccount(ctx, t.UserID)
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("failed to get active account for trader %s: %w", t.ID, err))
+	}
+
+	// 4. Decide trade type using biases
+	t.Status = TraderStatusTrading
+	// side := decideSide(t.Config)
+	// orderType := decideOrderType(t.Config)
+
+	// 5. Choose quantity & price logic
+	// quantity := rng.Intn(50) + 1 // 1–50 shares
+	// price := determinePrice(sec, side, orderType, t.Config)
+
+	// 6. Place order
+	// orderReq := broker.PlaceOrderRequest{
+	// 	AccountID:     activeAccount.ID,
+	// 	AccountNumber: activeAccount.Number,
+	// 	Ticker:        sec.Symbol,
+	// 	Quantity:      quantity,
+	// 	Price:         price,
+	// 	OrderSide:     int(side),
+	// 	OrderType:     int(orderType),
+	// }
+	// 6. Place order
+	orderReq := broker.PlaceOrderRequest{
+		AccountID:     activeAccount.ID,
+		AccountNumber: activeAccount.Number,
+		Ticker:        "BABY:TEST",
+		Quantity:      10,
+		Price:         0,
+		OrderSide:     int(broker.OrderSideBuy),
+		OrderType:     int(broker.OrderTypeMarket),
+	}
+
+	_, err = t.broker.PlaceOrder(ctx, orderReq)
+	if err != nil {
+		t.Status = TraderStatusError
+		return errorx.Trace(fmt.Errorf("failed to place order: %w", err))
+	}
+
+	t.Status = TraderStatusIdle
+	return nil
+}
+
+func decideSide(cfg TraderConfig) broker.OrderSide {
+	r := rng.Float64()
+	if r < cfg.BuyBias {
+		return broker.OrderSideBuy
+	}
+	return broker.OrderSideSell
+}
+
+func decideOrderType(cfg TraderConfig) broker.OrderType {
+	if rng.Float64() < 0.7 {
+		return broker.OrderTypeMarket
+	}
+	return broker.OrderTypeLimit
+}
+
+func determinePrice(sec broker.SearchSecuritiesResponse, side broker.OrderSide, otype broker.OrderType, cfg TraderConfig) float64 {
+	if otype == broker.OrderTypeMarket {
+		return 0 // market order has no price
+	}
+
+	// Guard against bad or zero price data
+	base := sec.LastPrice
+	if base <= 0 {
+		// fallback: random base between 10 and 100 if data is missing
+		base = 10 + rng.Float64()*90
+	}
+
+	// Limit order: slightly above or below the market
+	fluctuation := base * (0.001 + rng.Float64()*0.01) // 0.1–1% swing
+
+	var price float64
+	if side == broker.OrderSideBuy {
+		price = base - fluctuation
+	} else {
+		price = base + fluctuation
+	}
+
+	// Ensure a valid positive price
+	if price <= 0 {
+		price = 0.01
+	}
+
+	return price
+}
+
+func sideToString(s broker.OrderSide) string {
+	if s == broker.OrderSideBuy {
+		return "BUY"
+	}
+	return "SELL"
 }
 
 // seedFromCrypto generates a non-deterministic int64 seed.

@@ -174,7 +174,34 @@ func (s *Service) GetAccountInfo(ctx context.Context, accId uuid.UUID) (AccountI
 	}, nil
 }
 
+// getAccountInfo returns the info of an account.
+func (s *Service) GetActiveAccount(ctx context.Context, uId uuid.UUID) (AccountInfo, error) {
+	// access the store to get the account by the account ID
+	accs, err := s.store.GetByUserID(ctx, uId)
+	if err != nil {
+		return AccountInfo{}, errorx.Trace(fmt.Errorf("getAccountInfo: failed to execute: %w", err))
+	}
+
+	// Find the active account
+	for _, a := range *accs {
+		if a.IsActive {
+			return AccountInfo{
+				ID:         a.ID,
+				Number:     a.Number,
+				Balance:    a.Balance,
+				Status:     int(a.Status),
+				IsActive:   a.IsActive,
+				OpenedDate: a.OpenedDate,
+			}, nil
+		}
+	}
+
+	// No active account found
+	return AccountInfo{}, errorx.Trace(fmt.Errorf("getAccountInfo: no active account found for user %s", uId))
+}
+
 func (s *Service) DeductFunds(ctx context.Context, accId uuid.UUID, price float64) error {
+	return nil
 	acc, err := s.store.GetByID(ctx, accId)
 
 	if err != nil {
@@ -200,6 +227,7 @@ func (s *Service) DeductFunds(ctx context.Context, accId uuid.UUID, price float6
 }
 
 func (s *Service) Refund(ctx context.Context, accId uuid.UUID, price float64) error {
+	return nil
 	acc, err := s.store.GetByID(ctx, accId)
 
 	if err != nil {

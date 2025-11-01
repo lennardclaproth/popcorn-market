@@ -22,6 +22,8 @@ internal sealed class OrderBookCache
 
     public async Task<OrderBook?> Get(string ticker)
     {
+        // Efficiently update orderbook cache as well. Use a window of orders 
+        // you keep in memory so that the memory does not get overloaded.
         if (_cache.TryGetValue(ticker, out var cached))
         {
             _logger.LogInformation("Order book for ticker {Ticker} found in cache.", ticker);
@@ -45,13 +47,58 @@ internal sealed class OrderBookCache
     public void EvictStale()
     {
         var now = DateTimeOffset.UtcNow;
+        var evictedCount = 0;
+        var totalDomainEventsCleared = 0;
+        
         foreach (var kv in _cache)
         {
             if (now - kv.Value.LastAccessed > _evictionTimeout)
             {
+                var domainEventCount = kv.Value.OrderBook.DomainEvents.Count;
+                if (domainEventCount > 0)
+                {
+                    _logger.LogWarning("Evicting stale order book for ticker {Ticker} with {DomainEventCount} unprocessed domain events. This may indicate a processing issue.", 
+                        kv.Key, domainEventCount);
+                    totalDomainEventsCleared += domainEventCount;
+                }
+                
                 _logger.LogInformation("Evicting stale order book for ticker {Ticker}", kv.Key);
                 _cache.TryRemove(kv.Key, out _);
+                evictedCount++;
             }
+        }
+        
+        if (evictedCount > 0)
+        {
+            _logger.LogInformation("Evicted {EvictedCount} stale order books, cleared {TotalDomainEvents} unprocessed domain events", 
+                evictedCount, totalDomainEventsCleared);
+        }
+    }
+
+    /// <summary>
+    /// Clears all domain events from all cached order books. 
+    /// This is a recovery method to prevent memory leaks when domain events accumulate.
+    /// </summary>
+    public void ClearAllDomainEvents()
+    {
+        var totalEventsCleared = 0;
+        var orderBooksAffected = 0;
+        
+        foreach (var cached in _cache.Values)
+        {
+            var eventCount = cached.OrderBook.DomainEvents.Count;
+            if (eventCount > 0)
+            {
+                cached.OrderBook.ClearDomainEvents();
+                totalEventsCleared += eventCount;
+                orderBooksAffected++;
+            }
+        }
+        
+        if (totalEventsCleared > 0)
+        {
+            _logger.LogWarning("Emergency clearing of {TotalEvents} domain events from {OrderBooksCount} order books to prevent memory leak", 
+                totalEventsCleared, orderBooksAffected);
         }
     }
 }

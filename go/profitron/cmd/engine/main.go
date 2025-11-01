@@ -26,7 +26,7 @@ func run(ctx context.Context, args []string) error {
 	logger := logging.NewSlogLogger(slog.LevelDebug)
 	store := db.NewTraderStore(dbInstance)
 	b := broker.NewBroker(cfg.Broker.URI)
-	mgr := engine.NewManager(ctx, store, *b, logger)
+	mgr := engine.NewManager(ctx, store, *b, logger, cfg.MaxTraders)
 
 	// Starts the scheduler
 	mgr.StartScheduler(ctx)

@@ -14,6 +14,7 @@ const configPath = "config.yaml"
 type Config struct {
 	Mongo  MongoConfig  `yaml:"mongo"`
 	Broker BrokerConfig `yaml:"broker"`
+	MaxTraders int `yaml:"max_traders"`
 }
 
 type MongoConfig struct {

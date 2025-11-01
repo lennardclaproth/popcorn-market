@@ -44,19 +44,21 @@ internal sealed class OrderBookRepository : IOrderBookRepository
         var buyOrders = await _context.Orders
             .Where(o => o.StockSymbol == ticker 
                         && o.OrderSide == OrderSide.Buy 
-                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled))
-            .OrderBy(o => o.OrderType == OrderType.MarketOrder ? 0 : 1) // market orders first
-            .ThenByDescending(o => o.Price)                             // higher price first for limits
+                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled)
+                        && o.OrderType != OrderType.MarketOrder)
+            .OrderByDescending(o => o.Price)                             // higher price first for limits
             .ThenBy(o => o.PlacedTimestamp)                             // FIFO
+            .AsNoTracking()
             .ToListAsync();
         
         var sellOrders = await _context.Orders
             .Where(o => o.StockSymbol == ticker 
                         && o.OrderSide == OrderSide.Sell 
-                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled))
-            .OrderBy(o => o.OrderType == OrderType.MarketOrder ? 0 : 1) // market orders first
-            .ThenBy(o => o.Price)                                       // lower price first for limits
+                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled)
+                        && o.OrderType != OrderType.MarketOrder)
+            .OrderBy(o => o.Price)                                       // lower price first for limits
             .ThenBy(o => o.PlacedTimestamp)                             // FIFO
+            .AsNoTracking()
             .ToListAsync();
 
         var book = await _context.OrderBooks

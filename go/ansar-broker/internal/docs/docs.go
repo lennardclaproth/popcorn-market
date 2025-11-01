@@ -15,6 +15,65 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/accounts/active": {
+            "get": {
+                "description": "Retrieves the active account information for a given user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Get active account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.getActiveAccountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/accounts/open": {
             "post": {
                 "description": "Creates a new account with initial balance",
@@ -40,8 +99,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/http.openAccountResponse"
                         }
@@ -51,7 +110,7 @@ const docTemplate = `{
         },
         "/api/v1/orders/place": {
             "post": {
-                "description": "Creates a new user",
+                "description": "Places a new order on an exchange",
                 "consumes": [
                     "application/json"
                 ],
@@ -59,12 +118,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "orders"
                 ],
-                "summary": "Create user",
+                "summary": "Place order",
                 "parameters": [
                     {
-                        "description": "Create User",
+                        "description": "Place Order",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -103,7 +162,7 @@ const docTemplate = `{
         },
         "/api/v1/securities/search": {
             "get": {
-                "description": "Retrieves a paginated list of securities matching the filter",
+                "description": "Retrieves a paginated list of listings matching the filter",
                 "consumes": [
                     "application/json"
                 ],
@@ -144,7 +203,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.SearchSecuritiesResponse"
+                                "$ref": "#/definitions/http.SearchListingsResponse"
                             }
                         }
                     },
@@ -227,14 +286,44 @@ const docTemplate = `{
                 "OrderTypeLimit"
             ]
         },
-        "http.SearchSecuritiesResponse": {
+        "http.SearchListingsResponse": {
             "type": "object",
             "properties": {
-                "name": {
+                "companyName": {
                     "type": "string"
+                },
+                "isin": {
+                    "type": "string"
+                },
+                "lastPrice": {
+                    "type": "number"
+                },
+                "lastUpdated": {
+                    "type": "string"
+                },
+                "priceChange": {
+                    "type": "number"
+                },
+                "priceChangePercentage": {
+                    "type": "number"
+                },
+                "priceClose": {
+                    "type": "number"
+                },
+                "priceHigh": {
+                    "type": "number"
+                },
+                "priceLow": {
+                    "type": "number"
+                },
+                "priceOpen": {
+                    "type": "number"
                 },
                 "symbol": {
                     "type": "string"
+                },
+                "volume": {
+                    "type": "integer"
                 }
             }
         },
@@ -290,6 +379,29 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
+        "http.getActiveAccountResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "opened_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
                 }
             }
         },

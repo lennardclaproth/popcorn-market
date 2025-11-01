@@ -61,7 +61,7 @@ func (s *Session) run(ctx context.Context) {
 			return
 		case <-ticker.C:
 			s.logger.Debug(ctx, "Session tick", "trader_id", s.trader.ID)
-			s.trader.Trade()
+			s.trader.Trade(ctx)
 		}
 	}
 }

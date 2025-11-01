@@ -103,8 +103,18 @@ func (b *Broker) OpenAccount(ctx context.Context, userID uuid.UUID, balance floa
 }
 
 type SearchSecuritiesResponse struct {
-	Symbol string `json:"symbol"`
-	Name   string `json:"name"`
+	Symbol                string    `json:"symbol"`
+	Isin                  string    `json:"isin"`
+	CompanyName           string    `json:"companyName"`
+	LastPrice             float64   `json:"lastPrice"`
+	PriceOpen             float64   `json:"priceOpen"`
+	PriceClose            float64   `json:"priceClose"`
+	PriceHigh             float64   `json:"priceHigh"`
+	PriceLow              float64   `json:"priceLow"`
+	PriceChange           float64   `json:"priceChange"`
+	PriceChangePercentage float64   `json:"priceChangePercentage"`
+	Volume                int       `json:"volume"`
+	LastUpdated           time.Time `json:"lastUpdated"`
 }
 
 // FetchSecurities calls GET /api/v1/securities/search
@@ -142,6 +152,19 @@ type PlaceOrderResponse struct {
 	OrderID string `json:"order_id"`
 }
 
+type OrderSide int
+type OrderType int
+
+const (
+	OrderSideBuy  OrderSide = iota // 0
+	OrderSideSell                  // 1
+)
+
+const (
+	OrderTypeMarket OrderType = iota // 0
+	OrderTypeLimit                   // 1
+)
+
 // PlaceOrder calls POST /api/v1/orders/place
 func (b *Broker) PlaceOrder(ctx context.Context, req PlaceOrderRequest) (string, error) {
 	url := fmt.Sprintf("%s/api/v1/orders/place", b.baseURI)
@@ -164,4 +187,44 @@ func (b *Broker) PlaceOrder(ctx context.Context, req PlaceOrderRequest) (string,
 	}
 
 	return res.OrderID, nil
+}
+
+type GetActiveAccountResponse struct {
+	ID         uuid.UUID `json:"id"`
+	Number     string    `json:"number"`
+	Balance    float64   `json:"balance"`
+	OpenedDate time.Time `json:"opened_date"`
+	IsActive   bool      `json:"is_active"`
+	Status     int       `json:"status"`
+}
+
+// GetActiveAccount calls GET /api/v1/accounts/active
+func (b *Broker) GetActiveAccount(ctx context.Context, userID uuid.UUID) (*GetActiveAccountResponse, error) {
+	url := fmt.Sprintf("%s/api/v1/accounts/active?user_id=%s", b.baseURI, userID.String())
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, errorx.Trace(fmt.Errorf("broker: failed to create request for active account: %w", err))
+	}
+
+	resp, err := b.client.Do(req)
+	if err != nil {
+		return nil, errorx.Trace(fmt.Errorf("broker: failed to perform request for active account: %w", err))
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNoContent {
+		return nil, errorx.Trace(fmt.Errorf("broker: no active account found for user %s", userID))
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, errorx.Trace(fmt.Errorf("broker: unexpected status %d when fetching active account", resp.StatusCode))
+	}
+
+	res, err := httpx.DecodeJSONResponse[GetActiveAccountResponse](resp)
+	if err != nil {
+		return nil, errorx.Trace(fmt.Errorf("broker: failed to decode active account response: %w", err))
+	}
+
+	return &res, nil
 }
