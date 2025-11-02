@@ -2,6 +2,7 @@
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
 using PopcornMarket.BabylonExchange.Application.Abstractions;
+using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
 using PopcornMarket.SharedKernel.Abstractions;
@@ -12,14 +13,16 @@ internal sealed class OrderFulfilledHandler : IDomainEventHandler<OrderFulfilled
     private readonly IOrderRepository _orderRepository;
     private readonly IOutboxService _outboxService;
     private readonly ILogger<OrderFulfilledHandler> _logger;
+    private readonly IUnitOfWork _unitOfWork;
 
     public OrderFulfilledHandler(IOrderRepository orderRepository,
         ILogger<OrderFulfilledHandler> logger,
-        IOutboxService outboxService)
+        IOutboxService outboxService, IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _logger = logger;
         _outboxService = outboxService;
+        _unitOfWork = unitOfWork;
     }
 
 #warning Lennard Claproth [05/09/2025] we potentially set the tradeprice wrong here, this should be an average of the executed trades. 
@@ -34,5 +37,6 @@ internal sealed class OrderFulfilledHandler : IDomainEventHandler<OrderFulfilled
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
         _logger.LogInformation("Order with OrderId: {OrderId} fulfillment has been persisted in {ElapsedTimeMs}", notification.Id, elapsedTimeMs);
         await _outboxService.Add(notification, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

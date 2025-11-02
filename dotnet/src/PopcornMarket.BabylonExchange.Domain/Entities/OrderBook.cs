@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using PopcornMarket.BabylonExchange.Domain.Enums;
+using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.BabylonExchange.Domain.Events;
 using PopcornMarket.BabylonExchange.Domain.Helpers;
 using PopcornMarket.SharedKernel.Primitives;
@@ -66,7 +67,7 @@ public sealed class OrderBook : AggregateRoot
         RaiseDomainEvent(orderPlacedEvent);
     }
 
-    public void MatchOrder(Order incomingOrder)
+    public Result MatchOrder(Order incomingOrder)
     {
         // Decide which book to match against, if it is a buy incomingOrder we look at the 
         // sell side if it is a sell incomingOrder we look at the buy side.
@@ -78,8 +79,13 @@ public sealed class OrderBook : AggregateRoot
 
         // while the incomingOrder still has a remaining quantity and there are still opposing
         // orders left we keep trying to execute incomingOrder. By getting the bestMatch,
-        while (incomingOrder.RemainingQuantity > 0 && oppositeOrders.Count != 0)
+        while (incomingOrder.RemainingQuantity > 0)
         {
+            if (oppositeOrders.Count == 0)
+            {
+                return Result.Failure(OrderBookErrors.OrderBookMatchOrderCacheMiss);
+            }
+
             // Get the best match based on the incomingOrder side.
             var bestMatch = incomingOrder.OrderSide == OrderSide.Buy
                 ? GetBestSellOrder()
@@ -123,7 +129,7 @@ public sealed class OrderBook : AggregateRoot
         // We can exit here.
         if (incomingOrder.RemainingQuantity == 0)
         {
-            return;
+            return Result.Success();
         }
 
         // If we reach here it means that there are no more matching orders but there is still parts of the
@@ -131,7 +137,7 @@ public sealed class OrderBook : AggregateRoot
         if (incomingOrder.OrderType == OrderType.LimitOrder)
         {
             RestOrder(incomingOrder);
-            return;
+            return Result.Success();
         }
 
         // If it is a market order we have to cancel the remaining quantity.
@@ -145,12 +151,13 @@ public sealed class OrderBook : AggregateRoot
                 RemainingQuantity = incomingOrder.RemainingQuantity
             });
             incomingOrder.PartiallyCancelOrder($"Not able to match orders completely, incomingOrder partially fulfilled. Remaining quantity: {incomingOrder.RemainingQuantity}", incomingOrder.RemainingQuantity, DateTime.UtcNow);
-            return;
+            return Result.Success();
         }
 
         // No fills at all, cancel the order
         RaiseDomainEvent(new OrderCancelled(incomingOrder.Id, "Not able to match orders, no matching orders.", DateTime.UtcNow));
         incomingOrder.CancelOrder("Not able to match orders, no matching orders.", DateTime.UtcNow);
+        return Result.Success();
     }
 
     /// <summary>
@@ -169,6 +176,36 @@ public sealed class OrderBook : AggregateRoot
             _sellOrders.Add(order);
         }
     }
+
+    public void EvictOrders(IEnumerable<Order> orders)
+    {
+        foreach (var order in orders)
+        {
+            _orders.Remove(order);
+            if (order.OrderSide == OrderSide.Buy)
+                _buyOrders.Remove(order);
+            else
+                _sellOrders.Remove(order);
+        }
+    }
+
+    public IReadOnlyList<Order> OrdersOutsideWindow(int window)
+    {
+        var coldOrders = new List<Order>();
+
+        if (_buyOrders.Count > window)
+        {
+            coldOrders.AddRange(_buyOrders.Skip(window));
+        }
+
+        if (_sellOrders.Count > window)
+        {
+            coldOrders.AddRange(_sellOrders.Skip(window));
+        }
+
+        return coldOrders;
+    }
+
 
     /// <summary>
     /// We match the price. If the incoming order is a market order we can always return true.
@@ -233,9 +270,21 @@ public sealed class OrderBook : AggregateRoot
             var now = DateTime.UtcNow;
 
             if (order.Status == OrderStatus.Fulfilled)
-                RaiseDomainEvent(new OrderFulfilled(order.Id, tradePrice, tradeQuantity, now));
+            {
+                var orderFilledEvent = new OrderFulfilled(order.Id, tradePrice, tradeQuantity, now)
+                {
+                    FulfilledAt = now, Id = order.Id, TradePrice = tradePrice, TradeQuantity = tradeQuantity
+                };
+                RaiseDomainEvent(orderFilledEvent);
+            }
             else
-                RaiseDomainEvent(new OrderPartiallyFilled(order.Id, order.RemainingQuantity, tradePrice, now));
+            {
+                var orderPartiallyFilledEvent = new OrderPartiallyFilled()
+                {
+                    Id = order.Id, RemainingQuantity = order.RemainingQuantity, TradePrice = tradePrice, FulfilledAt = now
+                };
+                RaiseDomainEvent(orderPartiallyFilledEvent);
+            }
         }
 
         // Fill events

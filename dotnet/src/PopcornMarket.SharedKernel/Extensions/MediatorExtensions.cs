@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Text.Json;
+using MediatR;
 using PopcornMarket.SharedKernel.Abstractions;
 using PopcornMarket.SharedKernel.Primitives;
 
@@ -32,12 +33,19 @@ public static class MediatorExtensions
             return;
 
         var domainEvents = aggregateRoot.DomainEvents.ToList();
-        aggregateRoot.ClearDomainEvents();
-
-        foreach (var domainEvent in domainEvents)
+        try
         {
-            var e = domainEvent;
-            await queue.Enqueue(e, cancellationToken);
+            foreach (var domainEvent in domainEvents)
+            {
+                await queue.Enqueue(domainEvent, cancellationToken);
+            }
+
+            aggregateRoot.ClearDomainEvents();
+        }
+        catch
+        {
+            aggregateRoot.ClearDomainEvents();
+            throw;
         }
     }
 }

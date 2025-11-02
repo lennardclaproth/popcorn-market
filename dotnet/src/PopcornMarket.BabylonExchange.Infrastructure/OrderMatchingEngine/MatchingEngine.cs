@@ -5,8 +5,9 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Entities;
+using PopcornMarket.BabylonExchange.Domain.Enums;
+using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.SharedKernel.Abstractions;
 using PopcornMarket.SharedKernel.Extensions;
 
@@ -41,17 +42,17 @@ internal sealed class MatchingEngine : BackgroundService
     {
         await foreach (var order in _channel.Reader.ReadAllAsync(stoppingToken))
         {
-            await ProcessOrderSafely(order, stoppingToken);
+            await ProcessOrder(order, stoppingToken);
         }
     }
 
-    private async Task ProcessOrderSafely(Order order, CancellationToken stoppingToken)
+    private async Task ProcessOrder(Order order, CancellationToken stoppingToken)
     {
         var startTime = Stopwatch.GetTimestamp();
         _logger.LogInformation("Processing order {OrderId} for {StockSymbol}", order.Id, order.StockSymbol);
         
         OrderBook? orderBook = null;
-        
+
         try
         {
             using var scope = _scopeFactory.CreateScope();
@@ -59,53 +60,57 @@ internal sealed class MatchingEngine : BackgroundService
 
             orderBook = await _cache.Get(order.StockSymbol);
             Guard.Against.Null(orderBook, nameof(orderBook));
-
-            // Store events count before matching to track what was added
-            var eventsBeforeMatching = orderBook.DomainEvents.Count;
-            _logger.LogInformation("Domain events count: {Count}", eventsBeforeMatching);
-
-            try
+            _logger.LogDebug("Memory usage at matching engine: {Memory} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+            var matchResult = orderBook.MatchOrder(order);
+            if (matchResult.IsFailure && matchResult.Error.Equals(OrderBookErrors.OrderBookMatchOrderCacheMiss))
             {
-                orderBook.MatchOrder(order);
-                var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-                _logger.LogInformation("Order {OrderId} for {StockSymbol} processed in {ElapsedTimeMs} ms by the matching engine", order.Id, order.StockSymbol, elapsedTimeMs);
-                _logger.LogInformation("Dispatching domain events for OrderBook {StockSymbol}", order.StockSymbol);
-                await mediator.DispatchDomainEventsToQueueAsync(orderBook, _eventQueue, stoppingToken);
-                elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-                _logger.LogInformation("Domain events for OrderBook {StockSymbol} have been dispatched total processing time {ElapsedTimeMs}", order.StockSymbol, elapsedTimeMs);
+                _logger.LogInformation("Order {OrderId} for {StockSymbol} had a match order miss in the order book cache. Checking cold storage.", order.Id, order.StockSymbol);
+                bool hasMoreColdOrders = true;
+                bool fullyMatched = false;
+                int safetyCounter = 0;
+
+                while (hasMoreColdOrders && !fullyMatched && safetyCounter++ < 20)
+                {
+                    var result = orderBook.MatchOrder(order);
+
+                    if (result.IsSuccess)
+                    {
+                        break;
+                    }
+
+                    if (result.Error.Equals(OrderBookErrors.OrderBookMatchOrderCacheMiss))
+                    {
+                        hasMoreColdOrders = order.OrderSide == OrderSide.Buy
+                            ? await _cache.FillHotOrders(orderBook, OrderSide.Sell)
+                            : await _cache.FillHotOrders(orderBook, OrderSide.Buy);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during order processing or event dispatching for order {OrderId} for {StockSymbol}. Clearing domain events to prevent memory leak.", order.Id, order.StockSymbol);
-                
-                // Critical: Clear domain events that were generated during the failed processing
-                // This prevents memory leaks from accumulated events that were never properly processed
-                orderBook.ClearDomainEvents();
-                
-                // Re-throw to be handled by outer catch
-                throw;
-            }
+            _logger.LogDebug("Memory usage at matching engine after match order: {Memory} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+
+            var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
+            await _cache.EvictColdOrders(orderBook);
+            _logger.LogInformation("Order {OrderId} for {StockSymbol} processed in {ElapsedTimeMs} ms by the matching engine", order.Id, order.StockSymbol, elapsedTimeMs);
+            _logger.LogInformation("Dispatching {EventCount} domain events for OrderBook {StockSymbol}", order.StockSymbol, orderBook.DomainEvents.Count);
+            _logger.LogDebug("Memory usage at matching engine before dispatching match order: {Memory} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+            await mediator.DispatchDomainEventsToQueueAsync(orderBook, _eventQueue, stoppingToken);
+            _logger.LogDebug("Memory usage at matching engine after dispatching match order: {Memory} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+            elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
+            _logger.LogInformation("Domain events for OrderBook {StockSymbol} have been dispatched total processing time {ElapsedTimeMs}", order.StockSymbol, elapsedTimeMs);
         }
         catch (Exception ex)
         {
             var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-            _logger.LogError(ex, "Failed to process order {OrderId} for {StockSymbol} after {ElapsedTimeMs} ms. Order will be skipped to prevent blocking.", 
-                order.Id, order.StockSymbol, elapsedTimeMs);
-                
-            // Ensure domain events are cleared even if we couldn't get the orderBook earlier
+            _logger.LogError(ex, "Failed to process order {OrderId} for {StockSymbol} after {ElapsedTimeMs} ms. Order will be skipped to prevent blocking.", order.Id, order.StockSymbol, elapsedTimeMs);
+
             if (orderBook != null)
             {
-                try
-                {
-                    orderBook.ClearDomainEvents();
-                }
-                catch (Exception cleanupEx)
-                {
-                    _logger.LogError(cleanupEx, "Failed to cleanup domain events for {StockSymbol}", order.StockSymbol);
-                }
+                orderBook.ClearDomainEvents();
             }
-            
-            // Continue processing other orders - don't let one failed order stop the entire engine
         }
     }
 }

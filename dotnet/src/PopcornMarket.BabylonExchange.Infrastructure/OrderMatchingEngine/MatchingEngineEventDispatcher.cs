@@ -33,23 +33,22 @@ internal sealed class MatchingEngineEventDispatcher : BackgroundService
     {
         const int maxRetries = 3;
         var currentAttempt = 0;
+        _logger.LogInformation("Current amount of events in queue: {EventCount}", _channel.Reader.Count);
         
         while (currentAttempt < maxRetries)
         {
             try
             {
                 using var scope = _scopeFactory.CreateScope();
-                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                //var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                
-                _logger.LogInformation("Handling domain event {EventType} (attempt {Attempt}/{MaxRetries})", 
+
+                _logger.LogInformation("Handling domain event {EventType} (attempt {Attempt}/{MaxRetries})",
                     domainEvent.GetType().Name, currentAttempt + 1, maxRetries);
-                    
                 await mediator.Publish(domainEvent, stoppingToken);
-                await unitOfWork.SaveChangesAsync(stoppingToken);
-                
+
                 _logger.LogDebug("Successfully processed domain event {EventType}", domainEvent.GetType().Name);
-                return; // Success - exit retry loop
+                return;
             }
             catch (Exception ex) when (currentAttempt < maxRetries - 1)
             {
@@ -65,9 +64,6 @@ internal sealed class MatchingEngineEventDispatcher : BackgroundService
             {
                 _logger.LogError(ex, "Failed to dispatch domain event {EventType} after {MaxRetries} attempts. Event will be discarded to prevent memory leak.", 
                     domainEvent.GetType().Name, maxRetries);
-                    
-                // Event is discarded here to prevent infinite accumulation
-                // Consider implementing a dead letter queue for critical events
                 return;
             }
         }

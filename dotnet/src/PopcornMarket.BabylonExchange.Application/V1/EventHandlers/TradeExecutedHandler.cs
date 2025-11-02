@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
+using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Domain.Events;
@@ -12,12 +13,14 @@ internal sealed class TradeExecutedHandler : IDomainEventHandler<TradeExecuted>
     private readonly ITradeRepository _tradeRepository;
     private readonly ILogger<TradeExecutedHandler> _logger;
     private readonly IListingRepository _listingRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public TradeExecutedHandler(ITradeRepository tradeRepository, ILogger<TradeExecutedHandler> logger, IListingRepository listingRepository)
+    public TradeExecutedHandler(ITradeRepository tradeRepository, ILogger<TradeExecutedHandler> logger, IListingRepository listingRepository, IUnitOfWork unitOfWork)
     {
         _tradeRepository = tradeRepository;
         _logger = logger;
         _listingRepository = listingRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task Handle(TradeExecuted notification, CancellationToken cancellationToken)
@@ -41,5 +44,6 @@ internal sealed class TradeExecutedHandler : IDomainEventHandler<TradeExecuted>
         _logger.LogInformation("Trade for Listing: '{Symbol}' has been persisted in {ElapsedTime} ms",
                                listing.StockSymbol,
                                Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

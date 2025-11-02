@@ -15,4 +15,7 @@ public static class OrderBookErrors
     
     public static readonly Error OrderBookReferencePriceSet = 
         Error.Validation("OrderBook.ReferencePriceSet", "The order book has a reference price set.");
+
+    public static readonly Error OrderBookMatchOrderCacheMiss =
+        Error.NotFound("OrderBook.OppositeOrdersNotFound", "The order book has no opposite order.");
 }

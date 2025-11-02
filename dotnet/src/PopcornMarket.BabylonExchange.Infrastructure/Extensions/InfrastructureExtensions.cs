@@ -43,7 +43,8 @@ public static class InfrastructureExtensions
             {
                 FullMode = BoundedChannelFullMode.DropWrite, // Changed from Wait to prevent blocking
                 SingleReader = true,
-                SingleWriter = false
+                SingleWriter = false,
+                AllowSynchronousContinuations = false
             })
         );
 
@@ -52,7 +53,8 @@ public static class InfrastructureExtensions
             {
                 FullMode = BoundedChannelFullMode.DropWrite, // Changed from Wait to prevent blocking
                 SingleReader = true,
-                SingleWriter = false
+                SingleWriter = false,
+                AllowSynchronousContinuations = false
             })
         );
 

@@ -46,6 +46,7 @@ type Trader struct {
 	Config   TraderConfig `bson:"config"`
 	UserID   uuid.UUID    `bson:"user_id"`
 	broker   *broker.Broker
+	sec      *broker.SearchSecuritiesResponse
 }
 
 var (
@@ -69,6 +70,19 @@ func NewTrader(id, name string, config TraderConfig) *Trader {
 
 func (t *Trader) Load(br *broker.Broker) {
 	t.broker = br
+
+	// 1. Fetch a random batch of securities
+	securities, _ := t.broker.FetchSecurities(context.Background(), "", 1, 20)
+	// if err != nil {
+	// 	return errorx.Trace(fmt.Errorf("failed to fetch securities: %w", err))
+	// }
+	// if len(securities) == 0 {
+	// 	return fmt.Errorf("no securities available for trading")
+	// }
+
+	// // 2. Pick one randomly
+	sec := securities[rng.Intn(len(securities))]
+	t.sec = &sec
 }
 
 func (t *Trader) Trade(ctx context.Context) error {
@@ -83,45 +97,45 @@ func (t *Trader) Trade(ctx context.Context) error {
 	// 	return fmt.Errorf("no securities available for trading")
 	// }
 
-	// 2. Pick one randomly
+	// // 2. Pick one randomly
 	// sec := securities[rng.Intn(len(securities))]
 
 	// 3. Get active account
 	t.Status = TraderStatusAnalyzing
-	activeAccount, err := t.broker.GetActiveAccount(ctx, t.UserID)
+	acc, err := t.broker.GetActiveAccount(ctx, t.UserID)
 	if err != nil {
 		return errorx.Trace(fmt.Errorf("failed to get active account for trader %s: %w", t.ID, err))
 	}
 
 	// 4. Decide trade type using biases
 	t.Status = TraderStatusTrading
-	// side := decideSide(t.Config)
-	// orderType := decideOrderType(t.Config)
+	side := decideSide(t.Config)
+	orderType := decideOrderType(t.Config)
 
 	// 5. Choose quantity & price logic
-	// quantity := rng.Intn(50) + 1 // 1–50 shares
-	// price := determinePrice(sec, side, orderType, t.Config)
+	quantity := rng.Intn(100) + 1 // 1–50 shares
+	price := determinePrice(*t.sec, broker.OrderSideSell, broker.OrderTypeMarket, t.Config)
 
 	// 6. Place order
-	// orderReq := broker.PlaceOrderRequest{
-	// 	AccountID:     activeAccount.ID,
-	// 	AccountNumber: activeAccount.Number,
-	// 	Ticker:        sec.Symbol,
-	// 	Quantity:      quantity,
-	// 	Price:         price,
-	// 	OrderSide:     int(side),
-	// 	OrderType:     int(orderType),
-	// }
-	// 6. Place order
 	orderReq := broker.PlaceOrderRequest{
-		AccountID:     activeAccount.ID,
-		AccountNumber: activeAccount.Number,
+		AccountID:     acc.ID,
+		AccountNumber: acc.Number,
 		Ticker:        "BABY:TEST",
-		Quantity:      10,
-		Price:         0,
-		OrderSide:     int(broker.OrderSideBuy),
-		OrderType:     int(broker.OrderTypeMarket),
+		Quantity:      quantity,
+		Price:         price,
+		OrderSide:     int(side),
+		OrderType:     int(orderType),
 	}
+	// 6. Place order
+	// orderReq := broker.PlaceOrderRequest{
+	// 	AccountID:     acc.ID,
+	// 	AccountNumber: acc.Number,
+	// 	Ticker:        t.sec.Symbol,
+	// 	Quantity:      quantity,
+	// 	Price:         0,
+	// 	OrderSide:     int(broker.OrderSideBuy),
+	// 	OrderType:     int(broker.OrderTypeMarket),
+	// }
 
 	_, err = t.broker.PlaceOrder(ctx, orderReq)
 	if err != nil {

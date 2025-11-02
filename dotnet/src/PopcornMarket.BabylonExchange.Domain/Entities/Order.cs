@@ -74,13 +74,13 @@ public class Order : Entity
     
     public void TryFulfillOrder(decimal price, int tradeQuantity)
     {
-        var remainingQuantity = Quantity - tradeQuantity;
+        var remainingQuantity = RemainingQuantity - tradeQuantity;
         if(remainingQuantity < 0)
             throw new InvalidOperationException("Trade quantity exceeds remaining order quantity.");
 
         if (remainingQuantity > 0)
         {
-            RemainingQuantity = tradeQuantity;
+            RemainingQuantity = remainingQuantity;
             Status = OrderStatus.PartiallyFilled;
             return;
         }
