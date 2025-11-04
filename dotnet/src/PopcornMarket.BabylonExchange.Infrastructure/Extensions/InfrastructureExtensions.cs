@@ -12,6 +12,7 @@ using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Producers;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Services;
 using PopcornMarket.SharedKernel.Abstractions;
 using PopcornMarket.SharedKernel.Messaging;
+using Elastic.Apm.Extensions;
 using StackExchange.Redis;
 
 namespace PopcornMarket.BabylonExchange.Infrastructure.Extensions;
@@ -27,7 +28,10 @@ public static class InfrastructureExtensions
         SetupOrderMatchingEngine(services);
         SetupKafkaMessaging(services);
         AddObservability(services, configuration);
-        
+
+        services.AddAllElasticApm();
+
+
         return services;
     }
 
@@ -102,6 +106,6 @@ public static class InfrastructureExtensions
 
     private static void AddObservability(IServiceCollection services, IConfiguration configuration)
     {
-        
+        services.AddAllElasticApm();
     }
 }

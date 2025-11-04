@@ -2,7 +2,6 @@
 using System.Threading.Channels;
 using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Entities;
-using PopcornMarket.SharedKernel.Abstractions;
 
 namespace PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
 

@@ -11,6 +11,7 @@
       <PackageReference Include="Confluent.Kafka" />
       <PackageReference Include="Confluent.Kafka.Extensions.Diagnostics" />
       <PackageReference Include="Elastic.Apm" />
+      <PackageReference Include="Elastic.Apm.NetCoreAll" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />

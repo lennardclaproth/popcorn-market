@@ -7,7 +7,6 @@ internal sealed class CacheEvictionService : BackgroundService
 {
     private readonly OrderBookCache _cache;
     private readonly ILogger<CacheEvictionService> _logger;
-    private const int DomainEventThreshold = 1000; // If any order book has more than this many events, force cleanup
 
     public CacheEvictionService(OrderBookCache cache, ILogger<CacheEvictionService> logger)
     {
@@ -21,11 +20,8 @@ internal sealed class CacheEvictionService : BackgroundService
         {
             try
             {
-                _logger.LogInformation("Starting cache eviction and domain event monitoring cycle.");
-
-                // Perform regular cache eviction
+                _logger.LogInformation("Starting cache eviction.");
                 _cache.EvictStale();
-
                 _logger.LogInformation("Cache eviction cycle complete. Waiting for next cycle.");
             }
             catch (Exception ex)
