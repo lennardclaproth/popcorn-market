@@ -59,7 +59,6 @@ func ReadConfig() *Configuration {
 		panic(fmt.Errorf("config: error decoding config: %w", err))
 	}
 
-	// bridge YAML → environment variables used by Elastic APM
 	os.Setenv("ELASTIC_APM_SERVER_URL", cfg.APM.ServerURL)
 	os.Setenv("ELASTIC_APM_SERVICE_NAME", cfg.APM.ServiceName)
 	os.Setenv("ELASTIC_APM_ENVIRONMENT", cfg.APM.Environment)
