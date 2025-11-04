@@ -57,7 +57,7 @@ type Service struct {
 }
 
 type ExchangeHandler interface {
-	PlaceOrder(o *Order) (string, error)
+	PlaceOrder(ctx context.Context, o *Order) (string, error)
 }
 
 type AccountHandler interface {
@@ -135,7 +135,7 @@ func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (string
 	// place the order on the exchange and make sure to set the orderId
 	// of the order to the orderId that is returned from the exchange so
 	// we can map it back when the exchange publishes updates on the order.
-	oid, err := s.exchange.PlaceOrder(o)
+	oid, err := s.exchange.PlaceOrder(ctx, o)
 	if err != nil {
 		err = errorx.Trace(fmt.Errorf("placeOrder: failed to place order: %w", err))
 		refundErr := s.accounts.Refund(ctx, cmd.AccountID, totalprice)

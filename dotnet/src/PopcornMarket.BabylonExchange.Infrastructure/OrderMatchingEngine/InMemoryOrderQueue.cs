@@ -21,12 +21,8 @@ public class InMemoryOrderQueue : IOrderQueue
         return Task.FromResult(_channel.Reader.Count);
     }
 
-    public Task Enqueue(Order order)
+    public async Task Enqueue(Order order)
     {
-        if (!_channel.Writer.TryWrite(order))
-        {
-            return Task.CompletedTask;
-        }
-        return Task.CompletedTask;
+        await _channel.Writer.WriteAsync(order);
     }
 }

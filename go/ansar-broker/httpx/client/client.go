@@ -3,6 +3,8 @@ package httpx
 import (
 	"net/http"
 	"time"
+
+	"go.elastic.co/apm/module/apmhttp/v2"
 )
 
 type Client struct {
@@ -27,7 +29,7 @@ func WithCircuitBreaker(maxFailures int, resetTimeout time.Duration) ClientOptio
 func NewClient(opts ...ClientOption) *Client {
 	c := &Client{
 		Client: &http.Client{
-			Transport: http.DefaultTransport,
+			Transport: apmhttp.WrapRoundTripper(http.DefaultTransport),
 			Timeout:   10 * time.Second,
 		},
 	}

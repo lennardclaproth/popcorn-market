@@ -3,7 +3,15 @@ server:
 
 database:
   connection_string: file:db/ansar-broker.db?_foreign_keys=on
-  type: sqlite
+  type: sqlite3
 
 babylon_exchange:
   uri: https://localhost:7199
+
+apm:
+  server_url: http://localhost:8200
+  service_name: ansar-broker
+  environment: development
+  secret_token: 
+  verify_server_cert: false
+  log_level: warning

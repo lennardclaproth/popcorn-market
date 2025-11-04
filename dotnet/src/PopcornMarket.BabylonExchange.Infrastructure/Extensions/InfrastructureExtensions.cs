@@ -1,12 +1,7 @@
 ﻿using System.Threading.Channels;
-using Confluent.Kafka.Extensions.OpenTelemetry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Npgsql;
-using OpenTelemetry.Exporter;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Infrastructure.Caching;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Consumers;
@@ -41,7 +36,7 @@ public static class InfrastructureExtensions
         services.AddSingleton(
             Channel.CreateBounded<Domain.Entities.Order>(new BoundedChannelOptions(10_000)
             {
-                FullMode = BoundedChannelFullMode.DropWrite, // Changed from Wait to prevent blocking
+                FullMode = BoundedChannelFullMode.DropWrite,
                 SingleReader = true,
                 SingleWriter = false,
                 AllowSynchronousContinuations = false
@@ -49,9 +44,9 @@ public static class InfrastructureExtensions
         );
 
         services.AddSingleton(
-            Channel.CreateBounded<IDomainEvent>(new BoundedChannelOptions(10_000) // Increased capacity for events
+            Channel.CreateBounded<IDomainEvent>(new BoundedChannelOptions(10_000)
             {
-                FullMode = BoundedChannelFullMode.DropWrite, // Changed from Wait to prevent blocking
+                FullMode = BoundedChannelFullMode.DropWrite,
                 SingleReader = true,
                 SingleWriter = false,
                 AllowSynchronousContinuations = false
@@ -107,22 +102,6 @@ public static class InfrastructureExtensions
 
     private static void AddObservability(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOpenTelemetry()
-            .WithTracing(builder =>
-            {
-                builder
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation()
-                    .AddConfluentKafkaInstrumentation()
-                    .AddRedisInstrumentation()
-                    .AddNpgsql()
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService(configuration.GetSection("ServiceName").Value ?? "UnknownService"))
-                    .AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri("http://localhost:4317");
-                        options.Protocol = OtlpExportProtocol.Grpc;
-                    });
-            });
+        
     }
 }

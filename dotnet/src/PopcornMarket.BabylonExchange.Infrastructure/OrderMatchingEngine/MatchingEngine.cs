@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Threading.Channels;
 using Ardalis.GuardClauses;
+using Elastic.Apm.Api;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,14 +21,16 @@ internal sealed class MatchingEngine : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly OrderBookCache _cache;
     private readonly ILogger<MatchingEngine> _logger;
+    private readonly ITracer _tracer;
 
-    public MatchingEngine(Channel<Order> channel, IServiceScopeFactory scopeFactory, OrderBookCache cache, ILogger<MatchingEngine> logger, IDomainEventQueue eventQueue)
+    public MatchingEngine(Channel<Order> channel, IServiceScopeFactory scopeFactory, OrderBookCache cache, ILogger<MatchingEngine> logger, IDomainEventQueue eventQueue, ITracer tracer)
     {
         _channel = channel;
         _scopeFactory = scopeFactory;
         _cache = cache;
         _logger = logger;
         _eventQueue = eventQueue;
+        _tracer = tracer;
     }
 
     /// <summary>
@@ -49,8 +52,9 @@ internal sealed class MatchingEngine : BackgroundService
     private async Task ProcessOrder(Order order, CancellationToken stoppingToken)
     {
         var startTime = Stopwatch.GetTimestamp();
-        _logger.LogInformation("Processing order {OrderId} for {StockSymbol}", order.Id, order.StockSymbol);
-        
+        _logger.LogDebug("Processing order {OrderId} for {StockSymbol}", order.Id, order.StockSymbol);
+
+        var transaction = _tracer.StartTransaction(nameof(ProcessOrder), nameof(MatchingEngine));
         OrderBook? orderBook = null;
 
         try
@@ -60,11 +64,12 @@ internal sealed class MatchingEngine : BackgroundService
 
             orderBook = await _cache.Get(order.StockSymbol);
             Guard.Against.Null(orderBook, nameof(orderBook));
-            _logger.LogDebug("Memory usage at matching engine: {Memory} MB", GC.GetTotalMemory(false) / (1024 * 1024));
             var matchResult = orderBook.MatchOrder(order);
             if (matchResult.IsFailure && matchResult.Error.Equals(OrderBookErrors.OrderBookMatchOrderCacheMiss))
             {
-                _logger.LogInformation("Order {OrderId} for {StockSymbol} had a match order miss in the order book cache. Checking cold storage.", order.Id, order.StockSymbol);
+                _logger.LogDebug(
+                    "Order {OrderId} for {StockSymbol} had a match order miss in the order book cache. Checking cold storage.",
+                    order.Id, order.StockSymbol);
                 bool hasMoreColdOrders = true;
                 bool fullyMatched = false;
                 int safetyCounter = 0;
@@ -90,27 +95,44 @@ internal sealed class MatchingEngine : BackgroundService
                     }
                 }
             }
-            _logger.LogDebug("Memory usage at matching engine after match order: {Memory} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+
+            _logger.LogDebug("Memory usage at matching engine after match order: {Memory} MB",
+                GC.GetTotalMemory(false) / (1024 * 1024));
 
             var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
             await _cache.EvictColdOrders(orderBook);
-            _logger.LogInformation("Order {OrderId} for {StockSymbol} processed in {ElapsedTimeMs} ms by the matching engine", order.Id, order.StockSymbol, elapsedTimeMs);
-            _logger.LogInformation("Dispatching {EventCount} domain events for OrderBook {StockSymbol}", order.StockSymbol, orderBook.DomainEvents.Count);
-            _logger.LogDebug("Memory usage at matching engine before dispatching match order: {Memory} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+            _logger.LogDebug(
+                "Order {OrderId} for {StockSymbol} processed in {ElapsedTimeMs} ms by the matching engine", order.Id,
+                order.StockSymbol, elapsedTimeMs);
+            _logger.LogDebug("Dispatching {EventCount} domain events for OrderBook {StockSymbol}",
+                order.StockSymbol, orderBook.DomainEvents.Count);
+            _logger.LogDebug("Memory usage at matching engine before dispatching match order: {Memory} MB",
+                GC.GetTotalMemory(false) / (1024 * 1024));
             await mediator.DispatchDomainEventsToQueueAsync(orderBook, _eventQueue, stoppingToken);
-            _logger.LogDebug("Memory usage at matching engine after dispatching match order: {Memory} MB", GC.GetTotalMemory(false) / (1024 * 1024));
+            _logger.LogDebug("Memory usage at matching engine after dispatching match order: {Memory} MB",
+                GC.GetTotalMemory(false) / (1024 * 1024));
             elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-            _logger.LogInformation("Domain events for OrderBook {StockSymbol} have been dispatched total processing time {ElapsedTimeMs}", order.StockSymbol, elapsedTimeMs);
+            _logger.LogDebug(
+                "Domain events for OrderBook {StockSymbol} have been dispatched total processing time {ElapsedTimeMs}",
+                order.StockSymbol, elapsedTimeMs);
         }
         catch (Exception ex)
         {
             var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-            _logger.LogError(ex, "Failed to process order {OrderId} for {StockSymbol} after {ElapsedTimeMs} ms. Order will be skipped to prevent blocking.", order.Id, order.StockSymbol, elapsedTimeMs);
+            _logger.LogError(ex,
+                "Failed to process order {OrderId} for {StockSymbol} after {ElapsedTimeMs} ms. Order will be skipped to prevent blocking.",
+                order.Id, order.StockSymbol, elapsedTimeMs);
 
             if (orderBook != null)
             {
                 orderBook.ClearDomainEvents();
             }
+
+            transaction.CaptureException(ex);
+        }
+        finally
+        {
+            transaction.End();
         }
     }
 }

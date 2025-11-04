@@ -1,9 +1,5 @@
-﻿using Confluent.Kafka.Extensions.OpenTelemetry;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OpenTelemetry.Exporter;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using PopcornMarket.FinancialTimes.Application.Abstractions;
 using PopcornMarket.FinancialTimes.Infrastructure.Messaging.Consumers;
 using PopcornMarket.FinancialTimes.Infrastructure.Messaging.Services;
@@ -21,22 +17,7 @@ public static class InfrastructureExtensions
 
     private static void AddObservability(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOpenTelemetry()
-            .WithTracing(builder =>
-            {
-                builder
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation()
-                    .AddConfluentKafkaInstrumentation()
-                    .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService(configuration.GetSection("ServiceName").Value ?? "UnknownService"))
-                    .AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri("http://localhost:4317");
-                        options.Protocol = OtlpExportProtocol.Grpc;
-                    });
-            });
+
     }
 
     private static void SetupKafkaMessaging(this IServiceCollection services)
