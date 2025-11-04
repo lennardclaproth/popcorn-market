@@ -70,72 +70,43 @@ func NewTrader(id, name string, config TraderConfig) *Trader {
 
 func (t *Trader) Load(br *broker.Broker) {
 	t.broker = br
-
-	// 1. Fetch a random batch of securities
-	securities, _ := t.broker.FetchSecurities(context.Background(), "", 1, 20)
-	// if err != nil {
-	// 	return errorx.Trace(fmt.Errorf("failed to fetch securities: %w", err))
-	// }
-	// if len(securities) == 0 {
-	// 	return fmt.Errorf("no securities available for trading")
-	// }
-
-	// // 2. Pick one randomly
-	sec := securities[rng.Intn(len(securities))]
-	t.sec = &sec
 }
 
 func (t *Trader) Trade(ctx context.Context) error {
 	t.Status = TraderStatusFetching
 
-	// 1. Fetch a random batch of securities
-	// securities, err := t.broker.FetchSecurities(ctx, "", 1, 20)
-	// if err != nil {
-	// 	return errorx.Trace(fmt.Errorf("failed to fetch securities: %w", err))
-	// }
-	// if len(securities) == 0 {
-	// 	return fmt.Errorf("no securities available for trading")
-	// }
+	securities, err := t.broker.FetchSecurities(ctx, "", 1, 20)
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("failed to fetch securities: %w", err))
+	}
+	if len(securities) == 0 {
+		return fmt.Errorf("no securities available for trading")
+	}
 
-	// // 2. Pick one randomly
-	// sec := securities[rng.Intn(len(securities))]
+	sec := securities[rng.Intn(len(securities))]
 
-	// 3. Get active account
 	t.Status = TraderStatusAnalyzing
 	acc, err := t.broker.GetActiveAccount(ctx, t.UserID)
 	if err != nil {
 		return errorx.Trace(fmt.Errorf("failed to get active account for trader %s: %w", t.ID, err))
 	}
 
-	// 4. Decide trade type using biases
 	t.Status = TraderStatusTrading
 	side := decideSide(t.Config)
 	orderType := decideOrderType(t.Config)
 
-	// 5. Choose quantity & price logic
-	quantity := rng.Intn(100) + 1 // 1–50 shares
+	quantity := rng.Intn(100) + 1
 	price := determinePrice(*t.sec, broker.OrderSideSell, broker.OrderTypeMarket, t.Config)
 
-	// 6. Place order
 	orderReq := broker.PlaceOrderRequest{
 		AccountID:     acc.ID,
 		AccountNumber: acc.Number,
-		Ticker:        "BABY:TEST",
+		Ticker:        sec.Symbol,
 		Quantity:      quantity,
 		Price:         price,
 		OrderSide:     int(side),
 		OrderType:     int(orderType),
 	}
-	// 6. Place order
-	// orderReq := broker.PlaceOrderRequest{
-	// 	AccountID:     acc.ID,
-	// 	AccountNumber: acc.Number,
-	// 	Ticker:        t.sec.Symbol,
-	// 	Quantity:      quantity,
-	// 	Price:         0,
-	// 	OrderSide:     int(broker.OrderSideBuy),
-	// 	OrderType:     int(broker.OrderTypeMarket),
-	// }
 
 	_, err = t.broker.PlaceOrder(ctx, orderReq)
 	if err != nil {
@@ -163,14 +134,15 @@ func decideOrderType(cfg TraderConfig) broker.OrderType {
 }
 
 func determinePrice(sec broker.SearchSecuritiesResponse, side broker.OrderSide, otype broker.OrderType, cfg TraderConfig) float64 {
+	// market order has no price, we can always return 0
 	if otype == broker.OrderTypeMarket {
-		return 0 // market order has no price
+		return 0
 	}
 
 	// Guard against bad or zero price data
 	base := sec.LastPrice
 	if base <= 0 {
-		// fallback: random base between 10 and 100 if data is missing
+		// if base is smaller than zero we at least return a value bigger than 0
 		base = 10 + rng.Float64()*90
 	}
 
@@ -190,13 +162,6 @@ func determinePrice(sec broker.SearchSecuritiesResponse, side broker.OrderSide, 
 	}
 
 	return price
-}
-
-func sideToString(s broker.OrderSide) string {
-	if s == broker.OrderSideBuy {
-		return "BUY"
-	}
-	return "SELL"
 }
 
 // seedFromCrypto generates a non-deterministic int64 seed.
@@ -222,7 +187,7 @@ func (t *Trader) OnBoard(ctx context.Context) (uuid.UUID, error) {
 		return uuid.Nil, fmt.Errorf("broker not initialized; call Load() first")
 	}
 
-	// 1. Create a user on the broker
+	// Create a user on the broker
 	createReq := broker.CreateUserRequest{
 		DateOfBirth: "1990-01-01", // or generate based on your simulation
 		Email:       t.Email,
@@ -242,14 +207,14 @@ func (t *Trader) OnBoard(ctx context.Context) (uuid.UUID, error) {
 	}
 	t.UserID = userID
 
-	// 2. Open an account for the created user
+	// Open an account for the created user
 	initialBalance := 10_000.0 + rng.Float64()*90_000.0 // random 10k–100k
 	_, err = t.broker.OpenAccount(ctx, userID, initialBalance)
 	if err != nil {
 		return userID, fmt.Errorf("failed to open account for user %s: %w", userID, err)
 	}
 
-	// 3. Update state
+	// Update state
 	t.Status = TraderStatusIdle
 	return userID, nil
 }
