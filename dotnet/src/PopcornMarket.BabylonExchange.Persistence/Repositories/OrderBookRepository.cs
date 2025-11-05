@@ -39,7 +39,7 @@ internal sealed class OrderBookRepository : IOrderBookRepository
         return orderBook;
     }
 
-    public async Task<OrderBook?> GetByStockSymbolIncludingPendingOrders(string ticker, int page, int count)
+    public async Task<OrderBook?> GetByStockSymbolIncludingPendingOrders(string ticker)
     {
         var buyOrders = await _context.Orders
             .Where(o => o.StockSymbol == ticker 
@@ -48,7 +48,6 @@ internal sealed class OrderBookRepository : IOrderBookRepository
                         && o.OrderType != OrderType.MarketOrder)
             .OrderByDescending(o => o.Price)                             // higher price first for limits
             .ThenBy(o => o.PlacedTimestamp)                             // FIFO
-            //.Skip((page - 1) * count).Take(count)
             .AsNoTracking()
             .ToListAsync();
         
@@ -59,7 +58,6 @@ internal sealed class OrderBookRepository : IOrderBookRepository
                         && o.OrderType != OrderType.MarketOrder)
             .OrderBy(o => o.Price)                                       // lower price first for limits
             .ThenBy(o => o.PlacedTimestamp)                             // FIFO
-            //.Skip((page - 1) * count).Take(count)
             .AsNoTracking()
             .ToListAsync();
 
