@@ -13,7 +13,6 @@ internal sealed class OrderBookCache
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly TimeSpan _evictionTimeout;
     private readonly ILogger<OrderBookCache> _logger;
-    private readonly int _window = 10;
     public OrderBookCache(IServiceScopeFactory scopeFactory, TimeSpan evictionTimeout, ILogger<OrderBookCache> logger)
     {
         _scopeFactory = scopeFactory;
@@ -34,7 +33,7 @@ internal sealed class OrderBookCache
         using var scope = _scopeFactory.CreateScope();
         var orderBookRepository = scope.ServiceProvider.GetRequiredService<IOrderBookRepository>();
 
-        var book = await orderBookRepository.GetByStockSymbolIncludingPendingOrders(ticker, 1, _window);
+        var book = await orderBookRepository.GetByStockSymbolIncludingPendingOrders(ticker);
         if (book == null) return null;
 
         var newCached = new CachedOrderBook(book);
