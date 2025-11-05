@@ -1,12 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Threading.Channels;
 using Ardalis.GuardClauses;
+using Elastic.Apm.Api;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Entities;
+using PopcornMarket.BabylonExchange.Domain.Enums;
+using PopcornMarket.SharedKernel.Abstractions;
 using PopcornMarket.SharedKernel.Extensions;
 
 namespace PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
@@ -14,16 +16,22 @@ namespace PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
 internal sealed class MatchingEngine : BackgroundService
 {
     private readonly Channel<Order> _channel;
+    private readonly IDomainEventQueue _eventQueue;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly OrderBookCache _cache;
-    private readonly ILogger<MatchingEngine> _logger;
+    private readonly ITracer _tracer;
 
-    public MatchingEngine(Channel<Order> channel, IServiceScopeFactory scopeFactory, OrderBookCache cache, ILogger<MatchingEngine> logger)
+    public MatchingEngine(Channel<Order> channel,
+        IServiceScopeFactory scopeFactory,
+        OrderBookCache cache,
+        IDomainEventQueue eventQueue,
+        ITracer tracer)
     {
         _channel = channel;
         _scopeFactory = scopeFactory;
         _cache = cache;
-        _logger = logger;
+        _eventQueue = eventQueue;
+        _tracer = tracer;
     }
 
     /// <summary>
@@ -34,31 +42,57 @@ internal sealed class MatchingEngine : BackgroundService
     /// </summary>
     /// <param name="stoppingToken"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await foreach (var order in _channel.Reader.ReadAllAsync(stoppingToken))
         {
-            var startTime = Stopwatch.GetTimestamp();
-            _logger.LogInformation("Processing order {OrderId} for {StockSymbol}", order.Id, order.StockSymbol);
+            await ProcessOrder(order, stoppingToken);
+        }
+    }
+
+    private async Task ProcessOrder(Order order, CancellationToken stoppingToken)
+    {
+        var transaction = _tracer.StartTransaction($"{nameof(MatchingEngine)}.{nameof(ProcessOrder)}", nameof(BackgroundService));
+        var orderMatched = true;
+        var orderBook = await _cache.Get(order.StockSymbol);
+        Guard.Against.Null(orderBook, nameof(orderBook));
+
+        try
+        {
             using var scope = _scopeFactory.CreateScope();
-            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            while (order.RemainingQuantity > 0 && orderMatched)
+            {
+                orderMatched = orderBook.MatchOrder(order);
+                await mediator.DispatchDomainEventsToQueue(orderBook, _eventQueue, stoppingToken);
+            }
 
-            var orderBook = await _cache.Get(order.StockSymbol);
-            Guard.Against.Null(orderBook, nameof(orderBook));
+            if (orderMatched)
+            {
+                return;
+            }
 
-            orderBook.MatchOrder(order);
-            var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-            _logger.LogInformation("Order {OrderId} for {StockSymbol} processed in {ElapsedTimeMs} ms by the matching engine", order.Id, order.StockSymbol, elapsedTimeMs);
+            if (order.OrderType == OrderType.LimitOrder)
+            {
+                orderBook.RestOrder(order);
+                return;
+            }
 
-            _logger.LogInformation("Dispatching domain events for OrderBook {StockSymbol}", order.StockSymbol);
-
-            await mediator.DispatchDomainEventsAsync(orderBook, stoppingToken);
-            await unitOfWork.SaveChangesAsync(stoppingToken);
-
-            elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-            _logger.LogInformation("Domain events for OrderBook {StockSymbol} have been dispatched total processing time {ElapsedTimeMs}", order.StockSymbol, elapsedTimeMs);
+            if (order.OrderType == OrderType.MarketOrder)
+            {
+                orderBook.CancelOrder(order);
+                await mediator.DispatchDomainEventsToQueue(orderBook, _eventQueue, stoppingToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            orderBook.ClearDomainEvents();
+            transaction.CaptureException(ex);
+            throw;
+        }
+        finally
+        {
+            transaction.End();
         }
     }
 }

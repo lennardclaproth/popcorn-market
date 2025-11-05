@@ -6,7 +6,6 @@ internal sealed class CachedOrderBook
 {
     public OrderBook OrderBook { get;}
     public DateTimeOffset LastAccessed { get; set; }
-
     public CachedOrderBook(OrderBook orderBook)
     {
         OrderBook = orderBook;

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/lennardclaproth/ansar-broker/http/httpx"
+	"github.com/lennardclaproth/ansar-broker/httpx"
 	"github.com/lennardclaproth/ansar-broker/logging"
 )
 

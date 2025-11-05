@@ -18,9 +18,17 @@ internal sealed class CacheEvictionService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Evicting stale order books from cache.");
-            _cache.EvictStale();
-            _logger.LogInformation("Eviction complete. Waiting for next cycle.");
+            try
+            {
+                _logger.LogDebug("Starting cache eviction.");
+                _cache.EvictStale();
+                _logger.LogDebug("Cache eviction cycle complete. Waiting for next cycle.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during cache eviction cycle.");
+            }
+
             await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
         }
     }

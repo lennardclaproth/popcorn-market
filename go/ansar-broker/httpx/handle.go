@@ -32,7 +32,7 @@ func Handle[T any, R any](decode DecoderFunc[T], log logging.Logger, fn HandlerF
 		// if we encounter any problems we return the problems to the client
 		// as a bad request with the problems as a body
 		if validator, ok := any(req).(Validator); ok {
-			if problems := validator.Valid(r.Context()); problems != nil {
+			if problems := validator.Valid(r.Context()); len(problems) > 0 {
 				_ = encode(w, http.StatusBadRequest, problems)
 				return
 			}

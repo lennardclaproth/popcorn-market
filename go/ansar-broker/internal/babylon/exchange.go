@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/lennardclaproth/ansar-broker/config"
+	httpx "github.com/lennardclaproth/ansar-broker/httpx/client"
 	"github.com/lennardclaproth/ansar-broker/internal/order"
 	"github.com/lennardclaproth/ansar-broker/internal/security"
 )
@@ -20,16 +21,18 @@ type Service struct {
 }
 
 func NewService(cfg *config.Configuration) *Service {
+	client := httpx.NewClient(
+		httpx.WithCircuitBreaker(3, 3*time.Second),
+	)
+
 	return &Service{
-		client: &http.Client{
-			Timeout: 10 * time.Second,
-		},
+		client:  client.Client,
 		baseURL: cfg.Exchange.URI,
 	}
 }
 
 // PlaceOrder sends an order to the exchange via a POST request
-func (s *Service) PlaceOrder(o *order.Order) (string, error) {
+func (s *Service) PlaceOrder(ctx context.Context, o *order.Order) (string, error) {
 	url := fmt.Sprintf("%s/api/v1/order", s.baseURL)
 	// Build request payload based on the external API schema
 	request := struct {
@@ -55,7 +58,7 @@ func (s *Service) PlaceOrder(o *order.Order) (string, error) {
 	}
 
 	// build new request
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
 		return "", err
 	}
@@ -93,7 +96,7 @@ func (s *Service) FindListings(ctx context.Context, f string, p, c int) ([]secur
 	url := fmt.Sprintf(`%s/api/v1/listing`, s.baseURL)
 
 	// Build a request and set the query parameters of the request
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}

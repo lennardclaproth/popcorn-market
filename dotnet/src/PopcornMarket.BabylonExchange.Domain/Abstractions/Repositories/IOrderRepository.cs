@@ -12,4 +12,5 @@ public interface IOrderRepository : IRepository<Order>
     /// <returns></returns>
     Task<Dictionary<OrderType, List<Order>>> GetPendingBuyOrders(Guid orderBookId);
     Task<Dictionary<OrderType, List<Order>>> GetPendingSellOrders(Guid orderBookId);
+    Task<IReadOnlyCollection<Order>> GetPendingOrdersByTicker(string ticker, OrderSide orderSide, decimal? lastPrice, DateTimeOffset? lastPlacedTimestamp, int count);
 }

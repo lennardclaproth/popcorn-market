@@ -1,12 +1,7 @@
 ﻿using System.Threading.Channels;
-using Confluent.Kafka.Extensions.OpenTelemetry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Npgsql;
-using OpenTelemetry.Exporter;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Infrastructure.Caching;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Consumers;
@@ -15,6 +10,7 @@ using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Abstractions;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.BackgroundJobs;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Producers;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Services;
+using PopcornMarket.SharedKernel.Abstractions;
 using PopcornMarket.SharedKernel.Messaging;
 using StackExchange.Redis;
 
@@ -31,13 +27,32 @@ public static class InfrastructureExtensions
         SetupOrderMatchingEngine(services);
         SetupKafkaMessaging(services);
         AddObservability(services, configuration);
-        
+
         return services;
     }
 
     private static void SetupOrderMatchingEngine(IServiceCollection services)
     {
-        services.AddSingleton(Channel.CreateUnbounded<Domain.Entities.Order>());
+        services.AddSingleton(
+            Channel.CreateBounded<Domain.Entities.Order>(new BoundedChannelOptions(10_000)
+            {
+                FullMode = BoundedChannelFullMode.DropWrite,
+                SingleReader = true,
+                SingleWriter = false,
+                AllowSynchronousContinuations = false
+            })
+        );
+
+        services.AddSingleton(
+            Channel.CreateBounded<IDomainEvent>(new BoundedChannelOptions(10_000)
+            {
+                FullMode = BoundedChannelFullMode.DropWrite,
+                SingleReader = true,
+                SingleWriter = false,
+                AllowSynchronousContinuations = false
+            })
+        );
+
         services.AddSingleton<OrderBookCache>(sp =>
         {
             var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
@@ -45,9 +60,19 @@ public static class InfrastructureExtensions
             var logger = sp.GetRequiredService<ILogger<OrderBookCache>>();
             return new OrderBookCache(scopeFactory, evictionTimeout, logger);
         });
-        services.AddSingleton<IOrderQueue, InMemoryOrderQueue>();
+        services.AddSingleton<IOrderQueue>(sp =>
+        {
+            var channel = sp.GetRequiredService<Channel<Domain.Entities.Order>>();
+            return new InMemoryOrderQueue(channel);
+        });
+        services.AddSingleton<IDomainEventQueue>(sp =>
+        {
+            var channel = sp.GetRequiredService<Channel<IDomainEvent>>();
+            return new MatchingEngineEventQueue(channel);
+        });
         services.AddHostedService<CacheEvictionService>();
         services.AddHostedService<MatchingEngine>();
+        services.AddHostedService<MatchingEngineEventDispatcher>();
     }
     
     private static void SetupKafkaMessaging(this IServiceCollection services)
@@ -77,22 +102,6 @@ public static class InfrastructureExtensions
 
     private static void AddObservability(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOpenTelemetry()
-            .WithTracing(builder =>
-            {
-                builder
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation()
-                    .AddConfluentKafkaInstrumentation()
-                    .AddRedisInstrumentation()
-                    .AddNpgsql()
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService(configuration.GetSection("ServiceName").Value ?? "UnknownService"))
-                    .AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri("http://localhost:4317");
-                        options.Protocol = OtlpExportProtocol.Grpc;
-                    });
-            });
+        services.AddAllElasticApm();
     }
 }

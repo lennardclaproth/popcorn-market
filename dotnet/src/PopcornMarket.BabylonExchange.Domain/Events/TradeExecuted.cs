@@ -1,22 +1,29 @@
 ﻿using PopcornMarket.SharedKernel.Abstractions;
 
 namespace PopcornMarket.BabylonExchange.Domain.Events;
-public sealed class TradeExecuted : IDomainEvent
+public sealed record TradeExecuted : IDomainEvent
 {
-    public TradeExecuted(Guid buyOrderId, Guid sellOrderId, decimal tradePrice, int tradeQuantity, string symbol, DateTime executedAt)
+    public TradeExecuted(Guid buyOrderId,
+        Guid sellOrderId,
+        decimal tradePrice,
+        int tradeQuantity,
+        string stockSymbol,
+        DateTime executedAt)
     {
         BuyOrderId = buyOrderId;
         SellOrderId = sellOrderId;
         TradePrice = tradePrice;
-        TradeQuantity = tradeQuantity;
-        StockSymbol = symbol;
+        TradeQuantity =tradeQuantity;
+        StockSymbol = stockSymbol;
         ExecutedAt = executedAt;
     }
 
-    public Guid BuyOrderId { get; }
-    public Guid SellOrderId { get; }
-    public decimal TradePrice { get; }
-    public int TradeQuantity { get; }
-    public string StockSymbol { get; }
-    public DateTime ExecutedAt { get; }
+    public TradeExecuted(){}
+
+    public Guid BuyOrderId { get; init; }
+    public Guid SellOrderId { get; init; }
+    public decimal TradePrice { get; init; }
+    public int TradeQuantity { get; init; }
+    public required string StockSymbol { get; init; } = null!;
+    public DateTime ExecutedAt { get; init; }
 }

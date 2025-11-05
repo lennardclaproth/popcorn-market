@@ -1,4 +1,4 @@
-using PopcornMarket.BabylonExchange.Api.Filters;
+﻿using PopcornMarket.BabylonExchange.Api.Filters;
 
 namespace PopcornMarket.BabylonExchange.Api.Extensions;
 

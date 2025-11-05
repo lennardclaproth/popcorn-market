@@ -29,7 +29,7 @@ public class ListingAcceptedHandler : IDomainEventHandler<ListingAccepted>
     public async Task Handle(ListingAccepted notification, CancellationToken cancellationToken)
     {
         var startTime = Stopwatch.GetTimestamp();
-        _logger.LogInformation("Handling ListingAccepted event for stock symbol: {StockSymbol}", notification.StockSymbol);
+        _logger.LogDebug("Handling ListingAccepted event for stock symbol: {StockSymbol}", notification.StockSymbol);
         var listing = await _listingRepository.GetByStockSymbol(notification.StockSymbol);
         Guard.Against.Null(listing, nameof(listing));
 
@@ -44,6 +44,6 @@ public class ListingAcceptedHandler : IDomainEventHandler<ListingAccepted>
         await _orderBookRepository.AddEntity(creationResult.Value);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-        _logger.LogInformation("Order book created for stock symbol: {StockSymbol} in {ElapsedTimeMs}", notification.StockSymbol, elapsedTimeMs);
+        _logger.LogDebug("Order book created for stock symbol: {StockSymbol} in {ElapsedTimeMs}", notification.StockSymbol, elapsedTimeMs);
     }
 }

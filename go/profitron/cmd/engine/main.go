@@ -4,55 +4,50 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/lennardclaproth/profitron/internal/domain"
-	"github.com/lennardclaproth/profitron/internal/infrastructure/engine"
+	"github.com/lennardclaproth/profitron/config"
+	"github.com/lennardclaproth/profitron/db"
+	"github.com/lennardclaproth/profitron/internal/broker"
+	"github.com/lennardclaproth/profitron/internal/engine"
+	"github.com/lennardclaproth/profitron/logging"
 )
 
-func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	}))
-
-	scheduler := engine.NewScheduler(logger)
-
-	var traders []*domain.Trader
-	types := []domain.TraderType{
-		domain.TraderTypeScalper,
-		domain.TraderTypeSwing,
-		domain.TraderTypePosition,
-		domain.TraderTypeFundamental,
-	}
-
-	// Create traders
-	for i := 1; i <= 10000; i++ {
-		id := fmt.Sprintf("T-%04d", i) // -> T-0001 ... T-10000
-		name := fmt.Sprintf("Trader %d", i)
-
-		config := domain.TraderConfig{
-			TraderType: types[rand.Intn(len(types))],
-			BuyBias:    rand.Float64(), // 0.0 - 1.0
-			SellBias:   rand.Float64(),
-		}
-
-		trader := domain.NewTrader(id, name, config)
-
-		traders = append(traders, trader)
-	}
-
-	// Create and add sessions for each trader
-	for _, trader := range traders {
-		session := engine.NewSession(trader, logger)
-		scheduler.AddSession(trader.ID, session)
-	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+// run contains the program’s actual logic and returns an error if something fails.
+func run(ctx context.Context, args []string) error {
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	<-ctx.Done() // wait until Ctrl+C
-	scheduler.Stop()
+	// app initialization
+	cfg := config.ReadConfig()
+	dbInstance := db.NewDB(ctx, cfg.Mongo)
+	logger := logging.NewSlogLogger(slog.LevelDebug)
+	store := db.NewTraderStore(dbInstance)
+	b := broker.NewBroker(cfg.Broker.URI)
+	mgr := engine.NewManager(ctx, store, *b, logger, cfg.MaxTraders)
+
+	// Starts the scheduler
+	mgr.StartScheduler(ctx)
+
+	// load the traders
+	if err := mgr.LoadTraders(ctx); err != nil {
+		return err
+	}
+
+	// Wait for termination signal
+	<-ctx.Done()
+
+	mgr.StopScheduler(ctx)
+	return nil
+}
+
+func main() {
+	ctx := context.Background()
+	if err := run(ctx, os.Args); err != nil {
+		slog.Error("fatal error", "err", err)
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
 }

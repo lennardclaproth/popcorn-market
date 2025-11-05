@@ -50,6 +50,7 @@ internal sealed class ListingRepository : IListingRepository
             .Take(pageSize)
             .Where(l => l.Status == Domain.Enums.ListingStatus.Active)
             .Where(l => filter == null || l.StockSymbol.Contains(filter) || l.Name.Contains(filter) || l.Isin.Contains(filter))
+            .AsNoTracking()
             .ToListAsync();
 
         return listings;

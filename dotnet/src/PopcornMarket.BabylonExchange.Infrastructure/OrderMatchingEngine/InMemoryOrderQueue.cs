@@ -15,6 +15,11 @@ public class InMemoryOrderQueue : IOrderQueue
         _channel = channel;
     }
 
+    public Task<int> GetQueueCount()
+    {
+        return Task.FromResult(_channel.Reader.Count);
+    }
+
     public async Task Enqueue(Order order)
     {
         await _channel.Writer.WriteAsync(order);

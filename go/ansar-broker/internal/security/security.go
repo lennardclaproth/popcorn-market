@@ -49,7 +49,7 @@ func NewService(ex ExchangeHandler, log logging.Logger) *Service {
 	}
 }
 
-func (s *Service) SearchSecurities(ctx context.Context, q GetListingsQuery) ([]Listing, error) {
+func (s *Service) SearchListings(ctx context.Context, q GetListingsQuery) ([]Listing, error) {
 	listings, err := s.exchange.FindListings(ctx, q.Filter, q.Page, q.Count)
 	if err != nil {
 		return nil, err

@@ -42,6 +42,50 @@ internal sealed class OrderRepository : IOrderRepository
         throw new NotImplementedException();
     }
 
+    public async Task<IReadOnlyCollection<Order>> GetPendingOrdersByTicker(string ticker,
+        OrderSide orderSide,
+        decimal? lastPrice,
+        DateTimeOffset? lastPlacedTimestamp,
+        int count)
+    {
+        var query = _context.Orders
+            .Where(o => o.StockSymbol == ticker
+                        && o.OrderSide == orderSide
+                        && (o.Status == OrderStatus.Pending || o.Status == OrderStatus.PartiallyFilled)
+                        && o.OrderType != OrderType.MarketOrder);
+
+        if(orderSide == OrderSide.Buy)
+        {
+            query = query
+                .OrderByDescending(o => o.Price)
+                .ThenBy(o => o.PlacedTimestamp);
+
+            if (lastPrice.HasValue && lastPlacedTimestamp.HasValue)
+            {
+                query = query.Where(o =>
+                    o.Price < lastPrice.Value ||
+                    (o.Price == lastPrice.Value && o.PlacedTimestamp > lastPlacedTimestamp.Value));
+            }
+        }
+        else // Sell side
+        {
+            query = query
+                .OrderBy(o => o.Price) // lower price first for limits
+                .ThenBy(o => o.PlacedTimestamp); // FIFO
+
+            if (lastPrice.HasValue && lastPlacedTimestamp.HasValue)
+            {
+                query = query.Where(o =>
+                    o.Price > lastPrice.Value ||
+                    (o.Price == lastPrice.Value && o.PlacedTimestamp > lastPlacedTimestamp.Value));
+            }
+        }
+
+        query = query.Take(count);
+        var orders = await query.ToListAsync();
+        return orders;
+    }
+
     // public async Task<Dictionary<OrderType, List<Order>>> GetGroupedPendingBuyOrders(Guid orderBookId)
     // {
     //     var pendingBuyOrders = await _context.BuyOrders.Where(bo => bo.OrderBookId == orderBookId)

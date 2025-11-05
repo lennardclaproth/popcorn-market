@@ -8,6 +8,7 @@ import (
 
 	"github.com/lennardclaproth/ansar-broker/internal/application"
 	"github.com/lennardclaproth/ansar-broker/logging"
+	"go.elastic.co/apm/module/apmhttp/v2"
 )
 
 type Server struct {
@@ -34,7 +35,7 @@ func NewServer(addr string, app *application.App, log logging.Logger) *Server {
 func (s *Server) Run(ctx context.Context) error {
 	server := &http.Server{
 		Addr:    s.addr,
-		Handler: s.mux,
+		Handler: apmhttp.Wrap(s.mux),
 	}
 
 	s.log.Info(context.Background(),

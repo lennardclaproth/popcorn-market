@@ -15,12 +15,32 @@ definitions:
     x-enum-varnames:
     - OrderTypeMarket
     - OrderTypeLimit
-  http.SearchSecuritiesResponse:
+  http.SearchListingsResponse:
     properties:
-      name:
+      companyName:
         type: string
+      isin:
+        type: string
+      lastPrice:
+        type: number
+      lastUpdated:
+        type: string
+      priceChange:
+        type: number
+      priceChangePercentage:
+        type: number
+      priceClose:
+        type: number
+      priceHigh:
+        type: number
+      priceLow:
+        type: number
+      priceOpen:
+        type: number
       symbol:
         type: string
+      volume:
+        type: integer
     type: object
   http.createUserRequest:
     properties:
@@ -61,6 +81,21 @@ definitions:
       id:
         example: 123e4567-e89b-12d3-a456-426614174000
         type: string
+    type: object
+  http.getActiveAccountResponse:
+    properties:
+      balance:
+        type: number
+      id:
+        type: string
+      is_active:
+        type: boolean
+      number:
+        type: string
+      opened_date:
+        type: string
+      status:
+        type: integer
     type: object
   http.openAccountRequest:
     properties:
@@ -103,6 +138,45 @@ definitions:
 info:
   contact: {}
 paths:
+  /api/v1/accounts/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the active account information for a given user
+      parameters:
+      - description: User ID (UUID)
+        in: query
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.getActiveAccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get active account
+      tags:
+      - accounts
   /api/v1/accounts/open:
     post:
       consumes:
@@ -118,8 +192,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/http.openAccountResponse'
       summary: Create account
@@ -129,9 +203,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates a new user
+      description: Places a new order on an exchange
       parameters:
-      - description: Create User
+      - description: Place Order
         in: body
         name: input
         required: true
@@ -156,14 +230,14 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Create user
+      summary: Place order
       tags:
-      - users
+      - orders
   /api/v1/securities/search:
     get:
       consumes:
       - application/json
-      description: Retrieves a paginated list of securities matching the filter
+      description: Retrieves a paginated list of listings matching the filter
       parameters:
       - description: Filter by company or symbol
         in: query
@@ -188,7 +262,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.SearchSecuritiesResponse'
+              $ref: '#/definitions/http.SearchListingsResponse'
             type: array
         "400":
           description: Bad Request

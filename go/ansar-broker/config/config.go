@@ -14,6 +14,7 @@ type Configuration struct {
 	Database Database        `yaml:"database"`
 	Exchange BabylonExchange `yaml:"babylon_exchange"`
 	Logging  Logging         `yaml:"logging"`
+	APM      APMConfig       `yaml:"apm"`
 }
 
 type Logging struct {
@@ -33,12 +34,21 @@ type BabylonExchange struct {
 	URI string `yaml:"uri"`
 }
 
+type APMConfig struct {
+	ServerURL             string  `yaml:"server_url"`
+	ServiceName           string  `yaml:"service_name"`
+	Environment           string  `yaml:"environment"`
+	SecretToken           string  `yaml:"secret_token"`
+	VerifyServerCert      bool    `yaml:"verify_server_cert"`
+	LogLevel              string  `yaml:"log_level"`
+	TransactionSampleRate float64 `yaml:"transaction_sample_rate"`
+}
+
 func ReadConfig() *Configuration {
 	f, err := os.ReadFile(configPath)
 
 	if err != nil {
-		fmt.Printf("Error opening config file: %v", err)
-		panic(err)
+		panic(fmt.Errorf("config: error opening config file at %s: %w", configPath, err))
 	}
 
 	var cfg Configuration
@@ -46,9 +56,15 @@ func ReadConfig() *Configuration {
 	err = yaml.Unmarshal(f, &cfg)
 
 	if err != nil {
-		fmt.Printf("Error decoding config: %v", err)
-		panic(err)
+		panic(fmt.Errorf("config: error decoding config: %w", err))
 	}
+
+	os.Setenv("ELASTIC_APM_SERVER_URL", cfg.APM.ServerURL)
+	os.Setenv("ELASTIC_APM_SERVICE_NAME", cfg.APM.ServiceName)
+	os.Setenv("ELASTIC_APM_ENVIRONMENT", cfg.APM.Environment)
+	os.Setenv("ELASTIC_APM_SECRET_TOKEN", cfg.APM.SecretToken)
+	os.Setenv("ELASTIC_APM_VERIFY_SERVER_CERT", fmt.Sprintf("%t", cfg.APM.VerifyServerCert))
+	os.Setenv("ELASTIC_APM_LOG_LEVEL", cfg.APM.LogLevel)
 
 	return &cfg
 }

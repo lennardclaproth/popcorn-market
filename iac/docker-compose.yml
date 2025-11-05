@@ -1,10 +1,11 @@
 version: '3.8'
 
 name: popcorn-market
+
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg17
-    container_name: popcorn-market-timescale
+    container_name: popcorn-market-postgres
     restart: always
     environment:
       POSTGRES_DB: popcorn_market
@@ -22,23 +23,15 @@ services:
     ports:
       - "6379:6379"
 
-  seq:
-    image: datalust/seq:latest
-    container_name: popcorn-market-seq
-    environment:
-      - ACCEPT_EULA=Y
-    ports:
-      - 5341:80
-
   kafka:
     image: apache/kafka:latest
-    container_name: popcorn-market-event-stream
+    container_name: popcorn-market-kafka
     ports:
       - 9092:9092
 
   ollama:
     image: ollama/ollama:latest
-    container_name: popcorn-market-llm
+    container_name: popcorn-market-ollama
     restart: always
     ports:
       - "11434:11434"
@@ -53,17 +46,56 @@ services:
     volumes:
       - mongodb_data:/data/db
 
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: popcorn-market-observability
-    ports:
-      - "16686:16686" # Web UI
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.0
+    container_name: popcorn-market-elasticsearch
     environment:
-      - COLLECTOR_OTLP_ENABLED=true
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.2.0
+    container_name: popcorn-market-kibana
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:9.2.0
+    container_name: popcorn-market-apm
+    depends_on:
+      - elasticsearch
+      - kibana
+    ports:
+      - "8200:8200"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - output.elasticsearch.hosts=["http://elasticsearch:9200"]
+      - apm-server.kibana.enabled=true
+      - apm-server.kibana.host=kibana:5601
+      - apm-server.otlp.enabled=true
+      - apm-server.otlp.protocols.grpc.endpoint=0.0.0.0:4317
+      - apm-server.otlp.protocols.http.endpoint=0.0.0.0:4318
+      - apm-server.host=0.0.0.0:8200
+      - apm-server.logging.level=info
+      - apm-server.auth.anonymous.enabled=true
 
 volumes:
   timescale_data:
   ollama_data:
   mongodb_data:
+  es_data:

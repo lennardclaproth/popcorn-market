@@ -1,7 +1,7 @@
 ﻿using PopcornMarket.SharedKernel.Abstractions;
 
 namespace PopcornMarket.BabylonExchange.Domain.Events;
-public sealed class OrderCancelled : IDomainEvent
+public sealed record OrderCancelled : IDomainEvent
 {
     public OrderCancelled(Guid orderId, string reason, DateTime cancelledAt)
     {

@@ -40,6 +40,7 @@ public class PlaceOrderEndpoint : IEndpoint
                 };
 
                 return Results.Ok(response);
-            }).AllowAnonymous();
+            }).AllowAnonymous()
+            .AddValidation<PlaceOrderRequest>();
     }
 }

@@ -30,11 +30,11 @@ public class OrderPlacedHandler : IDomainEventHandler<OrderPlaced>
     /// <exception cref="NotImplementedException"></exception>
     public async Task Handle(OrderPlaced notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Handling OrderPlaced event for OrderId: {OrderId} to enqueue the order", notification.OrderId);
+        _logger.LogDebug("Handling OrderPlaced event for OrderId: {OrderId} to enqueue the order", notification.OrderId);
         var startTime = Stopwatch.GetTimestamp();
         var order = await _orderRepository.GetById(notification.OrderId);
         Guard.Against.Null(order, nameof(order));
         await _orderQueue.Enqueue(order);
-        _logger.LogInformation("Order with OrderId: {OrderId} has been enqueued in {ElapsedTimeMs} ms", notification.OrderId, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
+        _logger.LogDebug("Order with OrderId: {OrderId} has been enqueued in {ElapsedTimeMs} ms", notification.OrderId, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
     }
 }
