@@ -28,13 +28,13 @@ internal sealed class MatchingEngineEventDispatcher : BackgroundService
     {
         await foreach (var domainEvent in _channel.Reader.ReadAllAsync(stoppingToken))
         {
-            await ProcessEvent(domainEvent, stoppingToken);
+            await DispatchEvent(domainEvent, stoppingToken);
         }
     }
 
-    private async Task ProcessEvent(IDomainEvent domainEvent, CancellationToken stoppingToken)
+    private async Task DispatchEvent(IDomainEvent domainEvent, CancellationToken stoppingToken)
     {
-        var transaction = _tracer.StartTransaction($"{nameof(MatchingEngineEventDispatcher)}.{nameof(ProcessEvent)}", nameof(BackgroundService));
+        var transaction = _tracer.StartTransaction($"{nameof(MatchingEngineEventDispatcher)}.{nameof(DispatchEvent)}", nameof(BackgroundService));
         try
         {
             using var scope = _scopeFactory.CreateScope();
