@@ -37,8 +37,8 @@ internal sealed class MatchingEngineEventDispatcher : BackgroundService
         const int maxRetries = 3;
         var currentAttempt = 0;
         _logger.LogInformation("Current amount of events in queue: {EventCount}", _channel.Reader.Count);
-        
-        var transaction = _tracer.StartTransaction(nameof(ProcessEvent), nameof(MatchingEngineEventDispatcher));
+
+        var transaction = _tracer.StartTransaction(nameof(BackgroundService), $"{nameof(MatchingEngineEventDispatcher)}.{nameof(ProcessEvent)}");
         try
         {
             using var scope = _scopeFactory.CreateScope();

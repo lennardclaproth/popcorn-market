@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using PopcornMarket.BabylonExchange.Domain.Enums;
-using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.BabylonExchange.Domain.Events;
 using PopcornMarket.BabylonExchange.Domain.Helpers;
 using PopcornMarket.SharedKernel.Primitives;
@@ -67,82 +66,41 @@ public sealed class OrderBook : AggregateRoot
         RaiseDomainEvent(orderPlacedEvent);
     }
 
-    public Result MatchOrder(Order incomingOrder)
+    /// <summary>
+    /// When we match an order there are several different cases. We have a market order, a 
+    /// </summary>
+    /// <param name="incomingOrder"></param>
+    /// <returns></returns>
+    public bool MatchOrder(Order incomingOrder)
     {
-        // Decide which book to match against, if it is a buy incomingOrder we look at the 
-        // sell side if it is a sell incomingOrder we look at the buy side.
-        var oppositeOrders = incomingOrder.OrderSide == OrderSide.Buy 
-            ? _sellOrders 
-            : _buyOrders;
-
-        bool wasPartiallyFilled = false;
-
-        // while the incomingOrder still has a remaining quantity and there are still opposing
-        // orders left we keep trying to execute incomingOrder. By getting the bestMatch,
-        while (incomingOrder.RemainingQuantity > 0)
+        var bestMatch = GetBestMatch(incomingOrder);
+        if (bestMatch == null)
         {
-            if (oppositeOrders.Count == 0)
-            {
-                return Result.Failure(OrderBookErrors.OrderBookMatchOrderCacheMiss);
-            }
-
-            // Get the best match based on the incomingOrder side.
-            var bestMatch = incomingOrder.OrderSide == OrderSide.Buy
-                ? GetBestSellOrder()
-                : GetBestBuyOrder();
-
-            if (bestMatch == null)
-                break;
-
-            // If there is no price match we rest the incomingOrder on the orderbook.
-            // only limit orders can rest, market orders get cancelled if they cannot be matched.
-            if (!IsPriceMatch(incomingOrder, bestMatch))
-            {
-                // Limit incomingOrder cannot match, so it rests
-                if (incomingOrder.OrderType == OrderType.LimitOrder)
-                {
-                    RestOrder(incomingOrder);
-                }
-                break;
-            }
-
-            // Calculate the quantity of the trader, how many stocks are gonna be traded.
-            var tradeQuantity = Math.Min(incomingOrder.RemainingQuantity, bestMatch.RemainingQuantity);
-
-            // Get the trade price
-            var tradePrice = GetTradePrice(incomingOrder, bestMatch);
-
-            // Fulfill both the incoming order and bestmatch.
-            incomingOrder.TryFulfillOrder(tradePrice, tradeQuantity);
-            bestMatch.TryFulfillOrder(tradePrice, tradeQuantity);
-
-            // If the trade quantity is bigger than 0 we know that there was at least a partial fill.
-            // therefore we track if it was partially filled.
-            if (tradeQuantity > 0) wasPartiallyFilled = true;
-
-            // Determine what events to publish
-            RaiseOrderMatchedEvents(incomingOrder, bestMatch, tradePrice, tradeQuantity);
-            CleanUpMatchedOrders(incomingOrder, bestMatch);
+            return false;
         }
 
-        // If remaining quantity is 0 than the order has completely been fulfilled.
-        // We can exit here.
-        if (incomingOrder.RemainingQuantity == 0)
-        {
-            return Result.Success();
-        }
+        // Calculate the quantity of the trader, how many stocks are going to be traded.
+        var tradeQuantity = Math.Min(incomingOrder.RemainingQuantity, bestMatch.RemainingQuantity);
 
-        // If we reach here it means that there are no more matching orders but there is still parts of the
-        // trade remaining. If it is a limit order we can rest it on the orderbook.
-        if (incomingOrder.OrderType == OrderType.LimitOrder)
-        {
-            RestOrder(incomingOrder);
-            return Result.Success();
-        }
+        var tradePrice = GetTradePrice(incomingOrder, bestMatch);
 
-        // If it is a market order we have to cancel the remaining quantity.
-        if (wasPartiallyFilled)
+        incomingOrder.TryFulfillOrder(tradePrice, tradeQuantity);
+        bestMatch.TryFulfillOrder(tradePrice, tradeQuantity);
+        RaiseOrderMatchedEvents(incomingOrder, bestMatch, tradePrice, tradeQuantity);
+        CleanUpMatchedOrders(incomingOrder, bestMatch);
+        return true;
+    }
+
+    /// <summary>
+    /// Cancels an order based on the status of the order. If it is partially filled it will publish
+    /// an OrderPartiallyCancelledEvent and vice versa.
+    /// </summary>
+    /// <param name="incomingOrder"></param>
+    public void CancelOrder(Order incomingOrder)
+    {
+        if (incomingOrder.Status == OrderStatus.PartiallyFilled)
         {
+            EvictOrder(incomingOrder);
             RaiseDomainEvent(new OrderPartiallyCancelled
             {
                 OrderId = incomingOrder.Id,
@@ -151,13 +109,15 @@ public sealed class OrderBook : AggregateRoot
                 RemainingQuantity = incomingOrder.RemainingQuantity
             });
             incomingOrder.PartiallyCancelOrder($"Not able to match orders completely, incomingOrder partially fulfilled. Remaining quantity: {incomingOrder.RemainingQuantity}", incomingOrder.RemainingQuantity, DateTime.UtcNow);
-            return Result.Success();
+            return;
         }
 
-        // No fills at all, cancel the order
-        RaiseDomainEvent(new OrderCancelled(incomingOrder.Id, "Not able to match orders, no matching orders.", DateTime.UtcNow));
-        incomingOrder.CancelOrder("Not able to match orders, no matching orders.", DateTime.UtcNow);
-        return Result.Success();
+        if (incomingOrder.OrderType == OrderType.MarketOrder)
+        {
+            EvictOrder(incomingOrder);
+            RaiseDomainEvent(new OrderCancelled(incomingOrder.Id, "Not able to match orders, no matching orders.", DateTime.UtcNow));
+            incomingOrder.CancelOrder("Not able to match orders, no matching orders.", DateTime.UtcNow);
+        }
     }
 
     /// <summary>
@@ -167,74 +127,33 @@ public sealed class OrderBook : AggregateRoot
     /// <param name="order"></param>
     public void RestOrder(Order order)
     {
+        if (order.OrderType == OrderType.MarketOrder)
+        {
+            throw new InvalidOperationException("Cannot rest market order on the orderbook.");
+        }
+        var targetSet = order.OrderSide == OrderSide.Buy ? _buyOrders : _sellOrders;
+        targetSet.RemoveWhere(o => o.Id == order.Id);
+        targetSet.Add(order);
+    }
+
+    public void EvictOrder(Order order)
+    {
+        _orders.RemoveAll(o => o.Id == order.Id);
         if (order.OrderSide == OrderSide.Buy)
         {
-            _buyOrders.Add(order);
+            _buyOrders.Remove(order);
         }
         else
         {
-            _sellOrders.Add(order);
+            _sellOrders.Remove(order);
         }
-    }
-
-    public void EvictOrders(IEnumerable<Order> orders)
-    {
-        foreach (var order in orders)
-        {
-            _orders.Remove(order);
-            if (order.OrderSide == OrderSide.Buy)
-                _buyOrders.Remove(order);
-            else
-                _sellOrders.Remove(order);
-        }
-    }
-
-    public IReadOnlyList<Order> OrdersOutsideWindow(int window)
-    {
-        var coldOrders = new List<Order>();
-
-        if (_buyOrders.Count > window)
-        {
-            coldOrders.AddRange(_buyOrders.Skip(window));
-        }
-
-        if (_sellOrders.Count > window)
-        {
-            coldOrders.AddRange(_sellOrders.Skip(window));
-        }
-
-        return coldOrders;
-    }
-
-
-    /// <summary>
-    /// We match the price. If the incoming order is a market order we can always return true.
-    /// If the incoming order is a buy order we check if the price is greater than or equal to the resting order.
-    /// If the incoming order is a sell order we return the price is less than or equal to the resting order or
-    /// market order.
-    /// </summary>
-    /// <param name="incoming"></param>
-    /// <param name="resting"></param>
-    /// <returns></returns>
-    private static bool IsPriceMatch(Order incoming, Order resting)
-    {
-        if (incoming.OrderType == OrderType.MarketOrder)
-            return true;
-
-        if (incoming.OrderSide == OrderSide.Buy)
-            return incoming.Price >= resting.Price;
-
-        if (incoming.OrderSide == OrderSide.Sell)
-            return resting.OrderType == OrderType.MarketOrder || incoming.Price <= resting.Price;
-
-        return false;
     }
 
     /// <summary>
     /// We determine the trade price based on the incomingOrder types. If one is a market incomingOrder we 
-    /// use the price of the limit incomingOrder. If both are limit orders we use the price of the resting incomingOrder
-    /// this is because the resting incomingOrder is deemed to be the best price. When two market incomingOrder
-    /// are being traded we throw an exception, this should not be possible.
+    /// use the price of the limit incomingOrder. If both are limit orders we use the best price, this is
+    /// dependent on the order type and the best match. When two market incomingOrder are being traded we
+    /// throw an exception, this should not be possible.
     /// </summary>
     /// <param name="incomingOrder">the incoming order to be matched</param>
     /// <param name="bestMatch">the best match for the order</param>
@@ -242,25 +161,19 @@ public sealed class OrderBook : AggregateRoot
     /// <exception cref="InvalidOperationException">the exception thrown when two market orders are traded.</exception>
     private static decimal GetTradePrice(Order incomingOrder, Order bestMatch)
     {
-        decimal tradePrice;
-        if (incomingOrder.OrderType == OrderType.MarketOrder && bestMatch.OrderType == OrderType.LimitOrder)
+        switch (incomingOrder.OrderType)
         {
-            tradePrice = bestMatch.Price;
-        }
-        else if (incomingOrder.OrderType == OrderType.LimitOrder && bestMatch.OrderType == OrderType.MarketOrder)
-        {
-            tradePrice = incomingOrder.Price;
-        }
-        else if (incomingOrder.OrderType == OrderType.LimitOrder && bestMatch.OrderType == OrderType.LimitOrder)
-        {
-            tradePrice = bestMatch.Price;
-        }
-        else
-        {
-            throw new InvalidOperationException("Cannot execute a trade between two market orders.");
+            case OrderType.MarketOrder:
+                if (bestMatch.OrderType == OrderType.LimitOrder) return bestMatch.Price;
+                break;
+            case OrderType.LimitOrder:
+                if (bestMatch.OrderType == OrderType.MarketOrder) return incomingOrder.Price;
+                if (incomingOrder.OrderSide == OrderSide.Sell) return Math.Max(incomingOrder.Price, bestMatch.Price);
+                if (incomingOrder.OrderSide == OrderSide.Buy) return Math.Min(incomingOrder.Price, bestMatch.Price);
+                break;
         }
 
-        return tradePrice;
+        throw new InvalidOperationException("Cannot execute a trade between two market orders.");
     }
 
     private void RaiseOrderMatchedEvents(Order incomingOrder, Order bestMatch, decimal tradePrice, int tradeQuantity)
@@ -330,6 +243,27 @@ public sealed class OrderBook : AggregateRoot
         }
     }
 
-    public Order? GetBestBuyOrder() => _buyOrders.LastOrDefault(o => o.OrderType == OrderType.LimitOrder);
-    public Order? GetBestSellOrder() => _sellOrders.FirstOrDefault(o => o.OrderType == OrderType.LimitOrder);
+    /// <summary>
+    /// Gets the best match for the incoming order. When an order is of type marketOrder we return the highest price for incoming sell orders
+    /// and the lowest price for incoming buy orders. When the order type is market order we return the same as the market order but where
+    /// the price is at least bigger or smaller than the incoming order.
+    /// </summary>
+    /// <param name="incomingOrder">the order to be matched against</param>
+    /// <returns>the best match or null when no match is found</returns>
+    private Order? GetBestMatch(Order incomingOrder)
+    {
+        switch (incomingOrder.OrderType)
+        {
+            case OrderType.MarketOrder:
+                if (incomingOrder.OrderSide == OrderSide.Sell) return _buyOrders.FirstOrDefault(o => o.OrderType == OrderType.LimitOrder);
+                if (incomingOrder.OrderSide == OrderSide.Buy) return _sellOrders.FirstOrDefault(o => o.OrderType == OrderType.LimitOrder);
+                break;
+            case OrderType.LimitOrder:
+                if (incomingOrder.OrderSide == OrderSide.Sell) return _buyOrders.Where(o => incomingOrder.Price <= o.Price).FirstOrDefault(o => o.OrderType == OrderType.LimitOrder);
+                if (incomingOrder.OrderSide == OrderSide.Buy) return _sellOrders.Where(o => incomingOrder.Price >= o.Price).FirstOrDefault(o => o.OrderType == OrderType.LimitOrder);
+                break;
+        }
+
+        return null;
+    }
 }

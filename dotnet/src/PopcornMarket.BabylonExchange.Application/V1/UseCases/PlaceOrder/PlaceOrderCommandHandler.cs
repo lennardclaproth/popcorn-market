@@ -43,7 +43,7 @@ public class PlaceOrderCommandHandler : ICommandHandler<PlaceOrderCommand, strin
         await _orderBookRepository.UpdateEntity(orderBook);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await _mediator.DispatchDomainEventsAsync(orderBook, cancellationToken);
+        await _mediator.DispatchDomainEvents(orderBook, cancellationToken);
 
         return Result<string>.Success(order.OrderId);
     }

@@ -7,7 +7,7 @@ namespace PopcornMarket.SharedKernel.Extensions;
 
 public static class MediatorExtensions
 {
-    public static async Task DispatchDomainEventsAsync(this IMediator mediator, AggregateRoot aggregateRoot,
+    public static async Task DispatchDomainEvents(this IMediator mediator, AggregateRoot aggregateRoot,
         CancellationToken cancellationToken = default)
     {
         if (aggregateRoot.DomainEvents.Count == 0)
@@ -23,7 +23,7 @@ public static class MediatorExtensions
             await mediator.Publish(domainEvent, cancellationToken);
         }
     }
-    public static async Task DispatchDomainEventsToQueueAsync(
+    public static async Task DispatchDomainEventsToQueue(
         this IMediator mediator,
         AggregateRoot aggregateRoot,
         IDomainEventQueue queue,

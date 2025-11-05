@@ -21,6 +21,8 @@
       <PackageReference Include="Serilog.Sinks.Console" />
       <PackageReference Include="Serilog.Sinks.File" />
       <PackageReference Include="Serilog.Sinks.Seq" />
+      <PackageReference Include="Elastic.Apm" />
+      <PackageReference Include="Elastic.Apm.NetCoreAll" />
     </ItemGroup>
 
     <ItemGroup>

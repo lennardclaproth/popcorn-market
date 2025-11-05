@@ -24,7 +24,7 @@ internal sealed class OutboxJob : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var transaction = _tracer.StartTransaction(nameof(OutboxJob), nameof(OutboxJob));
+            var transaction = _tracer.StartTransaction(nameof(BackgroundService), $"{nameof(OutboxJob)}.{nameof(ExecuteAsync)}");
             try
             {
                 using var scope = _scopeFactory.CreateScope();

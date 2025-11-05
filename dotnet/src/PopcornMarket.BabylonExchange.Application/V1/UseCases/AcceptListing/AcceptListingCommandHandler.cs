@@ -36,7 +36,7 @@ internal sealed class AcceptListingCommandHandler : ICommandHandler<AcceptListin
         await _listingRepository.UpdateEntity(listing);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await _mediator.DispatchDomainEventsAsync(listing, cancellationToken);
+        await _mediator.DispatchDomainEvents(listing, cancellationToken);
         
         return Result.Success();
     }

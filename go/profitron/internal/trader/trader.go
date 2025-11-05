@@ -46,7 +46,6 @@ type Trader struct {
 	Config   TraderConfig `bson:"config"`
 	UserID   uuid.UUID    `bson:"user_id"`
 	broker   *broker.Broker
-	sec      *broker.SearchSecuritiesResponse
 }
 
 var (
@@ -96,7 +95,7 @@ func (t *Trader) Trade(ctx context.Context) error {
 	orderType := decideOrderType(t.Config)
 
 	quantity := rng.Intn(100) + 1
-	price := determinePrice(*t.sec, broker.OrderSideSell, broker.OrderTypeMarket, t.Config)
+	price := determinePrice(sec, broker.OrderSideSell, broker.OrderTypeMarket, t.Config)
 
 	orderReq := broker.PlaceOrderRequest{
 		AccountID:     acc.ID,
@@ -127,7 +126,7 @@ func decideSide(cfg TraderConfig) broker.OrderSide {
 }
 
 func decideOrderType(cfg TraderConfig) broker.OrderType {
-	if rng.Float64() < 0.7 {
+	if rng.Float64() < 0.6 {
 		return broker.OrderTypeMarket
 	}
 	return broker.OrderTypeLimit
@@ -160,7 +159,7 @@ func determinePrice(sec broker.SearchSecuritiesResponse, side broker.OrderSide, 
 	if price <= 0 {
 		price = 0.01
 	}
-
+	
 	return price
 }
 
