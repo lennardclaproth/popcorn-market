@@ -29,13 +29,13 @@ internal sealed class OrderFulfilledHandler : IDomainEventHandler<OrderFulfilled
     public async Task Handle(OrderFulfilled notification, CancellationToken cancellationToken)
     {
         var startTime = Stopwatch.GetTimestamp();
-        _logger.LogInformation("Handling OrderFulfilled event for OrderId: {OrderId} to persist changes", notification.Id);
+        _logger.LogDebug("Handling OrderFulfilled event for OrderId: {OrderId} to persist changes", notification.Id);
         var order = await _orderRepository.GetById(notification.Id);
         Guard.Against.Null(order);
         order.FulfillOrder(notification.TradePrice, notification.FulfilledAt);
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-        _logger.LogInformation("Order with OrderId: {OrderId} fulfillment has been persisted in {ElapsedTimeMs}", notification.Id, elapsedTimeMs);
+        _logger.LogDebug("Order with OrderId: {OrderId} fulfillment has been persisted in {ElapsedTimeMs}", notification.Id, elapsedTimeMs);
         await _outboxService.Add(notification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

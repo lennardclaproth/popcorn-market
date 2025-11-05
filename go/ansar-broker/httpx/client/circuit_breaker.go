@@ -105,7 +105,6 @@ func (cb *CircuitBreaker) execute(fn func() error) error {
 				cb.trip()
 				break
 			}
-			cb.failures = 0
 		}
 	case HalfOpen:
 		// when the circuit breaker is halfopen and an error occurs

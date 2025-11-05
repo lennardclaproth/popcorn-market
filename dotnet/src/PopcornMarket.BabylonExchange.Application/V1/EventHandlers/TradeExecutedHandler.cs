@@ -41,7 +41,7 @@ internal sealed class TradeExecutedHandler : IDomainEventHandler<TradeExecuted>
         listing.ApplyTrade(trade.Price, trade.Quantity, trade.ExecutedAt);
         await _listingRepository.UpdateEntity(listing);
 
-        _logger.LogInformation("Trade for Listing: '{Symbol}' has been persisted in {ElapsedTime} ms",
+        _logger.LogDebug("Trade for Listing: '{Symbol}' has been persisted in {ElapsedTime} ms",
                                listing.StockSymbol,
                                Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

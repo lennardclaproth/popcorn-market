@@ -27,14 +27,14 @@ internal sealed class OrderPartiallyCancelledHandler : IDomainEventHandler<Order
 
     public async Task Handle(OrderPartiallyCancelled notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Handling OrderPartiallyCancelled event for OrderId: {OrderId} to persist changes", notification.OrderId);
+        _logger.LogDebug("Handling OrderPartiallyCancelled event for OrderId: {OrderId} to persist changes", notification.OrderId);
         var startTime = Stopwatch.GetTimestamp();
         var order = await _orderRepository.GetById(notification.OrderId);
         Guard.Against.Null(order, nameof(order));
         order.PartiallyCancelOrder(notification.Reason, notification.RemainingQuantity, notification.CancelledAt);
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-        _logger.LogInformation("Order with OrderId: {OrderId} partial cancellation has been persisted in {ElapsedTimeMs}", notification.OrderId, elapsedTimeMs);
+        _logger.LogDebug("Order with OrderId: {OrderId} partial cancellation has been persisted in {ElapsedTimeMs}", notification.OrderId, elapsedTimeMs);
         await _outboxService.Add(notification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

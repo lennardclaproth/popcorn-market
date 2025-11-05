@@ -20,9 +20,9 @@ internal sealed class CacheEvictionService : BackgroundService
         {
             try
             {
-                _logger.LogInformation("Starting cache eviction.");
+                _logger.LogDebug("Starting cache eviction.");
                 _cache.EvictStale();
-                _logger.LogInformation("Cache eviction cycle complete. Waiting for next cycle.");
+                _logger.LogDebug("Cache eviction cycle complete. Waiting for next cycle.");
             }
             catch (Exception ex)
             {

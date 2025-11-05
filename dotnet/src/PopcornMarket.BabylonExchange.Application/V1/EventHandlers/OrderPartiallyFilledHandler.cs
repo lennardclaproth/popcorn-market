@@ -28,13 +28,13 @@ internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPar
 
     public async Task Handle(OrderPartiallyFilled notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Handling OrderPartiallyFilled event for OrderId: {OrderId} to persist changes", notification.Id);
+        _logger.LogDebug("Handling OrderPartiallyFilled event for OrderId: {OrderId} to persist changes", notification.Id);
         var startTime = Stopwatch.GetTimestamp();
         var order = await _orderRepository.GetById(notification.Id);
         Guard.Against.Null(order);
         order.PartiallyFulfillOrder(notification.TradePrice, notification.RemainingQuantity, notification.FulfilledAt);
         await _orderRepository.UpdateEntity(order);
-        _logger.LogInformation("Order with OrderId: {OrderId} partial fill has been persisted in {ElapsedTimeMs} ms", notification.Id, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
+        _logger.LogDebug("Order with OrderId: {OrderId} partial fill has been persisted in {ElapsedTimeMs} ms", notification.Id, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
         await _outboxService.Add(notification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

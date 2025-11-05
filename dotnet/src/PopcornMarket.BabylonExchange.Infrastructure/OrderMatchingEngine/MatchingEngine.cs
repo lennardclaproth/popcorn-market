@@ -52,7 +52,7 @@ internal sealed class MatchingEngine : BackgroundService
 
     private async Task ProcessOrder(Order order, CancellationToken stoppingToken)
     {
-        var transaction = _tracer.StartTransaction(nameof(BackgroundService), $"{nameof(MatchingEngine)}.{nameof(ProcessOrder)}");
+        var transaction = _tracer.StartTransaction($"{nameof(MatchingEngine)}.{nameof(ProcessOrder)}", nameof(BackgroundService));
         var orderMatched = true;
         var orderBook = await _cache.Get(order.StockSymbol);
         Guard.Against.Null(orderBook, nameof(orderBook));

@@ -27,7 +27,6 @@ internal sealed class OrderBookCache
         // you keep in memory so that the memory does not get overloaded.
         if (_cache.TryGetValue(ticker, out var cached))
         {
-            _logger.LogInformation("Order book for ticker {Ticker} found in cache.", ticker);
             cached.Touch();
             return cached.OrderBook;
         }
@@ -40,7 +39,7 @@ internal sealed class OrderBookCache
 
         var newCached = new CachedOrderBook(book);
         _cache[ticker] = newCached;
-        _logger.LogInformation("Order book for ticker {Ticker} loaded from database and added to cache.", ticker);
+        _logger.LogDebug("Cache miss occurred for ticker: {Ticker}, loaded order book from database into memory.", ticker);
 
         return book;
     }
@@ -58,20 +57,18 @@ internal sealed class OrderBookCache
                 var domainEventCount = kv.Value.OrderBook.DomainEvents.Count;
                 if (domainEventCount > 0)
                 {
-                    _logger.LogWarning("Evicting stale order book for ticker {Ticker} with {DomainEventCount} unprocessed domain events. This may indicate a processing issue.", 
-                        kv.Key, domainEventCount);
-                    totalDomainEventsCleared += domainEventCount;
+                    throw new InvalidOperationException(
+                        $"Orderbook still has orders to process, this indicates there was a processing issue. Ticker: {kv.Value.OrderBook.StockSymbol}, EventCount: {domainEventCount}");
                 }
                 
-                _logger.LogInformation("Evicting stale order book for ticker {Ticker}", kv.Key);
+                _logger.LogDebug("Evicting stale order book for ticker {Ticker}", kv.Key);
                 _cache.TryRemove(kv.Key, out _);
                 evictedCount++;
             }
         }
-        
         if (evictedCount > 0)
         {
-            _logger.LogInformation("Evicted {EvictedCount} stale order books, cleared {TotalDomainEvents} unprocessed domain events", 
+            _logger.LogDebug("Evicted {EvictedCount} stale order books, cleared {TotalDomainEvents} unprocessed domain events", 
                 evictedCount, totalDomainEventsCleared);
         }
     }

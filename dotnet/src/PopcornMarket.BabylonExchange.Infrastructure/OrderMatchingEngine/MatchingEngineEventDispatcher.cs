@@ -34,26 +34,19 @@ internal sealed class MatchingEngineEventDispatcher : BackgroundService
 
     private async Task ProcessEvent(IDomainEvent domainEvent, CancellationToken stoppingToken)
     {
-        const int maxRetries = 3;
-        var currentAttempt = 0;
-        _logger.LogInformation("Current amount of events in queue: {EventCount}", _channel.Reader.Count);
-
-        var transaction = _tracer.StartTransaction(nameof(BackgroundService), $"{nameof(MatchingEngineEventDispatcher)}.{nameof(ProcessEvent)}");
+        var transaction = _tracer.StartTransaction($"{nameof(MatchingEngineEventDispatcher)}.{nameof(ProcessEvent)}", nameof(BackgroundService));
         try
         {
             using var scope = _scopeFactory.CreateScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-            _logger.LogInformation("Handling domain event {EventType} (attempt {Attempt}/{MaxRetries})", domainEvent.GetType().Name, currentAttempt + 1, maxRetries);
             await mediator.Publish(domainEvent, stoppingToken);
             _logger.LogDebug("Successfully processed domain event {EventType}", domainEvent.GetType().Name);
-            return;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to dispatch domain event {EventType}. Event will be discarded to prevent memory leak.", domainEvent.GetType().Name);
             transaction.CaptureException(ex);
-            return;
         }
         finally
         {
