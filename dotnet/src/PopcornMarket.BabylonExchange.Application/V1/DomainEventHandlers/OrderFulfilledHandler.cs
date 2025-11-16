@@ -5,9 +5,10 @@ using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
+using PopcornMarket.Messaging.Contracts.V1.Events;
 using PopcornMarket.SharedKernel.Abstractions;
 
-namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
+namespace PopcornMarket.BabylonExchange.Application.V1.DomainEventHandlers;
 internal sealed class OrderFulfilledHandler : IDomainEventHandler<OrderFulfilled>
 {
     private readonly IOrderRepository _orderRepository;
@@ -36,7 +37,18 @@ internal sealed class OrderFulfilledHandler : IDomainEventHandler<OrderFulfilled
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
         _logger.LogDebug("Order with OrderId: {OrderId} fulfillment has been persisted in {ElapsedTimeMs}", notification.Id, elapsedTimeMs);
-        await _integrationEventDispatcher.Add(notification, cancellationToken);
+
+        var payload = new OrderFulfilledPayload
+        {
+            FulfilledAt = notification.FulfilledAt,
+            Id = notification.Id,
+            TradePrice = notification.TradePrice,
+            TradeQuantity = notification.TradeQuantity
+        };
+
+        var integrationEvent = new OrderFulfilledIntegrationEvent(payload);
+
+        await _integrationEventDispatcher.DispatchToOutbox(integrationEvent, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

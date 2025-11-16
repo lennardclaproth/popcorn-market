@@ -5,7 +5,6 @@ using Confluent.Kafka.Extensions.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using PopcornMarket.ServiceBus.Abstractions;
 using PopcornMarket.ServiceBus.Services;
-using PopcornMarket.SharedKernel.Messaging;
 
 namespace PopcornMarket.ServiceBus.Producers;
 internal sealed class KafkaProducer : IProducer

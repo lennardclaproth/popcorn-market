@@ -1,17 +1,17 @@
 ﻿using System.Text.Json.Serialization;
 using PopcornMarket.Messaging.Contracts.V1.Constants;
-using PopcornMarket.SharedKernel.Messaging;
+using PopcornMarket.ServiceBus.Abstractions;
 
 namespace PopcornMarket.Messaging.Contracts.V1.Events;
 
 public sealed record CompanyCreatedIntegrationEvent(CompanyCreatedPayload Payload) : IIntegrationEvent<CompanyCreatedPayload>
 {
     public string Topic { get; } = TopicConstants.CompanyCreated;
-    public CompanyCreatedPayload Payload { get; } = Payload;
 }
 
 public sealed record CompanyCreatedPayload
 {
+    public CompanyCreatedPayload(){}
     [JsonPropertyName("ticker")]
     public required string Ticker { get; set; }
     [JsonPropertyName("name")]

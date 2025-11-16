@@ -6,7 +6,7 @@ using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
 using PopcornMarket.SharedKernel.Abstractions;
 
-namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
+namespace PopcornMarket.BabylonExchange.Application.V1.DomainEventHandlers;
 
 public class OrderPlacedHandler : IDomainEventHandler<OrderPlaced>
 {

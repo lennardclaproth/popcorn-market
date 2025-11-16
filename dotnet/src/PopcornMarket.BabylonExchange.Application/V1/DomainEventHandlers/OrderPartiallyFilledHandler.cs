@@ -5,9 +5,10 @@ using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
+using PopcornMarket.Messaging.Contracts.V1.Events;
 using PopcornMarket.SharedKernel.Abstractions;
 
-namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
+namespace PopcornMarket.BabylonExchange.Application.V1.DomainEventHandlers;
 internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPartiallyFilled>
 {
     private readonly IOrderRepository _orderRepository;
@@ -35,7 +36,17 @@ internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPar
         order.PartiallyFulfillOrder(notification.TradePrice, notification.RemainingQuantity, notification.FulfilledAt);
         await _orderRepository.UpdateEntity(order);
         _logger.LogDebug("Order with OrderId: {OrderId} partial fill has been persisted in {ElapsedTimeMs} ms", notification.Id, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
-        await _integrationEventDispatcher.Add(notification, cancellationToken);
+
+        var payload = new OrderPartiallyFilledPayload
+        {
+            Id = order.Id,
+            TradePrice = notification.TradePrice,
+            RemainingQuantity = notification.RemainingQuantity,
+            FulfilledAt = notification.FulfilledAt
+        };
+        var integrationEvent = new OrderPartiallyFilledIntegrationEvent(payload);
+
+        await _integrationEventDispatcher.DispatchToOutbox(integrationEvent, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

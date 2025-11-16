@@ -1,15 +1,14 @@
-﻿using Ardalis.GuardClauses;
-using MediatR;
+﻿using System.Diagnostics;
+using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
+using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Entities;
-using PopcornMarket.BabylonExchange.Domain.Exceptions;
 using PopcornMarket.BabylonExchange.Domain.Events;
+using PopcornMarket.BabylonExchange.Domain.Exceptions;
 using PopcornMarket.SharedKernel.Abstractions;
-using System.Diagnostics;
-using PopcornMarket.BabylonExchange.Domain.Abstractions;
 
-namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
+namespace PopcornMarket.BabylonExchange.Application.V1.DomainEventHandlers;
 
 public class ListingAcceptedHandler : IDomainEventHandler<ListingAccepted>
 {

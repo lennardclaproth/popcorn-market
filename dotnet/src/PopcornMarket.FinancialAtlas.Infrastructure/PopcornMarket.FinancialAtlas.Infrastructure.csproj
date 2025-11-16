@@ -20,8 +20,4 @@
       <ProjectReference Include="..\PopcornMarket.ServiceBus\PopcornMarket.ServiceBus.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Messaging\" />
-    </ItemGroup>
-
 </Project>

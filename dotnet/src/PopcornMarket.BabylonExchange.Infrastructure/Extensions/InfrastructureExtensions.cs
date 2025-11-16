@@ -78,7 +78,7 @@ public static class InfrastructureExtensions
         services.WithKafkaServiceBus(configuration, topics, PayloadMap.Map, InfrastructureAssemblyReference.Assembly)
             .WithEfCoreOutbox<Persistence.Context.BabylonExchangeDbContext>();
 
-        services.AddScoped<IOutboxService, OutboxService>();
+        services.AddScoped<IIntegrationEventDispatcher, IntegrationEventDispatcher>();
     }
 
     private static void AddObservability(IServiceCollection services)

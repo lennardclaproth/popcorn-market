@@ -1,9 +1,8 @@
-﻿using PopcornMarket.BabylonExchange.Application.Abstractions;
+﻿using PopcornMarket.FinancialAtlas.Application.Abstractions;
 using PopcornMarket.ServiceBus.Abstractions;
 using PopcornMarket.SharedKernel.Exceptions;
 
-namespace PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Services;
-
+namespace PopcornMarket.FinancialAtlas.Infrastructure.ServiceBus.Services;
 internal sealed class IntegrationEventDispatcher : IIntegrationEventDispatcher
 {
     private readonly IOutbox _outbox;

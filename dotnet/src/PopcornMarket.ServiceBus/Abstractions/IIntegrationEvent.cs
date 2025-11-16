@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace PopcornMarket.ServiceBus.Abstractions;
 
-namespace PopcornMarket.ServiceBus.Abstractions;
-internal interface IIntegrationEvent
+public interface IIntegrationEvent<out TPayload>
 {
+    string Topic { get; }
+    TPayload Payload { get; }
 }

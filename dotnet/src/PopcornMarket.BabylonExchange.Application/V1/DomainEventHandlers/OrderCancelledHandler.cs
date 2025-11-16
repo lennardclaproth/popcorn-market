@@ -5,18 +5,20 @@ using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
+using PopcornMarket.Messaging.Contracts.V1.Events;
 using PopcornMarket.SharedKernel.Abstractions;
 
-namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
-internal sealed class OrderPartiallyCancelledHandler : IDomainEventHandler<OrderPartiallyCancelled>
+namespace PopcornMarket.BabylonExchange.Application.V1.DomainEventHandlers;
+
+internal sealed class OrderCancelledHandler : IDomainEventHandler<OrderCancelled>
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IIntegrationEventDispatcher _integrationEventDispatcher;
-    private readonly ILogger<OrderPartiallyCancelledHandler> _logger;
+    private readonly ILogger<OrderCancelledHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
-    public OrderPartiallyCancelledHandler(IOrderRepository orderRepository,
-        ILogger<OrderPartiallyCancelledHandler> logger,
+    public OrderCancelledHandler(IOrderRepository orderRepository,
+        ILogger<OrderCancelledHandler> logger,
         IIntegrationEventDispatcher integrationEventDispatcher, IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
@@ -25,17 +27,22 @@ internal sealed class OrderPartiallyCancelledHandler : IDomainEventHandler<Order
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(OrderPartiallyCancelled notification, CancellationToken cancellationToken)
+    public async Task Handle(OrderCancelled notification, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Handling OrderPartiallyCancelled event for OrderId: {OrderId} to persist changes", notification.OrderId);
         var startTime = Stopwatch.GetTimestamp();
+        _logger.LogDebug("Handling OrderCancelled event for OrderId: {OrderId} to persist changes", notification.OrderId);
         var order = await _orderRepository.GetById(notification.OrderId);
         Guard.Against.Null(order, nameof(order));
-        order.PartiallyCancelOrder(notification.Reason, notification.RemainingQuantity, notification.CancelledAt);
+        order.CancelOrder(notification.Reason, notification.CancelledAt);
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-        _logger.LogDebug("Order with OrderId: {OrderId} partial cancellation has been persisted in {ElapsedTimeMs}", notification.OrderId, elapsedTimeMs);
-        await _integrationEventDispatcher.Add(notification, cancellationToken);
+        _logger.LogDebug("Order with OrderId: {OrderId} cancellation has been persisted in {ElapsedTimeMs}", notification.OrderId, elapsedTimeMs);
+        var integrationEventPayload = new OrderCancelledPayload
+        {
+            OrderId = order.Id, Reason = notification.Reason, CancelledAt = notification.CancelledAt
+        };
+        var integrationEvent = new OrderCancelledIntegrationEvent(integrationEventPayload);
+        await _integrationEventDispatcher.DispatchToOutbox(integrationEvent, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
