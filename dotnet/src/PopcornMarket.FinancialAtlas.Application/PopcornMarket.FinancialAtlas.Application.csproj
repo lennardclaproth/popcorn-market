@@ -15,6 +15,7 @@
       <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Contracts\PopcornMarket.FinancialAtlas.Contracts.csproj" />
       <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Domain\PopcornMarket.FinancialAtlas.Domain.csproj" />
       <ProjectReference Include="..\PopcornMarket.Messaging.Contracts\PopcornMarket.Messaging.Contracts.csproj" />
+      <ProjectReference Include="..\PopcornMarket.ServiceBus\PopcornMarket.ServiceBus.csproj" />
       <ProjectReference Include="..\PopcornMarket.SharedKernel\PopcornMarket.SharedKernel.csproj" />
     </ItemGroup>
 

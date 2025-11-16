@@ -7,7 +7,7 @@
 //
 // namespace PopcornMarket.BabylonExchange.Infrastructure.Messaging.Handlers;
 //
-// internal sealed class MarketDataPublishedEventHandler : IEventHandler<MarketDataPublishedEvent>
+// internal sealed class MarketDataPublishedEventHandler : IIntegrationEventHandler<MarketDataPublishedIntegrationEvent>
 // {
 //     private readonly ISender _sender;
 //     private readonly ILogger<MarketDataPublishedEventHandler> _logger;
@@ -25,7 +25,7 @@
 //     /// <param name="event"></param>
 //     /// <param name="cancellationToken"></param>
 //     /// <returns></returns>
-//     public async Task HandleAsync(MarketDataPublishedEvent @event, CancellationToken cancellationToken)
+//     public async Task HandleAsync(MarketDataPublishedIntegrationEvent @event, CancellationToken cancellationToken)
 //     {
 //         // Creates a new Company based on the event
 //         var createCompanyCommand = new RequestListingCommand

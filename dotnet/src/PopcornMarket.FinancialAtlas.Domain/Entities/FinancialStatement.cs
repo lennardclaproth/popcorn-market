@@ -1,5 +1,4 @@
 ﻿using Popcorn.FinancialAtlas.Domain.ValueObjects;
-using Popcorn.FinancialAtlas.Domain.Enums;
 using PopcornMarket.SharedKernel.Primitives;
 using PopcornMarket.SharedKernel.ResultPattern;
 
@@ -14,6 +13,7 @@ public class FinancialStatement : Entity
     public IncomeStatement IncomeStatement { get; private set; } = null!;
     public BalanceSheet BalanceSheet { get; private set; } = null!;
     public CashFlowStatement CashFlowStatement { get; private set; } = null!;
+
 
     private FinancialStatement() { }
 

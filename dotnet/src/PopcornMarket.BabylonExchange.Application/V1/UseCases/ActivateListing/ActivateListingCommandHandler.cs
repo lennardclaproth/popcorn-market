@@ -1,4 +1,5 @@
-﻿using PopcornMarket.BabylonExchange.Domain.Abstractions;
+﻿using PopcornMarket.BabylonExchange.Application.Abstractions;
+using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Errors;
 using PopcornMarket.SharedKernel.CQRS;
@@ -11,11 +12,13 @@ public class ActivateListingCommandHandler : ICommandHandler<ActivateListingComm
 {
     private readonly IListingRepository _listingRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IIntegrationEventDispatcher _integrationEventDispatcher;
 
-    public ActivateListingCommandHandler(IListingRepository listingRepository, IUnitOfWork unitOfWork)
+    public ActivateListingCommandHandler(IListingRepository listingRepository, IUnitOfWork unitOfWork, IIntegrationEventDispatcher integrationEventDispatcher)
     {
         _listingRepository = listingRepository;
         _unitOfWork = unitOfWork;
+        _integrationEventDispatcher = integrationEventDispatcher;
     }
 
     public async Task<Result> Handle(ActivateListingCommand request, CancellationToken cancellationToken)

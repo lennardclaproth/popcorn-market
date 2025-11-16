@@ -1,6 +1,8 @@
-﻿namespace PopcornMarket.FinancialAtlas.Application.Abstractions;
+﻿//using PopcornMarket.SharedKernel.Messaging;
 
-public interface IProducer
-{
-    Task PublishAsync<T>(string topic, T message, CancellationToken cancellationToken = default) where T : class;
-}
+//namespace PopcornMarket.FinancialAtlas.Application.Abstractions;
+
+//public interface IProducer
+//{
+//    Task Produce<T>(IIntegrationEvent<T> integrationEvent, CancellationToken cancellationToken = default) where T : class;
+//}

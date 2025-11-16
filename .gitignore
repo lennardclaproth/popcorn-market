@@ -75,6 +75,9 @@ Generated\ Files/
 TestResult.xml
 nunit-*.xml
 
+*onnx/
+
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/
@@ -143,6 +146,14 @@ ipch/
 *.vsp
 *.vspx
 *.sap
+
+# Ignore SQLite database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
 
 # Visual Studio Trace Files
 *.e2e
@@ -1118,3 +1129,4 @@ poetry.toml
 pyrightconfig.json
 
 **/finbert-local
+go/ansar-broker/db/ansar-broker.db

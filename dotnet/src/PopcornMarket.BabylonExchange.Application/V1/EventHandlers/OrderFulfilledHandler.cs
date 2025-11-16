@@ -11,17 +11,17 @@ namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
 internal sealed class OrderFulfilledHandler : IDomainEventHandler<OrderFulfilled>
 {
     private readonly IOrderRepository _orderRepository;
-    private readonly IOutboxService _outboxService;
+    private readonly IIntegrationEventDispatcher _integrationEventDispatcher;
     private readonly ILogger<OrderFulfilledHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public OrderFulfilledHandler(IOrderRepository orderRepository,
         ILogger<OrderFulfilledHandler> logger,
-        IOutboxService outboxService, IUnitOfWork unitOfWork)
+        IIntegrationEventDispatcher integrationEventDispatcher, IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _logger = logger;
-        _outboxService = outboxService;
+        _integrationEventDispatcher = integrationEventDispatcher;
         _unitOfWork = unitOfWork;
     }
 
@@ -36,7 +36,7 @@ internal sealed class OrderFulfilledHandler : IDomainEventHandler<OrderFulfilled
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
         _logger.LogDebug("Order with OrderId: {OrderId} fulfillment has been persisted in {ElapsedTimeMs}", notification.Id, elapsedTimeMs);
-        await _outboxService.Add(notification, cancellationToken);
+        await _integrationEventDispatcher.Add(notification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

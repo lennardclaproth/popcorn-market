@@ -22,5 +22,6 @@
       <ProjectReference Include="..\PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj" />
       <ProjectReference Include="..\PopcornMarket.Messaging.Contracts\PopcornMarket.Messaging.Contracts.csproj" />
       <ProjectReference Include="..\PopcornMarket.BabylonExchange.Application\PopcornMarket.BabylonExchange.Application.csproj" />
+      <ProjectReference Include="..\PopcornMarket.ServiceBus\PopcornMarket.ServiceBus.csproj" />
     </ItemGroup>
 </Project>

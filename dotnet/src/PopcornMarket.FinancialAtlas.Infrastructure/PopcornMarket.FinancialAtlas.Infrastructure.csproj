@@ -10,10 +10,18 @@
       <PackageReference Include="Confluent.Kafka" />
       <PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+      <PackageReference Include="Elastic.Apm" />
+      <PackageReference Include="Elastic.Apm.NetCoreAll" />
      </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\PopcornMarket.FinancialAtlas.Application\PopcornMarket.FinancialAtlas.Application.csproj" />
+      <ProjectReference Include="..\PopcornMarket.Messaging.Contracts\PopcornMarket.Messaging.Contracts.csproj" />
+      <ProjectReference Include="..\PopcornMarket.ServiceBus\PopcornMarket.ServiceBus.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Messaging\" />
     </ItemGroup>
 
 </Project>

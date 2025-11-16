@@ -12,4 +12,6 @@ public sealed record MarketDataDto()
     public long SharesOutstanding { get; init; }
     [JsonPropertyName("current")]
     public MarketSnapshotDto Current { get; init; } = null!;
+    [JsonPropertyName("analysis")]
+    public AnalysisDto? Analysis { get; init; } = null!;
 };

@@ -8,5 +8,5 @@ public sealed record PublishMarketDataCommand : ICommand
     public string Ticker { get; init; } = null!;
     public long SharesOutstanding { get; init; }
     public MarketSnapshotDto Current { get; init; } = null!;
-    public List<MarketSnapshotDto> History { get; init; } = new();
+    public List<MarketHistoryDto> History { get; init; } = new();
 }

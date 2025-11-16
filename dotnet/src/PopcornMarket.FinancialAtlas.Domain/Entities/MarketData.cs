@@ -9,12 +9,13 @@ public class MarketData : Entity
     public string Ticker { get; private set; } = null!;
     public MarketSnapshot Current { get; private set; } = null!;
     public long SharesOutstanding { get; private set; }
-    private readonly List<MarketSnapshot> _history = new();
-    public IReadOnlyCollection<MarketSnapshot> History => _history;
+    private readonly List<MarketHistory> _history = new();
+    public IReadOnlyCollection<MarketHistory> History => _history;
+    public Analysis? Analysis { get; private set; }
 
     private MarketData() { }
 
-    private MarketData(string ticker, long sharesOutstanding ,MarketSnapshot current, List<MarketSnapshot> history) : base(Guid.NewGuid())
+    private MarketData(string ticker, long sharesOutstanding ,MarketSnapshot current, List<MarketHistory> history) : base(Guid.NewGuid())
     {
         _history = history;
         SharesOutstanding = sharesOutstanding;
@@ -22,7 +23,7 @@ public class MarketData : Entity
         Current = current;
     }
 
-    public static Result<MarketData> Create(string tickerSymbol, long sharesOutstanding ,MarketSnapshot current, List<MarketSnapshot> history)
+    public static Result<MarketData> Create(string tickerSymbol, long sharesOutstanding ,MarketSnapshot current, List<MarketHistory> history)
     {
         var marketData = new MarketData(tickerSymbol, sharesOutstanding, current, history);
         
@@ -36,7 +37,12 @@ public class MarketData : Entity
 
     public void UpdateMarketSnapshot(MarketSnapshot snapshot)
     {
-        _history.Add(Current);
+        //_history.Add(Current);
         Current = snapshot;
+    }
+
+    public void HydrateAnalysis(Analysis analysis)
+    {
+        Analysis = analysis;
     }
 }

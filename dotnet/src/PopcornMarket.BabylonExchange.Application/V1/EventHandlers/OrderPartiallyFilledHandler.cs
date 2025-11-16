@@ -11,18 +11,18 @@ namespace PopcornMarket.BabylonExchange.Application.V1.EventHandlers;
 internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPartiallyFilled>
 {
     private readonly IOrderRepository _orderRepository;
-    private readonly IOutboxService _outboxService;
+    private readonly IIntegrationEventDispatcher _integrationEventDispatcher;
     private readonly ILogger<OrderPartiallyFilledHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public OrderPartiallyFilledHandler(IOrderRepository orderRepository,
         ILogger<OrderPartiallyFilledHandler> logger,
-        IOutboxService outboxService,
+        IIntegrationEventDispatcher integrationEventDispatcher,
         IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _logger = logger;
-        _outboxService = outboxService;
+        _integrationEventDispatcher = integrationEventDispatcher;
         _unitOfWork = unitOfWork;
     }
 
@@ -35,7 +35,7 @@ internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPar
         order.PartiallyFulfillOrder(notification.TradePrice, notification.RemainingQuantity, notification.FulfilledAt);
         await _orderRepository.UpdateEntity(order);
         _logger.LogDebug("Order with OrderId: {OrderId} partial fill has been persisted in {ElapsedTimeMs} ms", notification.Id, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
-        await _outboxService.Add(notification, cancellationToken);
+        await _integrationEventDispatcher.Add(notification, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

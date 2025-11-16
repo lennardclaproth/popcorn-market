@@ -49,7 +49,7 @@ internal sealed class CompanyRepository : ICompanyRepository
 
     public async Task<IEnumerable<string>> GetTickers()
     {
-        var filter = Builders<Company>.Filter.Empty;
+        var filter = Builders<Company>.Filter.Eq(c => c.IsListed, true);
         var cursor = await _collection.DistinctAsync(x => x.Ticker, filter);
         return cursor.ToEnumerable();
     }

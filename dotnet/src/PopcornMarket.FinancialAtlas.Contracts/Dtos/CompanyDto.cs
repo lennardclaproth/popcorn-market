@@ -24,4 +24,6 @@ public sealed record CompanyDto
     public required int Employees { get; init; }
     [JsonPropertyName("region")]
     public required string Region { get; init; }
+    [JsonPropertyName("is_listed")]
+    public bool IsListed { get; init; }
 }

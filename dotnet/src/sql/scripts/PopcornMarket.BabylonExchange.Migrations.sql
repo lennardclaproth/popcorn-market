@@ -205,5 +205,48 @@ BEGIN
     VALUES ('20251022213803_PopcornMarket.BabylonExchange.OutboxPattern', '9.0.3');
     END IF;
 END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251116154624_PopcornMarket.BabylonExchange.OutboxPackageModel') THEN
+    ALTER TABLE "OutboxMessages" RENAME COLUMN "Type" TO "Topic";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251116154624_PopcornMarket.BabylonExchange.OutboxPackageModel') THEN
+    ALTER TABLE "OutboxMessages" RENAME COLUMN "ProcessedOnUtc" TO "ProcessedAtUtc";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251116154624_PopcornMarket.BabylonExchange.OutboxPackageModel') THEN
+    ALTER TABLE "OutboxMessages" RENAME COLUMN "OccurredOnUtc" TO "CreatedAtUtc";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251116154624_PopcornMarket.BabylonExchange.OutboxPackageModel') THEN
+    ALTER TABLE "OutboxMessages" ADD "Attempts" INTEGER NOT NULL DEFAULT 0;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251116154624_PopcornMarket.BabylonExchange.OutboxPackageModel') THEN
+    ALTER TABLE "OutboxMessages" ADD "Key" TEXT;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251116154624_PopcornMarket.BabylonExchange.OutboxPackageModel') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20251116154624_PopcornMarket.BabylonExchange.OutboxPackageModel', '9.0.3');
+    END IF;
+END $EF$;
 COMMIT;
 

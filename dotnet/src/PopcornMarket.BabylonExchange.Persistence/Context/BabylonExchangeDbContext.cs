@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PopcornMarket.BabylonExchange.Domain.Entities;
-using PopcornMarket.BabylonExchange.Persistence.Entities;
+using PopcornMarket.ServiceBus.Helpers;
+using PopcornMarket.ServiceBus.Models;
 
 namespace PopcornMarket.BabylonExchange.Persistence.Context;
 
@@ -26,5 +27,6 @@ public class BabylonExchangeDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(PersistenceAssemblyReference.Assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageEfCoreConfiguration());
     }
 }

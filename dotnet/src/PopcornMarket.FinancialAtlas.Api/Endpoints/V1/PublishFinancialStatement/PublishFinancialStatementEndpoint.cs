@@ -28,6 +28,6 @@ internal sealed class PublishFinancialStatementEndpoint : IEndpoint
                 var result = await sender.Send(command);
                 
                 return result.IsFailure ? result.ToProblemDetails() : Results.Created("/api/v1/financial-statement/{id}", new PublishFinancialStatementResponse { Id = result.Value});
-            }).AllowAnonymous();
+            }).WithTransactionName().AllowAnonymous();
     }
 }

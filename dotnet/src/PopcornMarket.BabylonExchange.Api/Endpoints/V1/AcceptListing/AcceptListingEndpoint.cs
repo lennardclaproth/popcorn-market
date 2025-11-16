@@ -20,6 +20,7 @@ internal sealed class AcceptListingEndpoint : IEndpoint
             var result = await _sender.Send(command, ct);
             
             return result.IsFailure ? result.ToProblemDetails() : Results.Accepted();
-        }).AllowAnonymous();
+        }).WithTransactionName()
+            .AllowAnonymous();
     }
 }

@@ -204,22 +204,28 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
                     b.ToTable("Trade", "OrderBook");
                 });
 
-            modelBuilder.Entity("PopcornMarket.BabylonExchange.Persistence.Entities.OutboxMessage", b =>
+            modelBuilder.Entity("PopcornMarket.ServiceBus.Models.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("UUID");
 
-                    b.Property<DateTime>("OccurredOnUtc")
+                    b.Property<int>("Attempts")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamptz");
+
+                    b.Property<string>("Key")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Payload")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("ProcessedOnUtc")
+                    b.Property<DateTime?>("ProcessedAtUtc")
                         .HasColumnType("timestamptz");
 
-                    b.Property<string>("Type")
+                    b.Property<string>("Topic")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("TEXT");
