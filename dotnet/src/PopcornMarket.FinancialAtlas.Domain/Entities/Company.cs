@@ -44,4 +44,9 @@ public class Company : AggregateRoot
         var company = new Company(ticker, name, industry, description, headquarters, ceo, foundedYear, employees, region);
         return Result<Company>.Success(company);
     }
+
+    public void List()
+    {
+        IsListed = true;
+    }
 }

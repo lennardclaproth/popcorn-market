@@ -201,7 +201,6 @@ func (s *Service) GetActiveAccount(ctx context.Context, uId uuid.UUID) (AccountI
 }
 
 func (s *Service) DeductFunds(ctx context.Context, accId uuid.UUID, price float64) error {
-	return nil
 	acc, err := s.store.GetByID(ctx, accId)
 
 	if err != nil {
@@ -227,7 +226,6 @@ func (s *Service) DeductFunds(ctx context.Context, accId uuid.UUID, price float6
 }
 
 func (s *Service) Refund(ctx context.Context, accId uuid.UUID, price float64) error {
-	return nil
 	acc, err := s.store.GetByID(ctx, accId)
 
 	if err != nil {
@@ -241,4 +239,28 @@ func (s *Service) Refund(ctx context.Context, accId uuid.UUID, price float64) er
 	}
 
 	return err
+}
+
+func (s *Service) AddFunds(ctx context.Context, accId uuid.UUID, price float64) error {
+	acc, err := s.store.GetByID(ctx, accId)
+
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("addfunds: failed to get account by id: %w", err))
+	}
+
+	acc.Balance += price
+	err = s.store.Update(ctx, acc)
+	if err != nil {
+		return errorx.Trace(fmt.Errorf("addfunds: failed to persist changes in the store: %w", err))
+	}
+
+	return err
+}
+
+func (s *Service) AddToHolding(ctx context.Context, symbol string, quantity int, price float64, accId uuid.UUID) {
+
+}
+
+func (s *Service) RemoveFromHolding(ctx context.Context, symbol string, quanity int, accId uuid.UUID) {
+
 }

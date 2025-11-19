@@ -9,7 +9,7 @@ public static class InfrastructureExtensions
 {
     public static void InstallInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var topics = new List<string>();
+        List<string> topics = [TopicConstants.CompanyListed];
         services.WithKafkaServiceBus(configuration, topics, PayloadMap.Map, InfrastructureAssemblyReference.Assembly);
         services.AddScoped<IIntegrationEventDispatcher, IIntegrationEventDispatcher>();
         AddObservability(services);

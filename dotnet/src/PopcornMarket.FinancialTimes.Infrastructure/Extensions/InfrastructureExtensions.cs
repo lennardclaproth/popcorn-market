@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PopcornMarket.FinancialTimes.Application.Abstractions;
+using PopcornMarket.FinancialTimes.Infrastructure.ServiceBus.services;
 using PopcornMarket.Messaging.Contracts.V1.Constants;
 using PopcornMarket.ServiceBus.Extensions;
 
@@ -20,9 +22,8 @@ public static class InfrastructureExtensions
 
     private static void SetupKafkaMessaging(this IServiceCollection services, IConfiguration configuration)
     {
-        //services.AddSingleton<IConsumer, KafkaConsumer>();
-        //services.AddHostedService<ConsumerService>();
         List<string> topics = [TopicConstants.CompanyCreated, TopicConstants.CompanyListed];
         services.WithKafkaServiceBus(configuration, topics, PayloadMap.Map, InfrastructureAssemblyReference.Assembly);
+        services.AddScoped<IIntegrationEventDispatcher, IntegrationEventDispatcher>();
     }
 }

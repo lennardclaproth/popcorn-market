@@ -24,17 +24,12 @@ internal sealed class KafkaProducer : IProducer
     public async Task Produce<T>(string topic, T payload, CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(payload);
-        var correlationId = Guid.NewGuid().ToString();
-
-        // TODO Implement CorrelationId correctly
-        var headers = new Headers { { "x-correlation-id", Encoding.UTF8.GetBytes(correlationId) } };
 
         var result = await _producer.ProduceAsync(topic,
             new Message<string, string>
             {
                 Key = topic,
                 Value = json,
-                Headers = headers
             },
             cancellationToken);
     }

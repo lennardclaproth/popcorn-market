@@ -10,6 +10,8 @@ public record CompanyListedIntegrationEvent(CompanyListedPayload Payload) : IInt
 
 public record CompanyListedPayload
 {
+    public CompanyListedPayload(){}
+
     [JsonPropertyName("ticker")]
     public string Ticker { get; init; } = null!;
 }
