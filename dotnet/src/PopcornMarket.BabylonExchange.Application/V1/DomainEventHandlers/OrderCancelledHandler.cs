@@ -37,12 +37,6 @@ internal sealed class OrderCancelledHandler : IDomainEventHandler<OrderCancelled
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
         _logger.LogDebug("Order with OrderId: {OrderId} cancellation has been persisted in {ElapsedTimeMs}", notification.OrderId, elapsedTimeMs);
-        var integrationEventPayload = new OrderCancelledPayload
-        {
-            OrderId = order.Id, Reason = notification.Reason, CancelledAt = notification.CancelledAt
-        };
-        var integrationEvent = new OrderCancelledIntegrationEvent(integrationEventPayload);
-        await _integrationEventDispatcher.DispatchToOutbox(integrationEvent, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

@@ -29,7 +29,6 @@ internal sealed class EfCoreOutboxService<TDbContext> : IOutbox
         };
 
         await _dbContext.Set<OutboxMessage>().AddAsync(message, cancellationToken);
-        // Important: SaveChanges should happen in the *same transaction* as your domain changes.
     }
 
     public async Task<List<OutboxMessage>> GetUnprocessedBatchAsync(int take, CancellationToken cancellationToken = default)

@@ -36,17 +36,6 @@ internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPar
         order.PartiallyFulfillOrder(notification.TradePrice, notification.RemainingQuantity, notification.FulfilledAt);
         await _orderRepository.UpdateEntity(order);
         _logger.LogDebug("Order with OrderId: {OrderId} partial fill has been persisted in {ElapsedTimeMs} ms", notification.Id, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds);
-
-        var payload = new OrderPartiallyFilledPayload
-        {
-            Id = order.Id,
-            TradePrice = notification.TradePrice,
-            RemainingQuantity = notification.RemainingQuantity,
-            FulfilledAt = notification.FulfilledAt
-        };
-        var integrationEvent = new OrderPartiallyFilledIntegrationEvent(payload);
-
-        await _integrationEventDispatcher.DispatchToOutbox(integrationEvent, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

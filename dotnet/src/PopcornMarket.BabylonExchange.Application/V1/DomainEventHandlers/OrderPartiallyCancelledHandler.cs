@@ -36,17 +36,6 @@ internal sealed class OrderPartiallyCancelledHandler : IDomainEventHandler<Order
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
         _logger.LogDebug("Order with OrderId: {OrderId} partial cancellation has been persisted in {ElapsedTimeMs}", notification.OrderId, elapsedTimeMs);
-
-        var payload = new OrderPartiallyCancelledPayload
-        {
-            OrderId = order.Id,
-            Reason = notification.Reason,
-            CancelledAt = notification.CancelledAt,
-            RemainingQuantity = notification.RemainingQuantity
-        };
-        var integrationEvent = new OrderPartiallyCancelledIntegrationEvent(payload);
-
-        await _integrationEventDispatcher.DispatchToOutbox(integrationEvent, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

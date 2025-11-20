@@ -37,18 +37,6 @@ internal sealed class OrderFulfilledHandler : IDomainEventHandler<OrderFulfilled
         await _orderRepository.UpdateEntity(order);
         var elapsedTimeMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
         _logger.LogDebug("Order with OrderId: {OrderId} fulfillment has been persisted in {ElapsedTimeMs}", notification.Id, elapsedTimeMs);
-
-        var payload = new OrderFulfilledPayload
-        {
-            FulfilledAt = notification.FulfilledAt,
-            Id = notification.Id,
-            TradePrice = notification.TradePrice,
-            TradeQuantity = notification.TradeQuantity
-        };
-
-        var integrationEvent = new OrderFulfilledIntegrationEvent(payload);
-
-        await _integrationEventDispatcher.DispatchToOutbox(integrationEvent, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
