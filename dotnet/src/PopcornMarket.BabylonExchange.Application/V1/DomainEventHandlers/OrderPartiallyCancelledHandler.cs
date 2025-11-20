@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
-using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
@@ -16,7 +15,7 @@ internal sealed class OrderPartiallyCancelledHandler : IDomainEventHandler<Order
 
     public OrderPartiallyCancelledHandler(IOrderRepository orderRepository,
         ILogger<OrderPartiallyCancelledHandler> logger,
-        IIntegrationEventDispatcher integrationEventDispatcher, IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _logger = logger;
