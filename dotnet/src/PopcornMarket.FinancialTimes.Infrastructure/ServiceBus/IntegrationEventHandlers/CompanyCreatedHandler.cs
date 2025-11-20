@@ -4,14 +4,14 @@ using PopcornMarket.FinancialTimes.Application.V1.UseCases.CreateCompany;
 using PopcornMarket.Messaging.Contracts.V1.Events;
 using PopcornMarket.ServiceBus.Abstractions;
 
-namespace PopcornMarket.FinancialTimes.Infrastructure.ServiceBus.Handlers;
+namespace PopcornMarket.FinancialTimes.Infrastructure.ServiceBus.IntegrationEventHandlers;
 
-internal sealed class CompanyCreatedIntegrationEventHandler : IntegrationEventHandler<CompanyCreatedPayload>
+internal sealed class CompanyCreatedHandler : IntegrationEventHandler<CompanyCreatedPayload>
 {
     private readonly ISender _sender;
-    private readonly ILogger<CompanyCreatedIntegrationEventHandler> _logger;
+    private readonly ILogger<CompanyCreatedHandler> _logger;
 
-    public CompanyCreatedIntegrationEventHandler(ISender mediator, ILogger<CompanyCreatedIntegrationEventHandler> logger)
+    public CompanyCreatedHandler(ISender mediator, ILogger<CompanyCreatedHandler> logger)
     {
         _sender = mediator;
         _logger = logger;

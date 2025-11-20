@@ -60,20 +60,6 @@ internal sealed class PublishMarketDataCommandHandler : ICommandHandler<PublishM
         await _marketDataRepository.Add(creationResult.Value);
         await _marketDataRepository.InsertHistory(creationResult.Value.History, cancellationToken);
 
-        //var marketData = creationResult.Value;
-
-        //var marketDataPublishedEvent = new MarketDataPublishedPayload
-        //{
-        //    Ticker = company.Ticker,
-        //    Name = company.Name,
-        //    Date = marketData.Current.Date,
-        //    MarketCapBillion = marketData.Current.MarketCapBillion,
-        //    SharesOutstanding = marketData.SharesOutstanding,
-        //    StockPriceUSD = marketData.Current.StockPriceUSD,
-        //    Volume = marketData.Current.Volume
-        //};
-        //await _producer.Produce(TopicConstants.MarketDataPublished, marketDataPublishedEvent, cancellationToken);
-        
         return Result.Success();
     }
 }

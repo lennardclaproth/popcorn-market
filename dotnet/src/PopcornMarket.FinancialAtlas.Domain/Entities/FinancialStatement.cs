@@ -14,7 +14,6 @@ public class FinancialStatement : Entity
     public BalanceSheet BalanceSheet { get; private set; } = null!;
     public CashFlowStatement CashFlowStatement { get; private set; } = null!;
 
-
     private FinancialStatement() { }
 
     private FinancialStatement(string ticker, ReportingPeriod reportingPeriod, 

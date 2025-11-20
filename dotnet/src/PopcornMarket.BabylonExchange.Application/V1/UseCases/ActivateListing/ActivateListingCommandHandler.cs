@@ -12,13 +12,11 @@ public class ActivateListingCommandHandler : ICommandHandler<ActivateListingComm
 {
     private readonly IListingRepository _listingRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IIntegrationEventDispatcher _integrationEventDispatcher;
 
     public ActivateListingCommandHandler(IListingRepository listingRepository, IUnitOfWork unitOfWork, IIntegrationEventDispatcher integrationEventDispatcher)
     {
         _listingRepository = listingRepository;
         _unitOfWork = unitOfWork;
-        _integrationEventDispatcher = integrationEventDispatcher;
     }
 
     public async Task<Result> Handle(ActivateListingCommand request, CancellationToken cancellationToken)

@@ -1,5 +1,4 @@
 ﻿using Ardalis.GuardClauses;
-using Elastic.Apm;
 using MediatR;
 using PopcornMarket.FinancialAtlas.Api.Abstractions;
 using PopcornMarket.FinancialAtlas.Api.Extensions;
@@ -20,7 +19,6 @@ internal sealed class GetCompanyByTickerEndpoint : IEndpoint
             CancellationToken ct
         ) =>
         {
-            //Agent.Tracer.CurrentTransaction.Name = "GET /api/v1/company/{ticker}";
             var query = new GetCompanyByTickerQuery { Ticker = req.Ticker };
             var result = await sender.Send(query, ct);
 

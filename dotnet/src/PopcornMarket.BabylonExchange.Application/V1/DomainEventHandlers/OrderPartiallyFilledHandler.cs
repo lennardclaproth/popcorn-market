@@ -5,14 +5,12 @@ using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Events;
-using PopcornMarket.Messaging.Contracts.V1.Events;
 using PopcornMarket.SharedKernel.Abstractions;
 
 namespace PopcornMarket.BabylonExchange.Application.V1.DomainEventHandlers;
 internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPartiallyFilled>
 {
     private readonly IOrderRepository _orderRepository;
-    private readonly IIntegrationEventDispatcher _integrationEventDispatcher;
     private readonly ILogger<OrderPartiallyFilledHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -23,7 +21,6 @@ internal sealed class OrderPartiallyFilledHandler : IDomainEventHandler<OrderPar
     {
         _orderRepository = orderRepository;
         _logger = logger;
-        _integrationEventDispatcher = integrationEventDispatcher;
         _unitOfWork = unitOfWork;
     }
 
