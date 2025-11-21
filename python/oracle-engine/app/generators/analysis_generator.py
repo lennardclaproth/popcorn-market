@@ -5,7 +5,9 @@ from inference.sentiment_engine import infer
 from services import financial_atlas, financial_times
 from models.financial_atlas import PublishAnalysisRequest
 import random
-    
+import logging
+
+logger = logging.getLogger("worker_app")
 
 def analyze_text(text: str) -> Dict[str, float]:
     """Analyze a single text and return sentiment scores."""
@@ -77,38 +79,33 @@ def analyze_financial_statement(financial_statement) -> float:
     Analyze financial statement fundamentals.
     Returns a score from -1 to +1 based on financial health.
     """
-    try:
-        income = financial_statement.income_statement
-        balance = financial_statement.balance_sheet
-        cashflow = financial_statement.cash_flow_statement
-        
-        scores = []
-        
-        # Revenue and profit growth indicators
-        if income.revenue_b > 0:
-            profit_margin = income.net_income_b / income.revenue_b
-            scores.append(normalize_score(profit_margin, 0.1, 0.3))
-        
-        # Cash flow health
-        if cashflow.operating_cash_flow_b > 0:
-            fcf_margin = cashflow.free_cash_flow_b / cashflow.operating_cash_flow_b
-            scores.append(normalize_score(fcf_margin, 0.3, 0.7))
-        
-        # Balance sheet strength
-        debt_to_equity = balance.debt_to_equity_ratio
-        # Lower debt-to-equity is better
-        scores.append(normalize_score(2.0 - debt_to_equity, 0.5, 1.5))
-        
-        # EPS as profitability indicator
-        if income.eps_usd > 0:
-            scores.append(min(income.eps_usd / 10, 1.0))  # Normalize
-        
-        return np.mean(scores) if scores else 0.0
-        
-    except Exception as e:
-        print(f"Error analyzing financials: {e}")
-        return 0.0
-
+    income = financial_statement.income_statement
+    balance = financial_statement.balance_sheet
+    cashflow = financial_statement.cash_flow_statement
+    
+    scores = []
+    
+    # Revenue and profit growth indicators
+    if income.revenue_b > 0:
+        profit_margin = income.net_income_b / income.revenue_b
+        scores.append(normalize_score(profit_margin, 0.1, 0.3))
+    
+    # Cash flow health
+    if cashflow.operating_cash_flow_b > 0:
+        fcf_margin = cashflow.free_cash_flow_b / cashflow.operating_cash_flow_b
+        scores.append(normalize_score(fcf_margin, 0.3, 0.7))
+    
+    # Balance sheet strength
+    debt_to_equity = balance.debt_to_equity_ratio
+    # Lower debt-to-equity is better
+    scores.append(normalize_score(2.0 - debt_to_equity, 0.5, 1.5))
+    
+    # EPS as profitability indicator
+    if income.eps_usd > 0:
+        scores.append(min(income.eps_usd / 10, 1.0))  # Normalize
+    
+    return np.mean(scores) if scores else 0.0
+    
 def generate_analysis(
     ticker: str,
     company_profile,
@@ -124,17 +121,9 @@ def generate_analysis(
     """
     current_date = datetime.now(UTC)
     
-    # Analyze all article types
-    print(f"Analyzing {len(company_articles)} company articles...")
     company_sentiments = analyze_articles(company_articles)
-    
-    print(f"Analyzing {len(sector_articles)} sector articles...")
     sector_sentiments = analyze_articles(sector_articles)
-    
-    print(f"Analyzing {len(macro_articles)} macro articles...")
     macro_sentiments = analyze_articles(macro_articles)
-    
-    print(f"Analyzing {len(political_articles)} political articles...")
     political_sentiments = analyze_articles(political_articles)
     
     # Combine all sentiments for overall analysis
@@ -165,8 +154,6 @@ def generate_analysis(
         political_weight * calculate_time_weighted_sentiment(political_sentiments, 14, current_date)
     )
     
-    # Analyze financial fundamentals
-    print("Analyzing financial fundamentals...")
     fundamental_score = analyze_financial_statement(financial_statement)
     
     # Combine sentiment and fundamentals (60% sentiment, 40% fundamentals)
@@ -211,7 +198,7 @@ def generate():
         return
     
     ticker = random.choice(tickers)
-    print(f"Analyzing {ticker}...")
+    logger.info(f"Analyzing {ticker}...")
     
     company_profile = financial_atlas.fetch_company(ticker)
     financial_statement = financial_atlas.fetch_company_financials(ticker)
@@ -243,10 +230,6 @@ def generate():
         "3m": float(analysis["3m"]),
         "target_price": float(analysis["target_price"])
     }
-    
-    print(f"Analysis complete for {ticker}")
-    print(f"Current sentiment: {request['current']:.3f}")
-    print(f"Target price: ${request['target_price']:.2f} (current: ${analysis['metadata']['current_price']:.2f})")
     
     # Post to external service
     financial_atlas.publish_analysis(PublishAnalysisRequest(**request))

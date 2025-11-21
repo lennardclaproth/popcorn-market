@@ -3,7 +3,7 @@ using PopcornMarket.FinancialAtlas.Application.V1.UseCases.ListCompany;
 using PopcornMarket.Messaging.Contracts.V1.Events;
 using PopcornMarket.ServiceBus.Abstractions;
 
-namespace PopcornMarket.FinancialAtlas.Infrastructure.ServiceBus.Handlers;
+namespace PopcornMarket.FinancialAtlas.Infrastructure.ServiceBus.IntegrationEventHandlers;
 internal sealed class CompanyListedHandler : IntegrationEventHandler<CompanyListedPayload>
 {
     private readonly ISender _sender;
