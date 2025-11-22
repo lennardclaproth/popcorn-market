@@ -1,9 +1,9 @@
-﻿using MongoDB.Driver;
+﻿using System.Data;
+using MongoDB.Driver;
 using Popcorn.FinancialAtlas.Domain.Abstractions;
 using Popcorn.FinancialAtlas.Domain.Entities;
 using PopcornMarket.FinancialAtlas.Persistence.Constants;
 using PopcornMarket.FinancialAtlas.Persistence.Context;
-using PopcornMarket.SharedKernel.Attributes.ServiceLifetime;
 
 namespace PopcornMarket.FinancialAtlas.Persistence.Repositories;
 
@@ -31,9 +31,18 @@ internal sealed class CompanyRepository : ICompanyRepository
         await _collection.InsertOneAsync(entity);
     }
 
-    public Task Update(Guid id, Company entity)
+    public async Task Update(Company entity, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var result = await _collection.ReplaceOneAsync(
+            e => e.Id == entity.Id,
+            entity,
+            new ReplaceOptions { IsUpsert = false },
+            ct);
+
+        if (result.MatchedCount == 0)
+        {
+            throw new DBConcurrencyException($"Company {entity.Id} no longer exists.");
+        }
     }
 
     public Task Delete(Guid id)
@@ -49,7 +58,7 @@ internal sealed class CompanyRepository : ICompanyRepository
 
     public async Task<IEnumerable<string>> GetTickers()
     {
-        var filter = Builders<Company>.Filter.Empty;
+        var filter = Builders<Company>.Filter.Eq(c => c.IsListed, true);
         var cursor = await _collection.DistinctAsync(x => x.Ticker, filter);
         return cursor.ToEnumerable();
     }

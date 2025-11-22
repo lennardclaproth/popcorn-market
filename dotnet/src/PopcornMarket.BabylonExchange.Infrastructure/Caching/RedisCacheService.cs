@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using StackExchange.Redis;
 
 namespace PopcornMarket.BabylonExchange.Infrastructure.Caching;
@@ -21,7 +21,7 @@ internal sealed class RedisCacheService : ICacheService
     public async Task<T?> GetAsync<T>(string key)
     {
         var json = await _cache.StringGetAsync(key);
-        return json.IsNullOrEmpty ? default : JsonSerializer.Deserialize<T>(json!);
+        return json.IsNullOrEmpty ? default : JsonSerializer.Deserialize<T>((string)json!);
     }
 
     public async Task RemoveAsync(string key)

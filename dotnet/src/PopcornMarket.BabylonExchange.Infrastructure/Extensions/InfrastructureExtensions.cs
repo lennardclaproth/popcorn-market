@@ -4,14 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PopcornMarket.BabylonExchange.Application.Abstractions;
 using PopcornMarket.BabylonExchange.Infrastructure.Caching;
-using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Consumers;
 using PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
-using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Abstractions;
-using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.BackgroundJobs;
-using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Producers;
 using PopcornMarket.BabylonExchange.Infrastructure.ServiceBus.Services;
+using PopcornMarket.Messaging.Contracts.V1.Constants;
+using PopcornMarket.ServiceBus.Extensions;
 using PopcornMarket.SharedKernel.Abstractions;
-using PopcornMarket.SharedKernel.Messaging;
 using StackExchange.Redis;
 
 namespace PopcornMarket.BabylonExchange.Infrastructure.Extensions;
@@ -25,8 +22,8 @@ public static class InfrastructureExtensions
         services.AddSingleton<ICacheService, RedisCacheService>();
         
         SetupOrderMatchingEngine(services);
-        SetupKafkaMessaging(services);
-        AddObservability(services, configuration);
+        SetupKafkaMessaging(services, configuration);
+        AddObservability(services);
 
         return services;
     }
@@ -75,32 +72,16 @@ public static class InfrastructureExtensions
         services.AddHostedService<MatchingEngineEventDispatcher>();
     }
     
-    private static void SetupKafkaMessaging(this IServiceCollection services)
+    private static void SetupKafkaMessaging(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IConsumer, KafkaConsumer>();
-        services.AddSingleton<IProducer, KafkaProducer>();
-        services.AddHostedService<ConsumerJob>();
-        services.AddHostedService<OutboxJob>();
+        List<string> topics = new();
+        services.WithKafkaServiceBus(configuration, topics, PayloadMap.Map, InfrastructureAssemblyReference.Assembly)
+            .WithEfCoreOutbox<Persistence.Context.BabylonExchangeDbContext>();
 
-        var handlers = InfrastructureAssemblyReference.Assembly
-            .GetTypes()
-            .Where(type => !type.IsAbstract && !type.IsInterface)
-            .SelectMany(type => 
-                type.GetInterfaces()
-                    .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>))
-                    .Select(i => new { Type = i, HandlerType = type }))
-            .ToList();
-
-        // Should maybe become part of setup ServiceBus
-        services.AddScoped<IOutboxService, EfCoreOutboxService>();
-
-        foreach (var handler in handlers)
-        {
-            services.AddScoped(handler.Type, handler.HandlerType);
-        }
+        services.AddScoped<IIntegrationEventDispatcher, IntegrationEventDispatcher>();
     }
 
-    private static void AddObservability(IServiceCollection services, IConfiguration configuration)
+    private static void AddObservability(IServiceCollection services)
     {
         services.AddAllElasticApm();
     }

@@ -28,6 +28,7 @@ internal sealed class GetArticlesBySectorEndpoint : IEndpoint
                     Articles = result.Value ?? new List<ArticleDto>()
                 });
             }).AllowAnonymous()
+            .WithTransactionName()
             .AddValidation<GetArticlesBySectorRequest>();
     }
 }

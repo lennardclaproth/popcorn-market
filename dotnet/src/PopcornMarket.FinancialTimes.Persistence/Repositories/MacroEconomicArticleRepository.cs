@@ -41,21 +41,18 @@ internal sealed class MacroEconomicArticleRepository : IMacroEconomicArticleRepo
         await _collection.InsertOneAsync(entity);
     }
 
-    public async Task Update(Guid id, MacroEconomicArticle entity)
+    public async Task Update(MacroEconomicArticle entity, CancellationToken ct)
     {
-        var filter = Builders<MacroEconomicArticle>.Filter.Eq(x => x.Id, id);
-        var update = Builders<MacroEconomicArticle>.Update
-            .Set(x => x.PublishDate, entity.PublishDate)
-            .Set(x => x.Content, entity.Content)
-            .Set(x => x.Headline, entity.Headline);
+        var result = await _collection.ReplaceOneAsync(
+            e => e.Id == entity.Id,
+            entity,
+            new ReplaceOptions { IsUpsert = false },
+            ct);
 
-        var cursor = await _collection.FindAsync(filter);
-        var entities = await cursor.ToListAsync();
-        
-        if (entities.Count > 1) throw new DBConcurrencyException($"More than one MacroEconomic article found with this ID {id}");
-        if (entities.Count == 0) throw new DBConcurrencyException($"No MactoEconomic article found with this ID {id}");
-        
-        await _collection.UpdateOneAsync(filter, update);
+        if (result.MatchedCount == 0)
+        {
+            throw new DBConcurrencyException($"MacroEconomicArticle with Id {entity.Id} was not found for update.");
+        }
     }
 
     public async Task Delete(Guid id)

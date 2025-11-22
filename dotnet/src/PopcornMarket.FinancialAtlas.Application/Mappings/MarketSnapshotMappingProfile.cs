@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Popcorn.FinancialAtlas.Domain.ValueObjects;
 using PopcornMarket.FinancialAtlas.Contracts.Dtos;
 

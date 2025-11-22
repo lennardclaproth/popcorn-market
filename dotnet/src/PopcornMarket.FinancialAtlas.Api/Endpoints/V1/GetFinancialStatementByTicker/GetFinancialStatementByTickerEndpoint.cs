@@ -36,6 +36,6 @@ internal sealed class GetFinancialStatementByTickerEndpoint : IEndpoint
 
                 return Results.Ok(response);
             }
-        );
+        ).WithTransactionName().AllowAnonymous();
     }
 }

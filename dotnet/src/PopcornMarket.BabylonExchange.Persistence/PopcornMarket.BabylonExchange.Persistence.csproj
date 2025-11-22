@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\PopcornMarket.BabylonExchange.Domain\PopcornMarket.BabylonExchange.Domain.csproj" />
+      <ProjectReference Include="..\PopcornMarket.ServiceBus\PopcornMarket.ServiceBus.csproj" />
     </ItemGroup>
 
     <ItemGroup>

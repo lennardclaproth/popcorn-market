@@ -1,6 +1,6 @@
 import requests
-from constants.financial_atlas import COMPANY_ENDPOINT, FINANCIAL_STATEMENT_ENDPOINT, MARKET_DATA_ENDPOINT, TICKERS_ENDPOINT
-from models.financial_atlas import Company, FinancialStatement, MarketData, MarketSnapshot
+from constants.financial_atlas import ANALYSIS_ENDPOINT, COMPANY_ENDPOINT, FINANCIAL_STATEMENT_ENDPOINT, MARKET_DATA_ENDPOINT, TICKERS_ENDPOINT
+from models.financial_atlas import Company, FinancialStatement, MarketData, MarketSnapshot, PublishAnalysisRequest
 
 def fetch_tickers() -> list[str]:
     """
@@ -125,4 +125,14 @@ def publish_market_data(market_data: MarketData):
     
     if response.status_code != 201 and response.status_code != 404:
         raise Exception("Failed to publish market data: %s - %s", response.status_code, response.text)
+
+def publish_analysis(analysis: PublishAnalysisRequest):
+    """
+    Publishes market data of a company
+    """
+    url = f"{ANALYSIS_ENDPOINT}"
+    json=analysis.model_dump(mode="json")
+    response = requests.post(url, json=json, verify=False)
     
+    if response.status_code != 201 and response.status_code != 404:
+        raise Exception("Failed to publish analysis: %s - %s", response.status_code, response.text)

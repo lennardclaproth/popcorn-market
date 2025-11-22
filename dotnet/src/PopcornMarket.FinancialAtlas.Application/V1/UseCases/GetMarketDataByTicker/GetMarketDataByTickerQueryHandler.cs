@@ -21,8 +21,15 @@ internal sealed class GetMarketDataByTickerQueryHandler : IQueryHandler<GetMarke
     public async Task<Result<MarketDataDto>> Handle(GetMarketDataByTickerQuery request, CancellationToken cancellationToken)
     {
         var marketData = await _marketDataRepository.GetByTicker(request.Ticker);
+        var analysis = await _marketDataRepository.GetLatestAnalysisByTicker(request.Ticker);
 
         if (marketData == null) return Result<MarketDataDto>.Failure(MarketDataErrors.MarketDataNotFound);
+
+        if (analysis != null)
+        {
+            marketData.HydrateAnalysis(analysis);
+        }
+
         return Result<MarketDataDto>.Success(_mapper.Map<MarketDataDto>(marketData));
     }
 }

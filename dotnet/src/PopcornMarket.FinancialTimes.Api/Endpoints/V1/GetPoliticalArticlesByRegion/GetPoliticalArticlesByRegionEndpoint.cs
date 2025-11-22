@@ -29,6 +29,7 @@ internal sealed class GetPoliticalArticlesByRegion : IEndpoint
                     Articles = result.Value ?? new List<ArticleDto>()
                 });
             }).AllowAnonymous()
+            .WithTransactionName()
             .AddValidation<GetPoliticalArticlesByRegionRequest>();
     }
 }

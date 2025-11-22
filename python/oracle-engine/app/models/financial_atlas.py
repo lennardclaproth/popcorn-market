@@ -3,6 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 from datetime import datetime
 from enum import IntEnum
+from decimal import Decimal
 
 class Company(BaseModel):
     """Represents a publicly traded company."""
@@ -29,14 +30,38 @@ class MarketSnapshot(BaseModel):
         extra="forbid"
     )
 
+class History(BaseModel):
+    """Represents a snapshot of a stock's market performance."""
+    stock_price_usd: float = Field(..., title="Stock Price in USD", alias="stock_price_USD")
+    volume: int = Field(..., title="Volume of the stocks traded")
+    market_cap_b: float = Field(..., title="Market Capitalization in Billions", alias="market_cap_B")
+    dividend_per_share_usd: Optional[float] = Field(default=None, title="Dividend per Share in USD", alias="dividend_per_share_USD")
+    dividend_yield_percent: Optional[float] = Field(default=None, title="Dividend Yield Percentage")
+    date: str = Field(..., title="Snapshot Date")
+    model_config = ConfigDict(
+        populate_by_name=True,
+        extra="forbid"
+    )
+
+class PublishAnalysisRequest(BaseModel):
+    ticker: str = Field(..., alias="ticker")
+    current: float = Field(..., alias="current")
+    one_week: float = Field(..., alias="1w")
+    one_month: float = Field(..., alias="1m")
+    three_months: float = Field(..., alias="3m")
+    target_price: Decimal = Field(..., alias="target_price")
+
+    class Config:
+        allow_population_by_field_name = True
+        populate_by_name = True
+
 
 class MarketData(BaseModel):
     """Represents the market data for a company, including historical prices."""
     ticker: str = Field(..., title="Stock Ticker Symbol")
     shares_outstanding: int = Field(..., title="Outstanding shares of the company,")
     current: MarketSnapshot = Field(..., title="Current Market Data Snapshot")
-    history: Optional[List[MarketSnapshot]] = Field(default=None, title="Historical Market Data")
-
+    history: Optional[List[History]] = Field(default=None, title="Historical Market Data")
 
 class IncomeStatement(BaseModel):
     """Represents a company's income statement."""
@@ -55,7 +80,6 @@ class IncomeStatement(BaseModel):
         populate_by_name=True,
         extra="forbid"
     )
-
 
 class BalanceSheet(BaseModel):
     """Represents a company's balance sheet."""

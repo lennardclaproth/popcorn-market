@@ -14,6 +14,7 @@ public class Company : AggregateRoot
     public int FoundedYear { get; private set; }
     public int Employees { get; private set; }
     public string Region { get; private set; }
+    public bool IsListed { get; private set; }
 
     private Company(string ticker,
         string name,
@@ -34,6 +35,7 @@ public class Company : AggregateRoot
         FoundedYear = foundedYear;
         Employees = employees;
         Region = region;
+        IsListed = false;
     }
 
     public static Result<Company> Create(string ticker, string name, string industry, string description,
@@ -41,5 +43,10 @@ public class Company : AggregateRoot
     {
         var company = new Company(ticker, name, industry, description, headquarters, ceo, foundedYear, employees, region);
         return Result<Company>.Success(company);
+    }
+
+    public void List()
+    {
+        IsListed = true;
     }
 }

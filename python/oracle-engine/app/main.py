@@ -5,6 +5,8 @@ from fastapi.concurrency import asynccontextmanager
 from logging_config import LOGGING_CONFIG
 from routers import worker, generator, chat
 from services.generator import seed_generators
+from elasticapm.contrib.starlette import ElasticAPM 
+from apm.client import client as apm_client
 
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger("worker_app")
@@ -16,6 +18,8 @@ async def lifespan(app:FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(ElasticAPM, client=apm_client)
+
 
 routers = [worker.router, generator.router, chat.router]
 

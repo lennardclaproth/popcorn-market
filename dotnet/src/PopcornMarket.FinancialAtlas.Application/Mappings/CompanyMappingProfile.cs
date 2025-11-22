@@ -9,7 +9,7 @@ public sealed class CompanyMappingProfile : Profile
 {
     public CompanyMappingProfile()
     {
-        CreateMap<Company, CompanyCreatedEvent>();
+        CreateMap<Company, CompanyCreatedPayload>();
         CreateMap<Company, CompanyDto>();
     }
 }

@@ -16,6 +16,6 @@ public class ActivateListingEndpoint : IEndpoint
 
                 var result = await sender.Send(command, ct);
                 return result.IsFailure ? result.ToProblemDetails() : Results.Created();
-            }).AllowAnonymous();
+            }).WithTransactionName().AllowAnonymous();
     }
 }

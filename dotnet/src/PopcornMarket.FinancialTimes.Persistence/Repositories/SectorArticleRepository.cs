@@ -39,7 +39,7 @@ internal sealed class SectorArticleRepository : ISectorArticleRepository
         await _collection.InsertOneAsync(entity);
     }
 
-    public Task Update(Guid id, SectorArticle entity)
+    public Task Update(SectorArticle entity, CancellationToken ct)
     {
         throw new NotImplementedException();
     }

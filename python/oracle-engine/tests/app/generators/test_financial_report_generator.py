@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from unittest.mock import patch
-from app.generators.financial_report_generator import analyze_sentiment, estimate_impact, generate
+from app.generators.financial_report_generator import __analyze_sentiment, __estimate_impact, generate
 from app.models.financial_times import ArticleBase, CompanyArticle, PoliticalArticle, MacroArticle, SectorArticle
 from app.models.financial_atlas import Company, MarketSnapshot
 from app.constants.financial_times import COMPANY_ARTICLE_TYPE, POLITICAL_ARTICLE_TYPE, MACRO_ARTICLE_TYPE, SECTOR_ARTICLE_TYPE
@@ -15,7 +15,7 @@ def test_estimate_impact_high_impact_article():
         date=datetime.now()
     )
 
-    score = estimate_impact(article)
+    score = __estimate_impact(article)
     assert 3.0 <= score <= 5.0
 
 def test_estimate_impact_low_impact_article():
@@ -26,7 +26,7 @@ def test_estimate_impact_low_impact_article():
         date=datetime.now()
     )
 
-    score = estimate_impact(article)
+    score = __estimate_impact(article)
     assert 1.0 <= score <= 2.5
 
 def test_analyze_sentiment_neutral_article():
@@ -42,7 +42,7 @@ Company leadership noted that the revisions reflect broader administrative harmo
 Central Logistics plans to continue its regular cadence of operational evaluations every quarter, with the next cycle scheduled for late Q3 2025. No additional announcements or press briefings are expected at this time.""",
         date=datetime.now()
     )
-    result = analyze_sentiment(article)
+    result = __analyze_sentiment(article)
     assert result == 0.0
 
 
@@ -58,7 +58,7 @@ However, the company isn’t immune to the broader headwinds. The ‘Asia’s Re
         date=datetime.now()
     )
 
-    result = analyze_sentiment(article)
+    result = __analyze_sentiment(article)
     assert result > 0.0 and result <= 1.0
 
 def test_analyze_sentiment_negative_article():
@@ -72,7 +72,7 @@ Politically, the current administration in the United States is prioritizing fis
 Despite recent improvements, the overall picture is one of uneven recovery. Global cooperation efforts, while present, have largely been reactive rather than proactive. The IMF's recent focus on debt sustainability and the ongoing discussions regarding the बेलarus debt crisis underscore the limitations of current mechanisms. The fragmented nature of international collaboration – driven by geopolitical tensions and nationalistic economic policies – continues to present a significant headwind for North American economic stability, necessitating a renewed push for robust, multilateral solutions to systemic risks.""",
         date=datetime.now()
     )
-    result = analyze_sentiment(article)
+    result = __analyze_sentiment(article)
     assert result < 0.0 and result >= -1.0
 
 @patch("services.financial_atlas.fetch_tickers")

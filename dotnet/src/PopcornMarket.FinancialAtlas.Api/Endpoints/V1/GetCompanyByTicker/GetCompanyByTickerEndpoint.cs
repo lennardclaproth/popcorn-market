@@ -32,6 +32,7 @@ internal sealed class GetCompanyByTickerEndpoint : IEndpoint
             var response = new GetCompanyByTickerResponse { Company = result.Value };
 
             return Results.Ok(response);
-        }).AllowAnonymous();
+        }).WithTransactionName()
+        .AllowAnonymous();
     }
 }

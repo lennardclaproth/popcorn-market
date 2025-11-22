@@ -21,6 +21,6 @@ internal sealed class PublishMarketDataEndpoint : IEndpoint
             };
             var result = await sender.Send(command);
             return result.IsFailure ? result.ToProblemDetails() : Results.Created();
-        }).AllowAnonymous();
+        }).WithTransactionName().AllowAnonymous();
     }
 }

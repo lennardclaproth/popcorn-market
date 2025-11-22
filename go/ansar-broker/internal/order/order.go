@@ -49,6 +49,14 @@ type Order struct {
 	Status    OrderStatus
 }
 
+type OrderFill struct {
+	ID uuid.UUID
+	OrderId uuid.UUID
+	Quantity int
+	Price float64
+	At time.Time
+}
+
 type Service struct {
 	store    Store
 	log      logging.Logger
@@ -103,7 +111,9 @@ var (
 // be processed.
 func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (string, error) {
 	// deduct funds first to check if the account is able
-	// to place the order.
+	// to place the order. If it is a market buy order we should
+	// first check what the current order price is before we place
+	// the order.
 	totalprice := cmd.Price * float64(cmd.Quantity)
 	err := s.accounts.DeductFunds(ctx, cmd.AccountID, totalprice)
 	if err != nil {
@@ -157,4 +167,20 @@ func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (string
 	}
 
 	return o.OrderId, nil
+}
+
+func (s *Service) CancelOrder(){
+
+}
+
+func (s *Service) PartiallyCancelOrder(){
+
+}
+
+func (s *Service) FulfillOrder(){
+
+}
+
+func (s *Service) PartiallyFulfillOrder(){
+
 }

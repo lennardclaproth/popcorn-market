@@ -36,6 +36,6 @@ internal sealed class GetMarketDataByTickerEndpoint : IEndpoint
             };
 
             return Results.Ok(response);
-        }).AllowAnonymous();
+        }).WithTransactionName().AllowAnonymous();
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PopcornMarket.BabylonExchange.Domain.Abstractions.Repositories;
 using PopcornMarket.BabylonExchange.Domain.Entities;
-using PopcornMarket.BabylonExchange.Domain.Enums;
 
 namespace PopcornMarket.BabylonExchange.Infrastructure.OrderMatchingEngine;
 
@@ -22,8 +21,6 @@ internal sealed class OrderBookCache
 
     public async Task<OrderBook?> Get(string ticker)
     {
-        // Efficiently update orderbook cache as well. Use a window of orders 
-        // you keep in memory so that the memory does not get overloaded.
         if (_cache.TryGetValue(ticker, out var cached))
         {
             cached.Touch();

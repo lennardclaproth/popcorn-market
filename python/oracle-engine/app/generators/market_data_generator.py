@@ -1,5 +1,5 @@
 import random
-from models.financial_atlas import Company, MarketData, MarketSnapshot
+from models.financial_atlas import Company, History, MarketData, MarketSnapshot
 from datetime import datetime, timedelta
 
 def generate(company: Company) -> MarketData:
@@ -30,8 +30,8 @@ def generate_price_history(current_price, avg_volume, shares_outstanding ,days=3
     """
     Simulates price history by using simple brownian Motion
     """
-    history : list[MarketSnapshot] = []
-    date = datetime.now()
+    history : list[History] = []
+    date = datetime.now().date()
     price = current_price
 
     for i in range(days):
@@ -42,8 +42,8 @@ def generate_price_history(current_price, avg_volume, shares_outstanding ,days=3
         price = round(price * (1 + delta_pct), 2)
         volume = int(random.gauss(avg_volume, avg_volume * 0.1))  # simulate volume variation
 
-        history.append(MarketSnapshot(
-            date=date,
+        history.append(History(
+            date=date.isoformat(),
             stock_price_usd=price,
             volume=volume,
             market_cap_b = round((price * shares_outstanding) / 1_000_000_000, 2)

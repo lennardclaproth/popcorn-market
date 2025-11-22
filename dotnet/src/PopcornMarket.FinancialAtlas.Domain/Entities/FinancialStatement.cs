@@ -1,5 +1,4 @@
 ﻿using Popcorn.FinancialAtlas.Domain.ValueObjects;
-using Popcorn.FinancialAtlas.Domain.Enums;
 using PopcornMarket.SharedKernel.Primitives;
 using PopcornMarket.SharedKernel.ResultPattern;
 

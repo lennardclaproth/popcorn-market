@@ -66,8 +66,7 @@ from models.generator import Generator
 from constants.financial_times import COMPANY_ARTICLE_TYPE, MACRO_ARTICLE_TYPE, POLITICAL_ARTICLE_TYPE, SECTOR_ARTICLE_TYPE
 from constants.financial_atlas import SERVICE_DESC
 from models.graph import NodeMetadata, EventType
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, BertTokenizer, BertForSequenceClassification, pipeline
-from os.path import dirname
+from inference import sentiment_engine
 
 generator = Generator(
     active=True,
@@ -93,14 +92,6 @@ MACRO_TERMS = [
     "geopolitical", "macroeconomic", "uae", "asia", "oceania", "inflation", "interest rates", "policy"
 ]
 
-model_name = "ProsusAI/finbert"
-
-tokenizer = AutoTokenizer.from_pretrained(f'{dirname(__file__)}/finbert-local/')
-model = AutoModelForSequenceClassification.from_pretrained(f'{dirname(__file__)}/finbert-local/')
-
-finbert = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
-
-
 def generate():
     """
     
@@ -116,7 +107,7 @@ def generate():
     # I don't know if this is nice...
     if financial_statement is None:
         market_data = financial_atlas.fetch_market_data(ticker)
-        initial_financial_statement = generate_initial_financial_statement(market_data)
+        initial_financial_statement = __generate_initial_financial_statement(market_data)
         entity_id = financial_atlas.publish_financial_statement(
             financial_statement=initial_financial_statement
         )
@@ -135,15 +126,15 @@ def generate():
         political_articles_by_region
     )
 
-    growth_factor = determine_growth_factor(all_articles)
-    financial_statement = apply_growth_factor(financial_statement, growth_factor)
+    growth_factor = __determine_growth_factor(all_articles)
+    financial_statement = __apply_growth_factor(financial_statement, growth_factor)
     entity_id = financial_atlas.publish_financial_statement(financial_statement)
 
     children = [article.id for article in all_articles]
     graph.create_node(entity_id, NodeMetadata(service=SERVICE_DESC, event_type=EventType.FINANCIAL_STATEMENT_PUBLISHED, kvp={"growth_factor": growth_factor + 1}), children)
 
 
-def generate_initial_financial_statement(market_data: MarketData) -> PublishFinancialStatementRequest:
+def __generate_initial_financial_statement(market_data: MarketData) -> PublishFinancialStatementRequest:
     snapshot = market_data.current
     shares = market_data.shares_outstanding
     market_cap = snapshot.market_cap_b
@@ -212,7 +203,7 @@ def generate_initial_financial_statement(market_data: MarketData) -> PublishFina
         cash_flow_statement=cash_flow_statement,
     )
     
-def determine_growth_factor(articles: list[ArticleBase]):
+def __determine_growth_factor(articles: list[ArticleBase]):
     scores = {
         COMPANY_ARTICLE_TYPE : [],
         POLITICAL_ARTICLE_TYPE : [],
@@ -221,9 +212,9 @@ def determine_growth_factor(articles: list[ArticleBase]):
     }
 
     for article in articles:
-        impact = estimate_impact(article)
-        relevance = define_relevance(article, impact)
-        sentiment = analyze_sentiment(article)
+        impact = __estimate_impact(article)
+        relevance = __define_relevance(article, impact)
+        sentiment = __analyze_sentiment(article)
         abs_score = relevance * abs(sentiment)
         net_score = relevance * sentiment
 
@@ -273,7 +264,7 @@ def determine_growth_factor(articles: list[ArticleBase]):
 
     return growth
 
-def apply_growth_factor(
+def __apply_growth_factor(
     previous: PublishFinancialStatementRequest,
     growth_factor: float
 ) -> PublishFinancialStatementRequest:
@@ -356,26 +347,24 @@ def apply_growth_factor(
         cash_flow_statement=cash_flow_statement,
     )
 
-def analyze_sentiment(article: ArticleBase) -> float:
+def __analyze_sentiment(article: ArticleBase) -> float:
     text = f"{article.headline}. {article.content}"
-    result = finbert(text)
+    sentiment, result = sentiment_engine.infer(text)
 
-    label = result[0]['label']
-    confidence = result[0]['score']
+    match sentiment.lower():
+        case "positive":
+            return result[sentiment]
+        case "negative":
+            return -result[sentiment]
+        case _:
+            return 0.0
 
-    if label == "positive":
-        return confidence  
-    elif label == "negative":
-        return -confidence
-    else:  
-        return 0.0
-
-def define_relevance(article: ArticleBase, impact_score: float) -> float:
+def __define_relevance(article: ArticleBase, impact_score: float) -> float:
     age_days = (datetime.now(timezone.utc) - article.date).days
     time_decay = exp(-0.05 * age_days)
     return time_decay * impact_score
 
-def estimate_impact(article: ArticleBase) -> float:
+def __estimate_impact(article: ArticleBase) -> float:
     """
     estimates the impact of an article based on the category and certain key
     words in the headline.

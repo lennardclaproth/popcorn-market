@@ -74,6 +74,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.BabylonExchan
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6CB38EB3-0C02-4B2E-8FBE-CD7D908AD1DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PopcornMarket.ServiceBus", "PopcornMarket.ServiceBus\PopcornMarket.ServiceBus.csproj", "{4D3C185A-6CC1-416A-96A0-90D4394BD83F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -168,6 +170,10 @@ Global
 		{C407346C-8426-49F2-8A4F-B5960956B95A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C407346C-8426-49F2-8A4F-B5960956B95A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C407346C-8426-49F2-8A4F-B5960956B95A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D3C185A-6CC1-416A-96A0-90D4394BD83F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D3C185A-6CC1-416A-96A0-90D4394BD83F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D3C185A-6CC1-416A-96A0-90D4394BD83F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D3C185A-6CC1-416A-96A0-90D4394BD83F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
