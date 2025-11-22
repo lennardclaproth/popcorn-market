@@ -39,7 +39,7 @@ internal sealed class PoliticalArticleRepository : IPoliticalArticleRepository
         await _collection.InsertOneAsync(entity);
     }
 
-    public Task Update(Guid id, PoliticalArticle entity)
+    public Task Update(PoliticalArticle entity, CancellationToken ct)
     {
         throw new NotImplementedException();
     }

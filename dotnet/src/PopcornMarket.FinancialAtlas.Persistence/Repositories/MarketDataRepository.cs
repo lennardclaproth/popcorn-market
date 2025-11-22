@@ -35,7 +35,7 @@ internal sealed class MarketDataRepository : IMarketDataRepository
         await _marketDataCollection.InsertOneAsync(entity);
     }
 
-    public Task Update(Guid id, MarketData entity)
+    public Task Update(MarketData entity, CancellationToken ct)
     {
         throw new NotImplementedException();
     }

@@ -18,7 +18,7 @@ internal sealed class ListCompanyCommandHandler : ICommandHandler<ListCompanyCom
         var company = await _companyRepository.GetByTicker(request.Ticker);
         Guard.Against.Null(company);
         company.List();
-        await _companyRepository.Update(company.Id, company);
+        await _companyRepository.Update(company, cancellationToken);
         return Result.Success();
     }
 }

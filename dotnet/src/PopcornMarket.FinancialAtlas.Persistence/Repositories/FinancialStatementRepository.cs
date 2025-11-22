@@ -30,7 +30,7 @@ internal sealed class FinancialStatementRepository : IFinancialStatementReposito
         await _collection.InsertOneAsync(entity);
     }
 
-    public Task Update(Guid id, FinancialStatement entity)
+    public Task Update(FinancialStatement entity, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
