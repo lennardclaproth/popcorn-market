@@ -2,11 +2,11 @@ server:
   port: 6060
 
 database:
-  connection_string: file:db/ansar-broker.db?_foreign_keys=on
+  connection_string: file:ansar-broker.db?_foreign_keys=on
   type: sqlite3
 
 babylon_exchange:
-  uri: https://localhost:7199
+  uri: localhost:7199
 
 apm:
   server_url: http://localhost:8200

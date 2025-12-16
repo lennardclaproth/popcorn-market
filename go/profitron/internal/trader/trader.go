@@ -95,7 +95,7 @@ func (t *Trader) Trade(ctx context.Context) error {
 	orderType := decideOrderType(t.Config)
 
 	quantity := rng.Intn(100) + 1
-	price := determinePrice(sec, broker.OrderSideSell, broker.OrderTypeMarket, t.Config)
+	price := determinePrice(sec, side, orderType, t.Config)
 
 	orderReq := broker.PlaceOrderRequest{
 		AccountID:     acc.ID,
@@ -159,7 +159,7 @@ func determinePrice(sec broker.SearchSecuritiesResponse, side broker.OrderSide, 
 	if price <= 0 {
 		price = 0.01
 	}
-	
+
 	return price
 }
 

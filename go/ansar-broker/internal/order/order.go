@@ -37,24 +37,25 @@ const (
 )
 
 type Order struct {
-	ID        uuid.UUID
-	OrderId   string
-	PlacedAt  time.Time
-	AccountID uuid.UUID
-	Ticker    string
-	Quantity  int
-	Price     float64
-	Side      OrderSide
-	Type      OrderType
-	Status    OrderStatus
+	ID            uuid.UUID
+	OrderId       string
+	PlacedAt      time.Time
+	AccountID     uuid.UUID
+	AccountNumber string
+	Ticker        string
+	Quantity      int
+	Price         float64
+	Side          OrderSide
+	Type          OrderType
+	Status        OrderStatus
 }
 
 type OrderFill struct {
-	ID uuid.UUID
-	OrderId uuid.UUID
+	ID       uuid.UUID
+	OrderId  uuid.UUID
 	Quantity int
-	Price float64
-	At time.Time
+	Price    float64
+	At       time.Time
 }
 
 type Service struct {
@@ -124,15 +125,16 @@ func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (string
 	// it can be handled correctly if an errors occur. Deduct the funds
 	// when the order has been saved.
 	o := &Order{
-		ID:        uuid.New(),
-		AccountID: cmd.AccountID,
-		PlacedAt:  time.Now(),
-		Ticker:    cmd.Ticker,
-		Quantity:  cmd.Quantity,
-		Price:     cmd.Price,
-		Side:      cmd.Side,
-		Type:      cmd.Type,
-		Status:    OrderStatusNew,
+		ID:            uuid.New(),
+		AccountID:     cmd.AccountID,
+		AccountNumber: cmd.AccountNumber,
+		PlacedAt:      time.Now(),
+		Ticker:        cmd.Ticker,
+		Quantity:      cmd.Quantity,
+		Price:         cmd.Price,
+		Side:          cmd.Side,
+		Type:          cmd.Type,
+		Status:        OrderStatusNew,
 	}
 	err = s.store.Create(ctx, o)
 	if err != nil {
@@ -169,18 +171,18 @@ func (s *Service) PlaceOrder(ctx context.Context, cmd PlaceOrderCommand) (string
 	return o.OrderId, nil
 }
 
-func (s *Service) CancelOrder(){
+func (s *Service) CancelOrder() {
 
 }
 
-func (s *Service) PartiallyCancelOrder(){
+func (s *Service) PartiallyCancelOrder() {
 
 }
 
-func (s *Service) FulfillOrder(){
+func (s *Service) FulfillOrder() {
 
 }
 
-func (s *Service) PartiallyFulfillOrder(){
+func (s *Service) PartiallyFulfillOrder() {
 
 }

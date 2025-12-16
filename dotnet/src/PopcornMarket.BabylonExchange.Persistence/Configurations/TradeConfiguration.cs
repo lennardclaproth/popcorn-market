@@ -14,12 +14,31 @@ public class TradeConfiguration : IEntityTypeConfiguration<Trade>
         builder.HasKey(t => t.Id);
 
         builder.Property(t => t.Price)
-            .HasColumnType("numeric(18,2)")
+            .HasColumnType("numeric(18,6)")
             .IsRequired();
 
         builder.Property(t => t.Quantity)
             .HasColumnType("integer")
             .IsRequired();
+
+        builder.Property(o => o.Id)
+            .HasColumnType("UUID")
+            .IsRequired()
+            .ValueGeneratedNever();
+
+        builder.Property(o => o.BuyOrderId)
+            .HasColumnType("UUID")
+            .IsRequired()
+            .ValueGeneratedNever();
+
+        builder.Property(o => o.SellOrderId)
+            .HasColumnType("UUID")
+            .IsRequired()
+            .ValueGeneratedNever();
+
+        builder.Property(o => o.ExecutedAt)
+            .IsRequired()
+            .HasColumnType("TIMESTAMPTZ");
 
         builder.HasOne(t => t.BuyOrder)
             .WithMany()

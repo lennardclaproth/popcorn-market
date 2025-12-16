@@ -10,7 +10,7 @@ public sealed record ListingDto
     [JsonPropertyName("company_name")]
     public required string CompanyName { get; init; }
     [JsonPropertyName("last_price")]
-    public required decimal LastPrice { get; init; }
+    public required decimal LastPrice { get; set; }
     [JsonPropertyName("price_open")]
     public required decimal PriceOpen { get; init; }
     [JsonPropertyName("price_close")]

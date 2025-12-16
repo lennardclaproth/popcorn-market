@@ -14,7 +14,7 @@ public record PlaceOrderRequest
     [JsonPropertyName("price")]
     public decimal Price { get; init; }
     [JsonPropertyName("order_type")]
-    public OrderType Type { get; init; }
+    public Enums.OrderType Type { get; init; }
     [JsonPropertyName("order_side")]
-    public OrderSide Side { get; init; }
+    public Enums.OrderSide Side { get; init; }
 }

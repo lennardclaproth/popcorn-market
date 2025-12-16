@@ -248,5 +248,34 @@ BEGIN
     VALUES ('20251116154624_PopcornMarket.BabylonExchange.OutboxPackageModel', '9.0.3');
     END IF;
 END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251210213429_PopcornMarket.BabylonExchange.TradeCorrectColumnValues') THEN
+    ALTER TABLE "OrderBook"."Trade" ALTER COLUMN "Price" TYPE numeric(18,6);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251210213429_PopcornMarket.BabylonExchange.TradeCorrectColumnValues') THEN
+    ALTER TABLE "OrderBook"."Trade" ALTER COLUMN "ExecutedAt" TYPE TIMESTAMPTZ;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251210213429_PopcornMarket.BabylonExchange.TradeCorrectColumnValues') THEN
+    ALTER TABLE "OrderBook"."Trade" ALTER COLUMN "Id" TYPE UUID;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20251210213429_PopcornMarket.BabylonExchange.TradeCorrectColumnValues') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20251210213429_PopcornMarket.BabylonExchange.TradeCorrectColumnValues', '9.0.3');
+    END IF;
+END $EF$;
 COMMIT;
 

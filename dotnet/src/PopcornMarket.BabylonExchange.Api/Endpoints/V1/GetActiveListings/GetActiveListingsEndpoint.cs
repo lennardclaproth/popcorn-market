@@ -39,7 +39,7 @@ public class ApplyForListingEndpoint : IEndpoint
                     PageNumber = pageNumber,
                     PageCount = (int)Math.Ceiling((double)(result.Value.Count()) / pageSize),
 
-                    // Should become total count of set.
+                    // Should become total count of set. 
                     TotalCount = result.Value.Count()
                 };
 

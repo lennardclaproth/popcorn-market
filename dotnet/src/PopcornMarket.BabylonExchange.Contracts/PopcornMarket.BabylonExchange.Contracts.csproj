@@ -6,4 +6,15 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Grpc.Tools" PrivateAssets="All" />
+      <PackageReference Include="Google.Api.CommonProtos" GeneratePathProperty="true"/>
+      <PackageReference Include="Grpc.Core" />
+      <PackageReference Include="Grpc.Net.Client" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="Protos\orders.proto" GrpcServices="Both" ProtoRoot="Protos" AdditionalImportDirs="$(PkgGoogle_Api_CommonProtos)\content\protos"/>
+    </ItemGroup>
+
 </Project>

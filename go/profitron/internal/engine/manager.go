@@ -72,7 +72,10 @@ func (mgr *Manager) LoadTraders(ctx context.Context) error {
 	for _, trader := range traders[:mgr.maxTraders] {
 		trader.Load(&mgr.broker)
 		if trader.UserID == uuid.Nil {
-			mgr.onBoardTrader(ctx, trader)
+			err := mgr.onBoardTrader(ctx, trader)
+			if err != nil {
+				mgr.log.Error(ctx, "Engine: LoadTraders: An error occurred while onboarding a trader", err)
+			}
 		}
 		mgr.startSession(ctx, trader)
 	}
@@ -92,7 +95,7 @@ func (mgr *Manager) generateTraders(cnt, traderI int) ([]trader.Trader, error) {
 		trader.TraderTypePosition,
 		trader.TraderTypeFundamental,
 	}
-	traders := make([]trader.Trader, cnt)
+	traders := make([]trader.Trader, 0, cnt)
 	for i := 0; i < cnt; i++ {
 		id := fmt.Sprintf("T-%04d", traderI)
 		name := fmt.Sprintf("Trader %d", i)

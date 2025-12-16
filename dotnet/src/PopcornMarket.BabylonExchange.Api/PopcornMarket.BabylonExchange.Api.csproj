@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>bbb4e5ca-4523-423d-ad52-a2d5242404c7</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +24,8 @@
       <PackageReference Include="Serilog.Sinks.Seq" />
       <PackageReference Include="Elastic.Apm" />
       <PackageReference Include="Elastic.Apm.NetCoreAll" />
+      <PackageReference Include="Grpc.AspNetCore" />
+      <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
     </ItemGroup>
 
     <ItemGroup>
@@ -32,6 +35,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\PopcornMarket.BabylonExchange.Contracts\PopcornMarket.BabylonExchange.Contracts.csproj" />
       <ProjectReference Include="..\PopcornMarket.BabylonExchange.Application\PopcornMarket.BabylonExchange.Application.csproj" />
       <ProjectReference Include="..\PopcornMarket.BabylonExchange.Infrastructure\PopcornMarket.BabylonExchange.Infrastructure.csproj" />
       <ProjectReference Include="..\PopcornMarket.BabylonExchange.Persistence\PopcornMarket.BabylonExchange.Persistence.csproj" />

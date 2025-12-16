@@ -1,11 +1,9 @@
-﻿using System.Diagnostics;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using Ardalis.GuardClauses;
 using Elastic.Apm.Api;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using PopcornMarket.BabylonExchange.Domain.Entities;
 using PopcornMarket.BabylonExchange.Domain.Enums;
 using PopcornMarket.SharedKernel.Abstractions;

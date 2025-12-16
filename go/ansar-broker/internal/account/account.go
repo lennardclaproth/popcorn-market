@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lennardclaproth/ansar-broker/crypto"
 	"github.com/lennardclaproth/ansar-broker/errorx"
 	"github.com/lennardclaproth/ansar-broker/internal/security"
 	"github.com/lennardclaproth/ansar-broker/logging"
+
+	"crypto/rand"
+	"math/big"
 )
 
 type AccountStatus int
@@ -57,10 +59,14 @@ type AccountInfo struct {
 	Status     int
 }
 
-type Service struct {
+type Accounts struct {
 	userHandler UserHandler
 	store       Store
 	logger      logging.Logger
+}
+
+type WatchList struct {
+	Securities []security.Security
 }
 
 var (
@@ -73,16 +79,28 @@ type UserHandler interface {
 	CanOpenAccount(ctx context.Context, uid uuid.UUID) (bool, error)
 }
 
+const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func RandomString(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		num, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		b[i] = charset[num.Int64()]
+	}
+	return string(b)
+}
+
 type Store interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*Account, error)
-	GetByUserID(ctx context.Context, userID uuid.UUID) (*[]Account, error)
+	GetWithPortfolio(ctx context.Context, id uuid.UUID) (*Account, error)
+	GetByUserID(ctx context.Context, userID uuid.UUID) ([]Account, error)
 	Create(ctx context.Context, account *Account) error
 	Update(ctx context.Context, account *Account) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
-func NewService(store Store, log logging.Logger, userHandler UserHandler) *Service {
-	return &Service{
+func NewService(store Store, log logging.Logger, userHandler UserHandler) *Accounts {
+	return &Accounts{
 		userHandler: userHandler,
 		store:       store,
 		logger:      log,
@@ -94,7 +112,7 @@ type OpenAccountCommand struct {
 	InitialBalance float64
 }
 
-func (s *Service) Open(ctx context.Context, cmd OpenAccountCommand) (string, error) {
+func (s *Accounts) Open(ctx context.Context, cmd OpenAccountCommand) (string, error) {
 	// Check if there are already existing accounts for this user
 	// If there is an existing account for this user the newly created
 	// account will not be the active account. The user would need
@@ -117,7 +135,7 @@ func (s *Service) Open(ctx context.Context, cmd OpenAccountCommand) (string, err
 	}
 
 	hasActiveAccount := false
-	for _, acc := range *accounts {
+	for _, acc := range accounts {
 		if acc.IsActive {
 			hasActiveAccount = true
 			break
@@ -125,7 +143,7 @@ func (s *Service) Open(ctx context.Context, cmd OpenAccountCommand) (string, err
 	}
 
 	prefix := "ANSR"
-	number := crypto.RandomString(12)
+	number := RandomString(12)
 
 	a := &Account{
 		ID:      uuid.New(),
@@ -152,12 +170,12 @@ func (s *Service) Open(ctx context.Context, cmd OpenAccountCommand) (string, err
 	return a.Number, nil
 }
 
-func (s *Service) CanPlaceOrder(ctx context.Context, accId uuid.UUID, price float64) (bool, error) {
+func (s *Accounts) CanPlaceOrder(ctx context.Context, accId uuid.UUID, price float64) (bool, error) {
 	return true, nil
 }
 
 // getAccountInfo returns the info of an account.
-func (s *Service) GetAccountInfo(ctx context.Context, accId uuid.UUID) (AccountInfo, error) {
+func (s *Accounts) GetAccountInfo(ctx context.Context, accId uuid.UUID) (AccountInfo, error) {
 	// access the store to get the account by the account ID
 	acc, err := s.store.GetByID(ctx, accId)
 	if err != nil {
@@ -175,7 +193,7 @@ func (s *Service) GetAccountInfo(ctx context.Context, accId uuid.UUID) (AccountI
 }
 
 // getAccountInfo returns the info of an account.
-func (s *Service) GetActiveAccount(ctx context.Context, uId uuid.UUID) (AccountInfo, error) {
+func (s *Accounts) GetActiveAccount(ctx context.Context, uId uuid.UUID) (AccountInfo, error) {
 	// access the store to get the account by the account ID
 	accs, err := s.store.GetByUserID(ctx, uId)
 	if err != nil {
@@ -183,7 +201,7 @@ func (s *Service) GetActiveAccount(ctx context.Context, uId uuid.UUID) (AccountI
 	}
 
 	// Find the active account
-	for _, a := range *accs {
+	for _, a := range accs {
 		if a.IsActive {
 			return AccountInfo{
 				ID:         a.ID,
@@ -200,7 +218,7 @@ func (s *Service) GetActiveAccount(ctx context.Context, uId uuid.UUID) (AccountI
 	return AccountInfo{}, errorx.Trace(fmt.Errorf("getAccountInfo: no active account found for user %s", uId))
 }
 
-func (s *Service) DeductFunds(ctx context.Context, accId uuid.UUID, price float64) error {
+func (s *Accounts) DeductFunds(ctx context.Context, accId uuid.UUID, price float64) error {
 	acc, err := s.store.GetByID(ctx, accId)
 
 	if err != nil {
@@ -225,7 +243,7 @@ func (s *Service) DeductFunds(ctx context.Context, accId uuid.UUID, price float6
 	return nil
 }
 
-func (s *Service) Refund(ctx context.Context, accId uuid.UUID, price float64) error {
+func (s *Accounts) Refund(ctx context.Context, accId uuid.UUID, price float64) error {
 	acc, err := s.store.GetByID(ctx, accId)
 
 	if err != nil {
@@ -241,7 +259,7 @@ func (s *Service) Refund(ctx context.Context, accId uuid.UUID, price float64) er
 	return err
 }
 
-func (s *Service) AddFunds(ctx context.Context, accId uuid.UUID, price float64) error {
+func (s *Accounts) AddFunds(ctx context.Context, accId uuid.UUID, price float64) error {
 	acc, err := s.store.GetByID(ctx, accId)
 
 	if err != nil {
@@ -257,10 +275,24 @@ func (s *Service) AddFunds(ctx context.Context, accId uuid.UUID, price float64) 
 	return err
 }
 
-func (s *Service) AddToHolding(ctx context.Context, symbol string, quantity int, price float64, accId uuid.UUID) {
+func (s *Accounts) AddToHolding(ctx context.Context, symbol string, quantity int, price float64, accId uuid.UUID) {
+	a, err := s.store.GetWithPortfolio(ctx, accId)
 
+	if err != nil {
+
+	}
+
+	for _, h := range(a.Portfolio.Holdings){
+		if h.Security.Symbol != symbol {
+			continue
+		}
+	}
 }
 
-func (s *Service) RemoveFromHolding(ctx context.Context, symbol string, quanity int, accId uuid.UUID) {
+func (s *Accounts) RemoveFromHolding(ctx context.Context, symbol string, quanity int, accId uuid.UUID) {
+	
+}
+
+func (s *Accounts) GetPortfolio(ctx context.Context, accId uuid.UUID) {
 
 }

@@ -1,4 +1,5 @@
 ﻿using PopcornMarket.BabylonExchange.Api.Extensions;
+using PopcornMarket.BabylonExchange.Api.Services;
 using PopcornMarket.BabylonExchange.Application.Extensions;
 using PopcornMarket.BabylonExchange.Infrastructure.Extensions;
 using PopcornMarket.BabylonExchange.Persistence.Extensions;
@@ -12,6 +13,9 @@ builder.Services.InstallApplication();
 builder.Services.AddAllElasticApm();
 builder.InstallPresentation();
 
+builder.Services.AddGrpcReflection();
+builder.Services.AddGrpc();
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -20,4 +24,12 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
 app.ConfigureEndpoints();
+
+app.MapGrpcService<OrderService>();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapGrpcReflectionService();
+}
+
 app.Run();

@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { LucideAngularModule, FileIcon } from 'lucide-angular';
 import { MarkdownComponent } from 'ngx-markdown';
+import { ButtonComponent } from "../../../lib/atoms/button/button.component";
 
 @Component({
   selector: 'app-index',
   standalone: true,
-  imports: [LucideAngularModule, MarkdownComponent],
+  imports: [LucideAngularModule, MarkdownComponent, ButtonComponent],
   templateUrl: './index.component.html',
   styleUrl: './index.component.css'
 })

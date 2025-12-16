@@ -171,17 +171,16 @@ namespace PopcornMarket.BabylonExchange.Persistence.Migrations
             modelBuilder.Entity("PopcornMarket.BabylonExchange.Domain.Entities.Trade", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("UUID");
 
                     b.Property<Guid>("BuyOrderId")
                         .HasColumnType("UUID");
 
                     b.Property<DateTime>("ExecutedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TIMESTAMPTZ");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric(18,2)");
+                        .HasColumnType("numeric(18,6)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");

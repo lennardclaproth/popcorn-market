@@ -8,10 +8,10 @@ import (
 	"os/signal"
 
 	"github.com/lennardclaproth/ansar-broker/config"
-	"github.com/lennardclaproth/ansar-broker/db"
-	"github.com/lennardclaproth/ansar-broker/http"
-	"github.com/lennardclaproth/ansar-broker/internal/application"
+	"github.com/lennardclaproth/ansar-broker/internal/app"
 	"github.com/lennardclaproth/ansar-broker/logging"
+	"github.com/lennardclaproth/ansar-broker/storage"
+	"github.com/lennardclaproth/ansar-broker/transport"
 )
 
 func run(ctx context.Context, args []string) error {
@@ -20,12 +20,12 @@ func run(ctx context.Context, args []string) error {
 
 	cfg := config.ReadConfig()
 
-	db := db.NewDB(cfg.Database.ConnStr, db.ConnectionType(cfg.Database.Type))
+	db := storage.NewDB(cfg.Database.ConnStr, storage.ConnectionType(cfg.Database.Type))
 
 	log := logging.NewSlogLogger(slog.LevelInfo)
-	app := application.NewApp(db, log, cfg)
+	app := app.New(db, log, cfg)
 
-	server := http.NewServer(fmt.Sprintf(":%d", cfg.Server.Port), app, log)
+	server := transport.NewServer(fmt.Sprintf(":%d", cfg.Server.Port), app, log)
 
 	if err := server.Run(ctx); err != nil {
 		return fmt.Errorf("server error: %w", err)

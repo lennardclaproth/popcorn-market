@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package babylonexchange.orders.v1;
+
+option csharp_namespace = "PopcornMarket.BabylonExchange.Contracts";
+option go_package = "github.com/lennardclaproth/ansar-broker/exchange/protos/orders;orders";
+
+service OrderService {
+  rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse);
+}
+
+message PlaceOrderRequest {
+  string trader_id = 1;
+  string stock_symbol = 2;
+  int32 quantity = 3;
+  double price = 4;
+  OrderType type = 5;
+  OrderSide side = 6;
+}
+
+message PlaceOrderResponse {
+  string order_id = 1;
+}
+
+enum OrderType {
+  MARKET = 0;
+  LIMIT = 1;
+}
+
+enum OrderSide {
+  BUY = 0;
+  SELL = 1;
+}
